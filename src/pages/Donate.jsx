@@ -22,6 +22,7 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -208,6 +209,7 @@ const Donate = () => {
 
   return (
     <div className="flex-1 max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 animate-fade-in">
+      <SEO title="Donate" description="Support Sri Anjaneya Youth Zarugumalli with your generous donation. Contribute to temple seva, annadanam, cultural preservation and community welfare activities." path="/donate" />
       
       {/* Page Header */}
       <div className="flex items-center justify-between">

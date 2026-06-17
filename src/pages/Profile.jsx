@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { dbService, authService } from '../firebase/config';
 import { User, Phone, MapPin, Mail, ShieldAlert, Check, Edit, LogOut, Loader2, AlertCircle, Lock, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const Profile = () => {
   const { user, loginUser, signOut } = useAuth();
@@ -153,6 +154,7 @@ const Profile = () => {
 
   return (
     <div className="flex-1 max-w-xl mx-auto px-4 py-12 animate-fade-in w-full">
+      <SEO title="My Profile" description="Manage your Sri Anjaneya Youth Zarugumalli member profile — update your information, view your membership details and activity history." path="/profile" />
       <div className="bg-white rounded-3xl border border-cream-200 shadow-sm overflow-hidden relative glass-panel">
         
         {/* Header Ribbon */}

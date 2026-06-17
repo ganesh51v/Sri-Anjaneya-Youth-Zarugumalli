@@ -3,6 +3,7 @@ import { dbService } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Plus, X, Loader2, AlertCircle, Image as ImageIcon, Trash2, Camera, ExternalLink } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const Gallery = () => {
   const { user } = useAuth();
@@ -133,6 +134,7 @@ const Gallery = () => {
 
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 animate-fade-in">
+      <SEO title="Gallery" description="Photo gallery of Sri Anjaneya Youth Zarugumalli events — temple festivals, cultural programmes, annadanam, youth activities and community celebrations." path="/gallery" />
       
       {/* Header Panel */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">

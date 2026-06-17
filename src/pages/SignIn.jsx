@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { authService } from '../firebase/config';
 import { Mail, Lock, LogIn, Download, AlertCircle, Info, Globe, Phone, User } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const SignIn = () => {
   const { user, loginUser } = useAuth();
@@ -184,6 +185,7 @@ const SignIn = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-cream-100/30 relative">
+      <SEO title="Sign In" description="Sign in to your Sri Anjaneya Youth Zarugumalli member account. Access events, announcements, gallery and community updates." path="/signin" />
       {/* Floating Language Switcher */}
       <div className="absolute top-4 right-4 z-50">
         <button 

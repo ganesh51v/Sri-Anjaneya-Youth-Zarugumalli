@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { dbService } from '../firebase/config';
 import { Users, Calendar, Bell, Heart, MapPin, Mail, Phone, Info, ChevronRight, MessageSquare, Award } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -67,6 +68,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
+      <SEO title="Dashboard" description="Your Sri Anjaneya Youth Zarugumalli member dashboard — view upcoming events, recent announcements, gallery highlights and community news." path="/" />
       {/* Devotional Hero Greeting */}
       <div className="welcome-banner rounded-3xl p-6 sm:p-8 relative overflow-hidden backdrop-blur-md">
         {/* Decorative background radial pattern */}

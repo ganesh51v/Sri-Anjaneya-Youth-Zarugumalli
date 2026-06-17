@@ -3,6 +3,7 @@ import { dbService } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Plus, X, Loader2, AlertCircle, Bell, Trash2 } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const Announcements = () => {
   const { user } = useAuth();
@@ -73,6 +74,7 @@ const Announcements = () => {
 
   return (
     <div className="flex-1 max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 animate-fade-in">
+      <SEO title="Announcements" description="Latest announcements from Sri Anjaneya Youth Zarugumalli — important updates, upcoming events, seva opportunities and community notices." path="/announcements" />
       
       {/* Header Panel */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">

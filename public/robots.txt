@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /signin
+Allow: /signup
+Allow: /events
+Allow: /gallery
+Allow: /announcements
+Allow: /donate
+
+# Disallow private member-only pages
+Disallow: /dashboard
+Disallow: /members
+Disallow: /profile
+Disallow: /admin
+
+# Sitemap location
+Sitemap: https://sri-anjaneya-youth-zarugumalli.web.app/sitemap.xml

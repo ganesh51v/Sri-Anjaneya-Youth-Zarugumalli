@@ -22,6 +22,7 @@ import {
   IndianRupee
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const AdminDashboard = () => {
   const { user: currentUser } = useAuth();
@@ -196,6 +197,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
+      <SEO title="Admin Dashboard" description="Sri Anjaneya Youth Zarugumalli admin control panel — manage members, events, announcements, gallery and donations." path="/admin" />
       
       {/* Page Header */}
       <div className="border-b border-cream-200 pb-5">

@@ -3,6 +3,7 @@ import { dbService } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import EventCard from '../components/EventCard';
 import { Plus, X, Loader2, AlertCircle, Calendar } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const Events = () => {
   const { user } = useAuth();
@@ -110,6 +111,7 @@ const Events = () => {
 
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 animate-fade-in">
+      <SEO title="Events" description="Upcoming and past events organised by Sri Anjaneya Youth Zarugumalli — temple festivals, cultural programmes, seva activities and community gatherings." path="/events" />
       
       {/* Header Panel */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">

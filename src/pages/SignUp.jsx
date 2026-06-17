@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { authService } from '../firebase/config';
 import { User, Mail, Phone, MapPin, Lock, UserPlus, AlertCircle, Globe } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const SignUp = () => {
   const { user, loginUser } = useAuth();
@@ -87,6 +88,7 @@ const SignUp = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-cream-100/30 relative">
+      <SEO title="Sign Up" description="Join Sri Anjaneya Youth Zarugumalli. Register as a new member and participate in seva, cultural events and community activities." path="/signup" />
       {/* Floating Language Switcher */}
       <div className="absolute top-4 right-4 z-50">
         <button 

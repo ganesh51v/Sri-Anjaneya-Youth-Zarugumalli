@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import MemberCard from '../components/MemberCard';
 import { Plus, Search, X, Loader2, AlertCircle, Camera } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const Members = () => {
   const { user } = useAuth();
@@ -140,6 +141,7 @@ const Members = () => {
 
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 animate-fade-in">
+      <SEO title="Members" description="Meet the active members of Sri Anjaneya Youth Association Zarugumalli — a dedicated group of youth committed to seva, culture and community welfare." path="/members" />
       {/* Header Panel */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">
         <div>
