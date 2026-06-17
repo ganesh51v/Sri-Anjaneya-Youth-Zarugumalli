@@ -207,22 +207,13 @@ const SignIn = () => {
             {/* Background Halo */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_70%)] animate-pulse-slow" />
             
-            {/* Custom SVG Hanuman Mace */}
+            {/* Custom Logo Image */}
             <div className="relative z-10 flex justify-center mb-3">
-              <svg 
-                className="w-16 h-16 text-gold-300 drop-shadow-md animate-float"
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="1.5"
-              >
-                <circle cx="12" cy="7" r="5" stroke="currentColor" strokeDasharray="1 1" />
-                <circle cx="12" cy="7" r="4" fill="currentColor" fillOpacity="0.3" />
-                <path d="M12 2v10" strokeWidth="2" />
-                <path d="M9 7h6" />
-                <path d="M12 12v10" strokeWidth="2.5" />
-                <circle cx="12" cy="22" r="1" fill="currentColor" />
-              </svg>
+              <img 
+                src="/icon.png" 
+                alt="Sri Anjaneya Youth Logo" 
+                className="w-16 h-16 rounded-full object-cover border-2 border-gold-300 shadow-lg animate-float"
+              />
             </div>
             
             <h2 className="text-2xl font-extrabold tracking-tight relative z-10">

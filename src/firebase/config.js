@@ -781,7 +781,7 @@ export const dbService = {
     updateRole: async (id, newRole) => {
       if (isFirebaseConfigured && db) {
         return firestoreOp(async () => {
-          await updateDoc(doc(db, 'users', id), { role: newRole });
+          await setDoc(doc(db, 'users', id), { role: newRole }, { merge: true });
           return { id, role: newRole };
         }, null, 'users.updateRole');
       }
@@ -804,7 +804,7 @@ export const dbService = {
       const { name, phone, village, photoUrl } = details;
       if (isFirebaseConfigured && db) {
         return firestoreOp(async () => {
-          await updateDoc(doc(db, 'users', id), { name, phone, village, photoUrl: photoUrl || '' });
+          await setDoc(doc(db, 'users', id), { name, phone, village, photoUrl: photoUrl || '' }, { merge: true });
           return { id, name, phone, village, photoUrl };
         }, null, 'users.updateDetails');
       }
@@ -826,7 +826,7 @@ export const dbService = {
     updateCommitteeStatus: async (id, status) => {
       if (isFirebaseConfigured && db) {
         return firestoreOp(async () => {
-          await updateDoc(doc(db, 'users', id), { committeeStatus: status });
+          await setDoc(doc(db, 'users', id), { committeeStatus: status }, { merge: true });
           return { id, committeeStatus: status };
         }, null, 'users.updateCommitteeStatus');
       }

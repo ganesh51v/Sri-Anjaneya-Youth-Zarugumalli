@@ -122,21 +122,11 @@ const Navbar = () => {
             <Link to="/" className="flex items-center space-x-2.5 group shrink-0">
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-saffron-400 to-gold-400 rounded-full blur opacity-15 group-hover:opacity-40 transition duration-500" />
-                <svg 
-                  className="relative w-8 h-8 text-saffron-600 filter drop-shadow group-hover:scale-110 transition-all duration-300"
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2"
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="8" r="5" fill="currentColor" fillOpacity="0.15" />
-                  <circle cx="12" cy="8" r="2" fill="currentColor" />
-                  <path d="M12 13v7" strokeWidth="2.5" />
-                  <circle cx="12" cy="20.5" r="1" fill="currentColor" />
-                  <path d="M7.5 8h9" strokeWidth="1.5" />
-                </svg>
+                <img 
+                  src="/icon.png" 
+                  alt="Sri Anjaneya Youth Logo" 
+                  className="relative w-8 h-8 rounded-full object-cover filter drop-shadow group-hover:scale-110 transition-all duration-300 border border-saffron-500/30"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-black text-base sm:text-lg text-saffron-600 tracking-tight leading-none group-hover:text-saffron-500 transition-colors">
