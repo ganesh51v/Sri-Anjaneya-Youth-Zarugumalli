@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sa-youth-v1';
+const CACHE_NAME = 'sa-youth-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -32,17 +32,31 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Event - Network first fallback to Cache
+// Fetch Event
 self.addEventListener('fetch', (event) => {
-  // Only intercept HTTP/S requests (avoid chrome-extension issues)
-  if (!event.request.url.startsWith(self.location.origin)) {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
+
+  // Only intercept same-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) return;
+
+  // --- Navigation requests (page loads like /signin, /signup, /dashboard) ---
+  // Network-first: try live network, fall back to cached index.html for offline SPA support
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match('/index.html');
+      })
+    );
     return;
   }
-  
+
+  // --- Static asset requests (JS, CSS, images, fonts) ---
+  // Network-first with cache fallback
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // If valid, clone and put it in cache dynamically
+        // Cache successful responses dynamically
         if (response.status === 200 && response.type === 'basic') {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -52,22 +66,8 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Offline fallback
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // For navigation requests in an SPA, fall back to index.html shell
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-          // Fallback response for other resources
-          return new Response('Network error occurred', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: new Headers({ 'Content-Type': 'text/plain' })
-          });
-        });
+        // Offline: serve from cache if available
+        return caches.match(event.request);
       })
   );
 });
