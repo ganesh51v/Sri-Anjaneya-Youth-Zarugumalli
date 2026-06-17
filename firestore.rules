@@ -36,7 +36,8 @@ service cloud.firestore {
 
     // Donations collection
     match /donations/{donationId} {
-      allow create, read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow read: if true;
       allow update, delete: if isAdmin();
     }
   }
