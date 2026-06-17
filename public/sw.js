@@ -53,7 +53,21 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         // Offline fallback
-        return caches.match(event.request);
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // For navigation requests in an SPA, fall back to index.html shell
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+          // Fallback response for other resources
+          return new Response('Network error occurred', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: new Headers({ 'Content-Type': 'text/plain' })
+          });
+        });
       })
   );
 });
