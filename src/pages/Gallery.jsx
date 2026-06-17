@@ -75,6 +75,7 @@ const Gallery = () => {
       try {
         await dbService.gallery.delete(id);
         setGallery(prev => prev.filter(item => item.id !== id));
+        setFilteredGallery(prev => prev.filter(item => item.id !== id));
       } catch (err) {
         alert(t('failedDeletePhoto'));
       }

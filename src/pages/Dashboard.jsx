@@ -234,7 +234,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <span className="block text-xl font-black text-slate-800 dark:text-white">
-                    ₹{stats.totalAmount.toLocaleString('en-IN')}.00
+                    ₹{stats.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('totalAmountDonated')}</span>
                 </div>

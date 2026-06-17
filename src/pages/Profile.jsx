@@ -6,7 +6,7 @@ import { User, Phone, MapPin, Mail, ShieldAlert, Check, Edit, LogOut, Loader2, A
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-  const { user, setUser, signOut } = useAuth();
+  const { user, loginUser, signOut } = useAuth();
   const { language, t } = useLanguage();
   const navigate = useNavigate();
 
@@ -123,7 +123,7 @@ const Profile = () => {
       // Update session details
       const sessionUser = { ...user, name, phone, village, photoUrl };
       localStorage.setItem('sa_current_user', JSON.stringify(sessionUser));
-      setUser(sessionUser);
+      loginUser(sessionUser);
 
       setSuccess(true);
       setIsEditing(false);
@@ -142,7 +142,7 @@ const Profile = () => {
       await dbService.users.updateCommitteeStatus(user.id, 'pending');
       const updatedUser = { ...user, committeeStatus: 'pending' };
       localStorage.setItem('sa_current_user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
+      loginUser(updatedUser);
       setSuccess(true);
     } catch (err) {
       setError(language === 'en' ? 'Failed to request committee membership.' : 'కమిటీ సభ్యత్వం అభ్యర్థించడంలో విఫలమైంది.');

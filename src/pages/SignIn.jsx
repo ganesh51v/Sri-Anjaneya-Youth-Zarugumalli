@@ -136,7 +136,7 @@ const SignIn = () => {
     setLoading(true);
     try {
       const loggedUser = await authService.signIn(email, password);
-      setUser(loggedUser);
+      loginUser(loggedUser);
       navigate('/');
     } catch (err) {
       setError(err.message || 'Failed to sign in. Please check your credentials.');
@@ -151,7 +151,7 @@ const SignIn = () => {
     setLoading(true);
     try {
       const loggedUser = await authService.signInWithGoogle();
-      setUser(loggedUser);
+      loginUser(loggedUser);
       navigate('/');
     } catch (err) {
       setError(err.message || 'Failed to sign in with Google.');

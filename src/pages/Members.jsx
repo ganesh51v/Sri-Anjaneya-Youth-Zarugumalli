@@ -56,9 +56,9 @@ const Members = () => {
   // Handle live search
   useEffect(() => {
     const results = members.filter(m => 
-      m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.area.toLowerCase().includes(searchTerm.toLowerCase())
+      m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.area?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredMembers(results);
   }, [searchTerm, members]);
