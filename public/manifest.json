@@ -1,0 +1,17 @@
+{
+  "short_name": "SA Youth",
+  "name": "Sri Anjaneya Youth Zarugumalli",
+  "description": "United for Seva, Culture, and Community",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#faf7f0",
+  "theme_color": "#ff7700",
+  "display": "standalone",
+  "orientation": "portrait"
+}
