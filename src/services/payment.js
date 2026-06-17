@@ -33,7 +33,7 @@ const MOCK_BACKEND = {
   }
 };
 
-export const RAZORPAY_KEY_ID = 'rzp_test_T0LiAO755ol6LH';
+export const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_T0LiAO755ol6LH';
 
 export const paymentService = {
   // Initiates the order creation (Client calls this to talk to "Backend")

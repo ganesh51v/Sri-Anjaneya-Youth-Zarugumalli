@@ -146,7 +146,7 @@ const Donate = () => {
 
       // Configure Razorpay Options
       const options = {
-        key: 'rzp_test_T0LiAO755ol6LH',
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_T0LiAO755ol6LH',
         amount: Math.round(parseFloat(amount) * 100), // paise
         currency: 'INR',
         name: 'Sri Anjaneya Youth Association',
