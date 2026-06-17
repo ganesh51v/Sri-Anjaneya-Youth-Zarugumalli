@@ -1,66 +1,107 @@
-const CACHE_NAME = 'sa-youth-v4';
+const CACHE_NAME = 'sa-youth-v5';
 
-// Install Event - Skip pre-caching to avoid install failures from cached 503s
-// Assets are cached dynamically on first fetch instead
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v4...');
-  // Force the new SW to activate immediately without waiting
-  self.skipWaiting();
+// ─── Install ───────────────────────────────────────────────────────────────
+// Skip pre-caching entirely; assets are cached on first successful fetch.
+// This avoids install failures caused by stale/broken previous SWs.
+self.addEventListener('install', () => {
+  console.log('[SW] v5 installing…');
+  self.skipWaiting(); // take over immediately
 });
 
-// Activate Event - Clean up ALL old cache versions
+// ─── Activate ──────────────────────────────────────────────────────────────
+// Delete every cache that doesn't match our current version.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
+    caches.keys()
+      .then((keys) => Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', key);
+            console.log('[SW] Removing old cache:', key);
             return caches.delete(key);
           }
         })
-      );
-    }).then(() => {
-      console.log('[SW] Activated v4, claiming all clients...');
-      return self.clients.claim();
-    })
+      ))
+      .then(() => {
+        console.log('[SW] v5 active — claiming all clients');
+        return self.clients.claim();
+      })
   );
 });
 
-// Fetch Event
+// ─── Helpers ───────────────────────────────────────────────────────────────
+
+/** Always returns a Response — never undefined or a rejected promise. */
+function safeCache(request) {
+  return caches.match(request).then((cached) => cached || null);
+}
+
+/** Offline fallback page sent for navigation when index.html isn't cached. */
+function offlinePage() {
+  return new Response(
+    `<!doctype html><html lang="en"><head><meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width,initial-scale=1">
+     <title>Sri Anjaneya Youth – Offline</title>
+     <style>
+       body{font-family:sans-serif;display:flex;flex-direction:column;
+            align-items:center;justify-content:center;min-height:100vh;
+            margin:0;background:#0b0f17;color:#faf7f0;text-align:center;gap:16px;}
+       h1{color:#ff7700;font-size:2rem;}
+       p{opacity:.7;max-width:320px;}
+       button{padding:10px 24px;border:none;border-radius:8px;
+              background:#ff7700;color:#fff;font-size:1rem;cursor:pointer;}
+     </style></head>
+     <body>
+       <h1>🙏 You're Offline</h1>
+       <p>Please check your internet connection and try again.</p>
+       <button onclick="location.reload()">Retry</button>
+     </body></html>`,
+    { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+  );
+}
+
+// ─── Fetch ─────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
-  if (event.request.method !== 'GET') return;
+  const { request } = event;
 
-  // Only intercept same-origin requests
-  if (!event.request.url.startsWith(self.location.origin)) return;
+  // Only handle GET requests from the same origin
+  if (request.method !== 'GET') return;
+  if (!request.url.startsWith(self.location.origin)) return;
 
-  // --- Navigation requests (SPA page loads) ---
-  // Always go to network first; fall back to cached index.html when offline
-  if (event.request.mode === 'navigate') {
+  // ── Navigation (page loads: /, /signin, /signup …) ──────────────────────
+  if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match('/index.html'))
+      fetch(request)
+        .catch(() =>
+          // Offline: try cached index.html, else show offline page
+          safeCache('/index.html').then((cached) => cached || offlinePage())
+        )
     );
     return;
   }
 
-  // --- Static asset requests (JS, CSS, images) ---
-  // Network-first: serve fresh from network, cache on success, serve from cache if offline
+  // ── Static assets (JS, CSS, images, fonts) ───────────────────────────────
+  // Network-first → cache on success → cache fallback → null (let browser handle)
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then((response) => {
-        // Only cache valid same-origin responses
+        // Cache valid same-origin responses
         if (response && response.status === 200 && response.type === 'basic') {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
         return response;
       })
-      .catch(() => {
-        // Offline fallback: return cached version if available
-        return caches.match(event.request);
-      })
+      .catch(() =>
+        // Offline: return cached version if available
+        safeCache(request).then((cached) => {
+          if (cached) return cached;
+          // Nothing cached — return a clean 503 so the browser doesn't hang
+          return new Response('Resource unavailable offline.', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        })
+      )
   );
 });
