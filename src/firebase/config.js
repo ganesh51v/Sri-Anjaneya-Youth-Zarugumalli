@@ -1,4 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeAppCheck, ReCaptchaV3Provider, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
@@ -137,17 +138,44 @@ if (isFirebaseConfigured) {
       // HMR hot-reload: Firestore already initialized, just retrieve existing instance
       db = getFirestore(app);
     }
-    // Disable reCAPTCHA on localhost/dev to avoid ERR_INTERNET_DISCONNECTED
-    const isDev = import.meta.env.DEV || (typeof window !== 'undefined' && (
-      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ));
-    if (isDev) {
-      auth.settings.appVerificationDisabledForTesting = true;
-      console.log("[Firebase] Phone auth test mode enabled (reCAPTCHA bypassed for localhost).");
+
+    // Initialize App Check to satisfy Firebase enforcement
+    // On localhost: use debug token so development works without reCAPTCHA
+    // On production: use reCAPTCHA v3 Enterprise
+    if (typeof window !== 'undefined') {
+      const isDev = import.meta.env.DEV ||
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1';
+
+      if (isDev) {
+        // Allow App Check debug mode on localhost
+        self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+        auth.settings.appVerificationDisabledForTesting = true;
+        console.log('[Firebase] Phone auth test mode enabled (reCAPTCHA bypassed for localhost).');
+      }
+
+      const reCaptchaKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+      if (reCaptchaKey) {
+        try {
+          initializeAppCheck(app, {
+            provider: new ReCaptchaV3Provider(reCaptchaKey),
+            isTokenAutoRefreshEnabled: true
+          });
+          console.log('[Firebase] App Check initialized with reCAPTCHA v3.');
+        } catch (appCheckErr) {
+          // App Check may already be initialized on HMR reload — safe to ignore
+          if (!appCheckErr.message?.includes('already')) {
+            console.warn('[Firebase] App Check init warning:', appCheckErr.message);
+          }
+        }
+      } else if (!isDev) {
+        console.warn('[Firebase] VITE_RECAPTCHA_SITE_KEY not set — App Check disabled. Auth may fail if App Check is enforced.');
+      }
     }
-    console.log("Firebase initialized successfully with offline persistence.");
+
+    console.log('Firebase initialized successfully with offline persistence.');
   } catch (error) {
-    console.error("Firebase initialization failed, falling back to Mock storage:", error);
+    console.error('Firebase initialization failed, falling back to Mock storage:', error);
     // Reset so downstream `isFirebaseConfigured && auth/db` guards work as true fallback
     app = auth = db = null;
   }
