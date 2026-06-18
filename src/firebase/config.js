@@ -254,33 +254,50 @@ const triggerWelcomeNotifications = async (userData) => {
     return;
   }
 
+  // Bug 7 fix: guard against missing uid
+  if (!userData || !userData.uid) {
+    console.warn('[Welcome API] No uid in userData. Skipping.');
+    return;
+  }
+
+  // Bug 1/2 fix: only fire for very recently created accounts (within 120 seconds)
+  // This prevents onAuthStateChanged from re-triggering for existing users
+  if (userData.createdAt) {
+    const ageMs = Date.now() - new Date(userData.createdAt).getTime();
+    if (ageMs > 120000) {
+      console.log('[Welcome API] Account is older than 2 minutes — not a new registration. Skipping welcome dispatch.');
+      return;
+    }
+  }
+
   try {
-    // Check real-time values in Firestore to prevent race conditions or duplicate sends
+    // Bug 6 fix: Only do the Firestore read if flags are uncertain (e.g. from onAuthStateChanged path)
+    // If called directly from signUp/signInWithGoogle, trust the fresh userData directly
     const userRef = doc(db, 'users', userData.uid);
+    if (userData.welcomeEmailSent && userData.welcomeMessageSent) {
+      console.log('[Welcome API] Both flags already true in userData. Skipping.');
+      return;
+    }
+
+    // Check real-time Firestore state to prevent race conditions
     const userDoc = await getDoc(userRef);
-    let currentData = userData;
     if (userDoc.exists()) {
       const dbData = userDoc.data();
       if (dbData.welcomeEmailSent && dbData.welcomeMessageSent) {
         console.log('[Welcome API] Welcome notifications already fully sent according to Firestore. Skipping.');
         return;
       }
-      currentData = { ...userData, ...dbData };
-    }
-
-    if (currentData.welcomeEmailSent && currentData.welcomeMessageSent) {
-      return;
     }
 
     const apiBase = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
       ? ''
       : 'https://sri-anjaneya-youth-zarugumalli.vercel.app';
 
-    console.log('[Welcome API] Dispatching welcome notifications for:', currentData.email);
+    console.log('[Welcome API] Dispatching welcome notifications for:', userData.email);
     const res = await fetch(`${apiBase}/api/welcome`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(currentData)
+      body: JSON.stringify(userData)
     });
 
     if (res.ok) {
@@ -561,7 +578,14 @@ export const authService = {
               try {
                 await setDoc(doc(db, 'users', user.uid), defaultData);
                 console.log('[onAuthStateChanged] Created missing Firestore profile document for UID:', user.uid);
-                triggerWelcomeNotifications(defaultData).catch(e => console.error('[Welcome API] Auth State trigger failed:', e));
+                // Bug 1/2 fix: Only trigger welcome for accounts created within the last 2 minutes
+                // This prevents re-triggering on existing users whose Firestore doc was somehow missing
+                const ageMs = Date.now() - new Date(defaultData.createdAt).getTime();
+                if (ageMs < 120000) {
+                  triggerWelcomeNotifications(defaultData).catch(e => console.error('[Welcome API] Auth State trigger failed:', e));
+                } else {
+                  console.log('[Welcome API] Existing account detected (>2 min old). Skipping welcome dispatch from onAuthStateChanged.');
+                }
               } catch (writeErr) {
                 console.warn('[onAuthStateChanged] Failed to write missing profile document:', writeErr);
               }

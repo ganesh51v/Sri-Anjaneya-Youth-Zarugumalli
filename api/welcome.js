@@ -75,9 +75,10 @@ const sendWelcomeMessage = async (user) => {
   const apiKey = process.env.SMS_API_KEY || process.env.MESSAGE_API_KEY;
   const phone = user.phone;
 
-  if (!phone) {
-    console.warn('[welcome.js] User does not have a registered phone number. Skipping welcome SMS.');
-    return { success: false, reason: 'No phone number' };
+  if (!phone || phone.trim() === '') {
+    // Mark as done (no retry) — no phone number registered, skip permanently
+    console.warn('[welcome.js] User has no registered phone number. Marking SMS as done to prevent future retries.');
+    return { success: true, skipped: true, reason: 'No phone number' };
   }
 
   if (!apiKey) {
@@ -100,8 +101,21 @@ const sendWelcomeMessage = async (user) => {
 
 export default async function handler(req, res) {
   // Set CORS headers for cross-origin requests (e.g. from Firebase hosting or localhost)
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Allow specific origins; wildcard + credentials is invalid per CORS spec
+  const allowedOrigins = [
+    'https://sri-anjaneya-youth-zarugumalli.web.app',
+    'https://sri-anjaneya-youth-zarugumalli.firebaseapp.com',
+    'https://sri-anjaneya-youth-zarugumalli.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:4173'
+  ];
+  const origin = req.headers.origin || '';
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
