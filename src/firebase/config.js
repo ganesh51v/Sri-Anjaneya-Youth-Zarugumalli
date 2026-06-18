@@ -272,9 +272,9 @@ const triggerWelcomeNotifications = async (userData) => {
       return;
     }
 
-    const apiBase = typeof window !== 'undefined' && (window.location.hostname.includes('web.app') || window.location.hostname.includes('firebaseapp.com'))
-      ? 'https://sri-anjaneya-youth-zarugumalli.vercel.app'
-      : '';
+    const apiBase = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
+      ? ''
+      : 'https://sri-anjaneya-youth-zarugumalli.vercel.app';
 
     console.log('[Welcome API] Dispatching welcome notifications for:', currentData.email);
     const res = await fetch(`${apiBase}/api/welcome`, {
