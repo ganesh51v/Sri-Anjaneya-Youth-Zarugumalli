@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { dbService } from '../firebase/config';
-import { Menu, X, Home, Users, Calendar, Image, Bell, User, Settings, LogOut, ChevronDown, ShieldAlert, Globe, Sun, Moon, Heart } from 'lucide-react';
+import { Menu, X, Home, Users, Calendar, Image, Bell, User, Settings, LogOut, ChevronDown, ShieldAlert, Globe, Sun, Moon, Heart, Banknote } from 'lucide-react';
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -298,6 +298,17 @@ const Navbar = () => {
                         </Link>
                       )}
 
+                      {user && user.role === 'admin' && (
+                        <Link 
+                          to="/expenditure" 
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/30 dark:hover:bg-slate-800/40 transition-colors"
+                        >
+                          <Banknote className="w-4 h-4 text-emerald-500" />
+                          Expenditure
+                        </Link>
+                      )}
+
                       <hr className="border-cream-100 dark:border-slate-800 my-1 mx-2" />
 
                       <button 
@@ -405,6 +416,17 @@ const Navbar = () => {
                   >
                     <Settings className="w-4 h-4 text-gold-500" />
                     {t('adminPanel')}
+                  </Link>
+                )}
+
+                {user && user.role === 'admin' && (
+                  <Link
+                    to="/expenditure"
+                    onClick={() => setIsOpen(false)}
+                    className="py-2 border border-cream-300 hover:border-emerald-500 text-slate-700 font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors bg-white"
+                  >
+                    <Banknote className="w-4 h-4 text-emerald-500" />
+                    Expenditure
                   </Link>
                 )}
 

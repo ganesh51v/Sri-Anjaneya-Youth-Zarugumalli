@@ -52,6 +52,7 @@ import Announcements from './pages/Announcements';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import Donate from './pages/Donate';
+import Expenditure from './pages/Expenditure';
 
 function App() {
   return (
@@ -133,6 +134,16 @@ function App() {
                 element={
                   <ProtectedRoute adminOnly={true}>
                     <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+
+              {/* Expenditure Management — Admin Only */}
+              <Route 
+                path="/expenditure" 
+                element={
+                  <ProtectedRoute adminOnly={true}>
+                    <Expenditure />
                   </ProtectedRoute>
                 } 
               />

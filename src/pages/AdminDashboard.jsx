@@ -19,7 +19,9 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
-  IndianRupee
+  IndianRupee,
+  Banknote,
+  TrendingDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -324,6 +326,23 @@ const AdminDashboard = () => {
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Donations</span>
           </div>
         </div>
+
+        {/* Expenditure quick-nav card */}
+        <Link
+          to="/expenditure"
+          className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 p-4 rounded-2xl flex flex-col justify-between hover:border-emerald-400 hover:shadow-sm transition-all group"
+        >
+          <div className="flex justify-between items-start mb-2">
+            <Banknote className="w-5 h-5 text-emerald-600" />
+            <span className="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600 transition-colors uppercase">Manage</span>
+          </div>
+          <div>
+            <span className="block text-xl sm:text-2xl font-black text-slate-800 dark:text-white flex items-center gap-1">
+              <TrendingDown className="w-4 h-4 text-emerald-600" />
+            </span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Expenditure</span>
+          </div>
+        </Link>
 
       </div>
 

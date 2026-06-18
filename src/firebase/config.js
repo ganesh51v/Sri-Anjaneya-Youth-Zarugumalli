@@ -1000,5 +1000,62 @@ export const dbService = {
       localStorage.setItem('sa_donations', JSON.stringify(donations));
       return newDonation;
     }
+  },
+
+  // ---------------- EXPENDITURES COLLECTION ----------------
+  expenditures: {
+    getAll: async () => {
+      if (isFirebaseConfigured && db) {
+        return firestoreOp(async () => {
+          const q = query(collection(db, 'expenditures'), orderBy('date', 'desc'));
+          const s = await getDocs(q);
+          return s.docs.map(d => ({ id: d.id, ...d.data() }));
+        }, safeParseLS('sa_expenditures', []).sort((a, b) => new Date(b.date) - new Date(a.date)),
+        'expenditures.getAll');
+      }
+      const exp = safeParseLS('sa_expenditures', []);
+      return exp.sort((a, b) => new Date(b.date) - new Date(a.date));
+    },
+    add: async (expenditureData) => {
+      const { id: _drop, ...rest } = expenditureData;
+      const data = { ...rest, createdAt: new Date().toISOString() };
+      if (isFirebaseConfigured && db) {
+        return firestoreOp(async () => {
+          const docRef = await addDoc(collection(db, 'expenditures'), data);
+          return { id: docRef.id, ...data };
+        }, null, 'expenditures.add');
+      }
+      const expenditures = safeParseLS('sa_expenditures', []);
+      const newExpenditure = { id: 'ex_' + Math.random().toString(36).substr(2, 9), ...data };
+      expenditures.push(newExpenditure);
+      localStorage.setItem('sa_expenditures', JSON.stringify(expenditures));
+      return newExpenditure;
+    },
+    update: async (id, expenditureData) => {
+      const { id: _drop, ...rest } = expenditureData;
+      if (isFirebaseConfigured && db) {
+        return firestoreOp(async () => {
+          await updateDoc(doc(db, 'expenditures', id), rest);
+          return { id, ...rest };
+        }, null, 'expenditures.update');
+      }
+      const expenditures = safeParseLS('sa_expenditures', []);
+      const index = expenditures.findIndex(e => e.id === id);
+      if (index > -1) {
+        expenditures[index] = { ...expenditures[index], ...rest };
+        localStorage.setItem('sa_expenditures', JSON.stringify(expenditures));
+        return expenditures[index];
+      }
+      throw new Error('Expenditure not found');
+    },
+    delete: async (id) => {
+      if (isFirebaseConfigured && db) {
+        return firestoreOp(() => deleteDoc(doc(db, 'expenditures', id)).then(() => id), null, 'expenditures.delete');
+      }
+      let expenditures = safeParseLS('sa_expenditures', []);
+      expenditures = expenditures.filter(e => e.id !== id);
+      localStorage.setItem('sa_expenditures', JSON.stringify(expenditures));
+      return id;
+    }
   }
 };
