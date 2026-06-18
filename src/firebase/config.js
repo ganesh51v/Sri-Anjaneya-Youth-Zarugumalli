@@ -242,8 +242,66 @@ const normalizeUser = (uid, extra = {}) => ({
   village: '',
   photoUrl: '',
   committeeStatus: 'none',
+  welcomeEmailSent: false,
+  welcomeMessageSent: false,
   ...extra,
 });
+
+// Trigger welcome email/message API asynchronously on registration
+const triggerWelcomeNotifications = async (userData) => {
+  if (!isFirebaseConfigured || !db) {
+    console.log('[Welcome API] Offline/Mock mode active. Skipping remote welcome notifications.');
+    return;
+  }
+
+  try {
+    // Check real-time values in Firestore to prevent race conditions or duplicate sends
+    const userRef = doc(db, 'users', userData.uid);
+    const userDoc = await getDoc(userRef);
+    let currentData = userData;
+    if (userDoc.exists()) {
+      const dbData = userDoc.data();
+      if (dbData.welcomeEmailSent && dbData.welcomeMessageSent) {
+        console.log('[Welcome API] Welcome notifications already fully sent according to Firestore. Skipping.');
+        return;
+      }
+      currentData = { ...userData, ...dbData };
+    }
+
+    if (currentData.welcomeEmailSent && currentData.welcomeMessageSent) {
+      return;
+    }
+
+    const apiBase = typeof window !== 'undefined' && (window.location.hostname.includes('web.app') || window.location.hostname.includes('firebaseapp.com'))
+      ? 'https://sri-anjaneya-youth-zarugumalli.vercel.app'
+      : '';
+
+    console.log('[Welcome API] Dispatching welcome notifications for:', currentData.email);
+    const res = await fetch(`${apiBase}/api/welcome`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentData)
+    });
+
+    if (res.ok) {
+      const result = await res.json();
+      console.log('[Welcome API] Success response:', result);
+      
+      const updates = {};
+      if (result.emailSent) updates.welcomeEmailSent = true;
+      if (result.messageSent) updates.welcomeMessageSent = true;
+
+      if (Object.keys(updates).length > 0) {
+        await setDoc(userRef, updates, { merge: true });
+        console.log('[Welcome API] Updated Firestore document with dispatch results:', updates);
+      }
+    } else {
+      console.warn('[Welcome API] Service returned non-ok status:', res.status);
+    }
+  } catch (err) {
+    console.error('[Welcome API] Error sending welcome notifications:', err.message);
+  }
+};
 
 // -------------------------------------------------------------
 // ADAPTER EXPORTS (AUTH & DB)
@@ -322,6 +380,7 @@ export const authService = {
         });
         try {
           await setDoc(doc(db, 'users', cred.user.uid), userData);
+          triggerWelcomeNotifications(userData).catch(e => console.error('[Welcome API] Email Signup trigger failed:', e));
         } catch (fsErr) {
           if (!isOfflineError(fsErr)) throw fsErr;
           console.warn('[signUp] Offline — Firestore profile will sync when reconnected.');
@@ -366,16 +425,18 @@ export const authService = {
           if (userDoc.exists()) {
             return { uid: cred.user.uid, ...userDoc.data() };
           } else {
-            const userData = {
-              id: cred.user.uid,
+            const userData = normalizeUser(cred.user.uid, {
               name: cred.user.displayName || 'Google User',
               email: cred.user.email,
               phone: cred.user.phoneNumber || '',
               village: 'Zarugumalli',
               role: 'user',
               createdAt: new Date().toISOString()
-            };
-            try { await setDoc(userRef, userData); } catch (e) {
+            });
+            try { 
+              await setDoc(userRef, userData); 
+              triggerWelcomeNotifications(userData).catch(e => console.error('[Welcome API] Google Signup trigger failed:', e));
+            } catch (e) {
               if (!isOfflineError(e)) throw e;
               console.warn('[Firestore] Offline — user profile not saved yet, will sync when back online.');
             }
@@ -500,6 +561,7 @@ export const authService = {
               try {
                 await setDoc(doc(db, 'users', user.uid), defaultData);
                 console.log('[onAuthStateChanged] Created missing Firestore profile document for UID:', user.uid);
+                triggerWelcomeNotifications(defaultData).catch(e => console.error('[Welcome API] Auth State trigger failed:', e));
               } catch (writeErr) {
                 console.warn('[onAuthStateChanged] Failed to write missing profile document:', writeErr);
               }
