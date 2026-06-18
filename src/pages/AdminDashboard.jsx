@@ -166,6 +166,7 @@ const AdminDashboard = () => {
         
         alert(`${reqUser.name} has been approved and added to the committee members list.`);
       } catch (err) {
+        console.error("Error approving request:", err);
         alert("Failed to approve request.");
       }
     }
@@ -178,6 +179,7 @@ const AdminDashboard = () => {
         setUsers(prev => prev.map(u => u.id === userId ? { ...u, committeeStatus: 'none' } : u));
         alert("Request has been declined.");
       } catch (err) {
+        console.error("Error declining request:", err);
         alert("Failed to decline request.");
       }
     }

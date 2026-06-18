@@ -261,6 +261,23 @@ export const authService = {
           const userDoc = await getDoc(doc(db, 'users', cred.user.uid));
           if (userDoc.exists()) {
             return normalizeUser(cred.user.uid, userDoc.data());
+          } else {
+            const defaultData = normalizeUser(cred.user.uid, {
+              email: cred.user.email || '',
+              name: cred.user.displayName || cred.user.email || 'Bhaktha',
+              phone: cred.user.phoneNumber || '',
+              village: 'Zarugumalli',
+              role: cred.user.email === 'admin@srianjaneya.org' ? 'admin' : 'user',
+              committeeStatus: 'none',
+              createdAt: new Date().toISOString()
+            });
+            try {
+              await setDoc(doc(db, 'users', cred.user.uid), defaultData);
+              console.log('[signIn] Created missing Firestore profile document for UID:', cred.user.uid);
+            } catch (writeErr) {
+              console.warn('[signIn] Failed to write missing profile document:', writeErr);
+            }
+            return defaultData;
           }
         } catch (firestoreErr) {
           console.warn('[Firestore] Failed to retrieve user role document:', firestoreErr);
@@ -471,7 +488,22 @@ export const authService = {
             if (userDoc.exists()) {
               callback(normalizeUser(user.uid, userDoc.data()));
             } else {
-              callback(normalizeUser(user.uid, { email: user.email, name: user.displayName || user.email, role: user.email === 'admin@srianjaneya.org' ? 'admin' : 'user' }));
+              const defaultData = normalizeUser(user.uid, {
+                email: user.email || '',
+                name: user.displayName || user.email || 'Bhaktha',
+                phone: user.phoneNumber || '',
+                village: 'Zarugumalli',
+                role: user.email === 'admin@srianjaneya.org' ? 'admin' : 'user',
+                committeeStatus: 'none',
+                createdAt: new Date().toISOString()
+              });
+              try {
+                await setDoc(doc(db, 'users', user.uid), defaultData);
+                console.log('[onAuthStateChanged] Created missing Firestore profile document for UID:', user.uid);
+              } catch (writeErr) {
+                console.warn('[onAuthStateChanged] Failed to write missing profile document:', writeErr);
+              }
+              callback(defaultData);
             }
           } catch (err) {
             if (isOfflineError(err)) {
