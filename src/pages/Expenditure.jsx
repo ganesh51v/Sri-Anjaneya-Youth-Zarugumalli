@@ -69,7 +69,16 @@ const ConfirmModal = ({ title, message, onConfirm, onCancel }) => (
 
 // ─── Form Modal ──────────────────────────────────────────────────────────────
 const ExpenditureFormModal = ({ initialData, onSave, onClose, currentUser }) => {
-  const [form, setForm] = useState(initialData || { ...EMPTY_FORM, date: new Date().toISOString().split('T')[0] });
+  // Bug fix: ensure amount is always a string for the <input type="number"> element,
+  // and strip internal Firestore fields (id, createdAt) from the edit form state.
+  const sanitizeInitial = (data) => {
+    if (!data) return null;
+    const { id: _id, createdAt: _ca, ...rest } = data;
+    return { ...rest, amount: data.amount != null ? String(data.amount) : '' };
+  };
+  const [form, setForm] = useState(
+    sanitizeInitial(initialData) || { ...EMPTY_FORM, date: new Date().toISOString().split('T')[0] }
+  );
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef(null);
@@ -319,8 +328,12 @@ const Expenditure = () => {
   const currentYear = new Date().getFullYear();
   const monthlyExpenditure = useMemo(() =>
     expenditures.filter(e => {
-      const d = new Date(e.date);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      // Parse YYYY-MM-DD as local date to avoid UTC-to-IST timezone shift
+      const parts = (e.date || '').split('-');
+      if (parts.length < 3) return false;
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // 0-indexed
+      return month === currentMonth && year === currentYear;
     }).reduce((sum, e) => sum + parseFloat(e.amount || 0), 0),
     [expenditures, currentMonth, currentYear]
   );

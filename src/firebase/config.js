@@ -1007,9 +1007,11 @@ export const dbService = {
     getAll: async () => {
       if (isFirebaseConfigured && db) {
         return firestoreOp(async () => {
-          const q = query(collection(db, 'expenditures'), orderBy('date', 'desc'));
-          const s = await getDocs(q);
-          return s.docs.map(d => ({ id: d.id, ...d.data() }));
+          // No orderBy here — avoids needing a Firestore composite index.
+          // Client-side sort by date descending is applied below.
+          const s = await getDocs(collection(db, 'expenditures'));
+          const docs = s.docs.map(d => ({ id: d.id, ...d.data() }));
+          return docs.sort((a, b) => new Date(b.date) - new Date(a.date));
         }, safeParseLS('sa_expenditures', []).sort((a, b) => new Date(b.date) - new Date(a.date)),
         'expenditures.getAll');
       }

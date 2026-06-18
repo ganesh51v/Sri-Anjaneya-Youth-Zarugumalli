@@ -40,5 +40,13 @@ service cloud.firestore {
       allow read: if true;
       allow update, delete: if isAdmin();
     }
+
+    // Expenditures collection — admin only
+    match /expenditures/{expenditureId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
   }
 }
