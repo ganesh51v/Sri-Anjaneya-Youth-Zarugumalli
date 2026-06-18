@@ -170,7 +170,7 @@ const Members = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder={t('searchPlaceholder')}
-          className="w-full bg-white border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-saffron-500"
+          className="w-full bg-white dark:bg-slate-900 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 text-slate-800 dark:text-white transition-all"
         />
         {searchTerm && (
           <button 

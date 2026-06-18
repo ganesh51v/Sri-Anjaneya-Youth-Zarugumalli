@@ -134,23 +134,23 @@ const Events = () => {
       </div>
 
       {/* Tabs Row */}
-      <div className="flex border-b border-cream-200">
+      <div className="flex border border-cream-200 dark:border-slate-800/80 mb-5 p-1.5 bg-cream-50/50 dark:bg-slate-950 rounded-2xl w-full max-w-md">
         <button
           onClick={() => setActiveTab('upcoming')}
-          className={`pb-3 px-6 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${
+          className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
             activeTab === 'upcoming' 
-              ? 'border-saffron-500 text-saffron-600' 
-              : 'border-transparent text-slate-400 hover:text-slate-600'
+              ? 'bg-gradient-to-r from-saffron-500 to-saffron-600 text-white shadow-md shadow-saffron-500/15' 
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           Upcoming Events
         </button>
         <button
           onClick={() => setActiveTab('completed')}
-          className={`pb-3 px-6 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors ${
+          className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
             activeTab === 'completed' 
-              ? 'border-saffron-500 text-saffron-600' 
-              : 'border-transparent text-slate-400 hover:text-slate-600'
+              ? 'bg-gradient-to-r from-saffron-500 to-saffron-600 text-white shadow-md shadow-saffron-500/15' 
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           Completed Activities

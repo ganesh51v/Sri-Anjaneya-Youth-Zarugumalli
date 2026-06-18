@@ -7,7 +7,7 @@ const MemberCard = ({ member, onEdit, onDelete }) => {
   const isAdmin = user && user.role === 'admin';
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-cream-200 overflow-hidden hover:border-saffron-300 hover:shadow-md transition-all duration-300 flex flex-col group">
+    <div className="bg-white rounded-2xl shadow-sm border border-cream-200 overflow-hidden hover-lift hover-glow-gold transition-all duration-300 flex flex-col group">
       {/* Decorative colored strip */}
       <div className="h-1.5 bg-gradient-to-r from-saffron-400 to-gold-400 w-full" />
       
@@ -18,10 +18,10 @@ const MemberCard = ({ member, onEdit, onDelete }) => {
             <img 
               src={member.photoUrl} 
               alt={member.name} 
-              className="w-16 h-16 rounded-full object-cover border-2 border-saffron-100 group-hover:border-saffron-400 transition-colors"
+              className="w-16 h-16 rounded-full object-cover border-2 border-saffron-100 group-hover:border-saffron-400 group-hover:scale-105 transition-all duration-300"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-saffron-100 border-2 border-saffron-200 flex items-center justify-center text-saffron-600 font-extrabold text-xl">
+            <div className="w-16 h-16 rounded-full bg-saffron-100 border-2 border-saffron-200 flex items-center justify-center text-saffron-600 font-extrabold text-xl group-hover:scale-105 transition-all duration-300">
               {member.name ? member.name[0].toUpperCase() : 'Y'}
             </div>
           )}

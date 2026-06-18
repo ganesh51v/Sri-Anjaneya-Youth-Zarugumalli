@@ -244,14 +244,14 @@ const SignIn = () => {
             )}
 
             {/* Login Method Tab Selection */}
-            <div className="flex border-b border-cream-200 dark:border-slate-800 mb-5 text-center">
+            <div className="flex border border-cream-200 dark:border-slate-800/80 mb-5 text-center p-1.5 bg-cream-50 dark:bg-slate-950 rounded-2xl">
               <button
                 type="button"
                 onClick={() => { setLoginMethod('email'); setError(''); setInfo(''); }}
-                className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                   loginMethod === 'email'
-                    ? 'border-saffron-500 text-saffron-600'
-                    : 'border-transparent text-slate-400 hover:text-slate-600'
+                    ? 'bg-gradient-to-r from-saffron-500 to-saffron-600 text-white shadow-md shadow-saffron-500/15'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 {t('emailAddressLabel')}
@@ -259,10 +259,10 @@ const SignIn = () => {
               <button
                 type="button"
                 onClick={() => { setLoginMethod('phone'); setError(''); setInfo(''); }}
-                className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                   loginMethod === 'phone'
-                    ? 'border-saffron-500 text-saffron-600'
-                    : 'border-transparent text-slate-400 hover:text-slate-600'
+                    ? 'bg-gradient-to-r from-saffron-500 to-saffron-600 text-white shadow-md shadow-saffron-500/15'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 {t('phoneNumberLabel')}
@@ -282,7 +282,7 @@ const SignIn = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={t('emailAddressPlaceholder')}
-                      className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:border-transparent transition-all"
+                      className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
                       required
                     />
                   </div>
@@ -308,7 +308,7 @@ const SignIn = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder={t('passwordPlaceholder')}
-                      className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:border-transparent transition-all"
+                      className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
                       required
                     />
                   </div>
@@ -343,7 +343,7 @@ const SignIn = () => {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="+919876543210"
-                        className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:border-transparent transition-all"
+                        className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
                         required
                       />
                     </div>
@@ -360,7 +360,7 @@ const SignIn = () => {
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
                         placeholder="123456"
-                        className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:border-transparent transition-all"
+                        className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
                         required
                       />
                     </div>

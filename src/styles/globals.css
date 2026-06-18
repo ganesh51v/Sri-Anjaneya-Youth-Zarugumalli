@@ -487,3 +487,156 @@ body {
   background: linear-gradient(135deg, rgba(212, 175, 55, 0.06) 0%, rgba(183, 28, 28, 0.03) 100%) !important;
   border-color: rgba(212, 175, 55, 0.25) !important;
 }
+
+/* --- PREMIUM UI EFFECTS AND MICRO-INTERACTIONS --- */
+
+/* Hover Lift Effect */
+.hover-lift {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, border-color 0.4s ease !important;
+}
+.hover-lift:hover {
+  transform: translateY(-6px) scale(1.015) !important;
+}
+
+/* Glowing Shadows */
+.hover-glow-saffron:hover {
+  box-shadow: 0 20px 40px -10px rgba(255, 119, 0, 0.15), 0 8px 16px -8px rgba(255, 119, 0, 0.1) !important;
+  border-color: var(--color-saffron-300) !important;
+}
+.hover-glow-gold:hover {
+  box-shadow: 0 20px 40px -10px rgba(212, 175, 55, 0.15), 0 8px 16px -8px rgba(212, 175, 55, 0.1) !important;
+  border-color: var(--color-gold-300) !important;
+}
+.dark .hover-glow-saffron:hover {
+  box-shadow: 0 20px 40px -10px rgba(255, 119, 0, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.5) !important;
+  border-color: rgba(255, 119, 0, 0.4) !important;
+}
+.dark .hover-glow-gold:hover {
+  box-shadow: 0 20px 40px -10px rgba(212, 175, 55, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.5) !important;
+  border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+/* Floating Decorative Orbs */
+.bg-blob-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bg-blob-1, .bg-blob-2 {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.05;
+  animation: drift-blob 25s infinite alternate ease-in-out;
+}
+.bg-blob-1 {
+  width: 500px;
+  height: 500px;
+  background-color: var(--color-saffron-400);
+  top: -10%;
+  left: -10%;
+  animation-duration: 25s;
+}
+.bg-blob-2 {
+  width: 600px;
+  height: 600px;
+  background-color: var(--color-gold-400);
+  bottom: -10%;
+  right: -10%;
+  animation-duration: 35s;
+  animation-delay: -5s;
+}
+.dark .bg-blob-1 {
+  opacity: 0.04;
+  background-color: var(--color-saffron-800);
+}
+.dark .bg-blob-2 {
+  opacity: 0.03;
+  background-color: var(--color-gold-800);
+}
+@keyframes drift-blob {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  33% { transform: translate(10%, 8%) scale(1.1) rotate(120deg); }
+  66% { transform: translate(-5%, 15%) scale(0.9) rotate(240deg); }
+  100% { transform: translate(0, 0) scale(1) rotate(360deg); }
+}
+
+/* Traditional Devotional Separator */
+.traditional-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0;
+  width: 100%;
+}
+.traditional-divider::before, .traditional-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-saffron-400), transparent);
+}
+.traditional-divider::before {
+  background: linear-gradient(to right, transparent, var(--color-saffron-400));
+}
+.traditional-divider::after {
+  background: linear-gradient(to left, transparent, var(--color-saffron-400));
+}
+.traditional-divider-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--color-gold-500);
+  transform: rotate(45deg);
+  margin: 0 10px;
+  box-shadow: 0 0 8px var(--color-gold-400);
+}
+
+/* Pulsing Aura Badge */
+.pulse-glow-badge {
+  position: relative;
+}
+.pulse-glow-badge::after {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  border: 1.5px solid currentColor;
+  opacity: 0.4;
+  animation: badge-pulse 2s infinite ease-out;
+  pointer-events: none;
+}
+@keyframes badge-pulse {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+/* Skeleton Loading Shimmer */
+.shimmer-bg {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer-effect 1.5s infinite linear;
+}
+.dark .shimmer-bg {
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
+}
+@keyframes shimmer-effect {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Custom Table Polish */
+.premium-table-row {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.premium-table-row:hover {
+  background-color: var(--color-cream-50) !important;
+  transform: scale(1.002);
+}
+.dark .premium-table-row:hover {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
+

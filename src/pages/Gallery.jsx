@@ -162,10 +162,10 @@ const Gallery = () => {
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 border cursor-pointer hover:scale-105 active:scale-95 ${
               activeCategory === cat
-                ? 'bg-saffron-500 border-saffron-500 text-white shadow-sm'
-                : 'bg-white border-cream-300 text-slate-600 hover:border-saffron-300'
+                ? 'bg-saffron-500 border-saffron-500 text-white shadow-md shadow-saffron-500/25'
+                : 'bg-white border-cream-300 text-slate-600 hover:border-saffron-300 hover:bg-saffron-50/10'
             }`}
           >
             {getCategoryLabel(cat)}
@@ -192,7 +192,7 @@ const Gallery = () => {
           {filteredGallery.map(item => (
             <div 
               key={item.id} 
-              className="bg-white border border-cream-200 rounded-2xl overflow-hidden shadow-sm group hover:border-saffron-300 hover:shadow-md transition-all duration-300 relative flex flex-col"
+              className="bg-white border border-cream-200 rounded-2xl overflow-hidden shadow-sm group hover-lift hover-glow-saffron transition-all duration-300 relative flex flex-col"
             >
               <div className="overflow-hidden aspect-video relative">
                 {item.redirectUrl ? (

@@ -89,7 +89,7 @@ const Dashboard = () => {
 
       {/* Stats Counter Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white border border-cream-200 p-5 rounded-2xl flex items-center gap-4 hover:border-saffron-300 transition-colors shadow-sm">
+        <div className="bg-white border border-cream-200 p-5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-saffron transition-all duration-300 shadow-sm">
           <div className="bg-saffron-100 p-3 rounded-xl text-saffron-600">
             <Users className="w-6 h-6" />
           </div>
@@ -99,7 +99,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-cream-200 p-5 rounded-2xl flex items-center gap-4 hover:border-saffron-300 transition-colors shadow-sm">
+        <div className="bg-white border border-cream-200 p-5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-gold transition-all duration-300 shadow-sm">
           <div className="bg-gold-100 p-3 rounded-xl text-gold-700">
             <Calendar className="w-6 h-6" />
           </div>
@@ -109,7 +109,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-cream-200 p-5 rounded-2xl flex items-center gap-4 hover:border-saffron-300 transition-colors shadow-sm">
+        <div className="bg-white border border-cream-200 p-5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-saffron transition-all duration-300 shadow-sm">
           <div className="bg-devored-100 p-3 rounded-xl text-devored-700">
             <Bell className="w-6 h-6" />
           </div>
@@ -140,7 +140,7 @@ const Dashboard = () => {
             {upcomingEvents.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {upcomingEvents.map(event => (
-                  <div key={event.id} className="bg-white border border-cream-200 rounded-2xl p-5 hover:border-saffron-300 transition-all flex flex-col shadow-sm">
+                  <div key={event.id} className="bg-white border border-cream-200 rounded-2xl p-5 hover-lift hover-glow-saffron transition-all duration-300 flex flex-col shadow-sm">
                     <span className="text-[10px] bg-saffron-50 text-saffron-700 border border-saffron-100 px-2 py-0.5 rounded-full font-bold uppercase w-max mb-3">
                       {event.date}
                     </span>
@@ -175,7 +175,7 @@ const Dashboard = () => {
             {recentAnnouncements.length > 0 ? (
               <div className="space-y-3">
                 {recentAnnouncements.map(ann => (
-                  <div key={ann.id} className="bg-white border border-cream-200 rounded-2xl p-4 hover:border-saffron-300 transition-all flex gap-3 shadow-sm">
+                  <div key={ann.id} className="bg-white border border-cream-200 rounded-2xl p-4 hover-lift hover-glow-gold transition-all duration-300 flex gap-3 shadow-sm">
                     <div className="bg-saffron-50 text-saffron-600 rounded-xl p-2.5 h-10 w-10 flex items-center justify-center shrink-0">
                       <MessageSquare className="w-5 h-5" />
                     </div>
@@ -219,7 +219,7 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Number of Donations */}
-              <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 p-4.5 rounded-2xl flex items-center gap-4 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 p-4.5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-gold transition-all duration-300 shadow-sm">
                 <div className="bg-saffron-100 dark:bg-saffron-950/40 p-3 rounded-xl text-saffron-600">
                   <Users className="w-5.5 h-5.5" />
                 </div>
@@ -230,7 +230,7 @@ const Dashboard = () => {
               </div>
 
               {/* Total Amount Donated */}
-              <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 p-4.5 rounded-2xl flex items-center gap-4 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 p-4.5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-saffron transition-all duration-300 shadow-sm">
                 <div className="bg-gold-100 dark:bg-gold-950/40 p-3 rounded-xl text-gold-600">
                   <Heart className="w-5.5 h-5.5 fill-current" />
                 </div>
@@ -259,7 +259,7 @@ const Dashboard = () => {
             {galleryPreview.length > 0 ? (
               <div className="grid grid-cols-3 gap-3">
                 {galleryPreview.map(item => (
-                  <div key={item.id} className="relative rounded-xl overflow-hidden aspect-video group shadow-sm">
+                  <div key={item.id} className="relative rounded-xl overflow-hidden aspect-video group shadow-sm hover-lift transition-all duration-300">
                     <img 
                       src={item.imageUrl} 
                       alt={item.caption} 

@@ -61,6 +61,10 @@ function App() {
         <LanguageProvider>
           <AuthProvider>
             <div className="flex flex-col min-h-screen bg-cream-100/10">
+              <div className="bg-blob-container">
+                <div className="bg-blob-1" />
+                <div className="bg-blob-2" />
+              </div>
               <OfflineBanner />
               <Navbar />
           

@@ -465,7 +465,7 @@ const Expenditure = () => {
       {/* ── Summary Dashboard ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Donations */}
-        <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 rounded-2xl p-5 space-y-1.5">
+        <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 rounded-2xl p-5 space-y-1.5 hover-lift hover-glow-gold transition-all duration-300">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Donations</span>
             <TrendingUp className="w-4 h-4 text-emerald-500" />
@@ -475,7 +475,7 @@ const Expenditure = () => {
         </div>
 
         {/* Total Expenditure */}
-        <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 rounded-2xl p-5 space-y-1.5">
+        <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 rounded-2xl p-5 space-y-1.5 hover-lift hover-glow-saffron transition-all duration-300">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Expenditure</span>
             <TrendingDown className="w-4 h-4 text-devored-500" />
@@ -485,7 +485,7 @@ const Expenditure = () => {
         </div>
 
         {/* Remaining Balance */}
-        <div className={`bg-white dark:bg-slate-900 border rounded-2xl p-5 space-y-1.5 ${remainingBalance >= 0 ? 'border-emerald-200 dark:border-emerald-900/40' : 'border-devored-200 dark:border-devored-900/40'}`}>
+        <div className={`bg-white dark:bg-slate-900 border rounded-2xl p-5 space-y-1.5 hover-lift hover-glow-gold transition-all duration-300 ${remainingBalance >= 0 ? 'border-emerald-200 dark:border-emerald-900/40 hover:border-emerald-400' : 'border-devored-200 dark:border-devored-900/40 hover:border-devored-400'}`}>
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Remaining Balance</span>
             <Wallet className={`w-4 h-4 ${remainingBalance >= 0 ? 'text-emerald-500' : 'text-devored-500'}`} />
@@ -499,7 +499,7 @@ const Expenditure = () => {
         </div>
 
         {/* Monthly Expenditure */}
-        <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 rounded-2xl p-5 space-y-1.5">
+        <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 rounded-2xl p-5 space-y-1.5 hover-lift hover-glow-saffron transition-all duration-300">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">This Month</span>
             <Clock className="w-4 h-4 text-saffron-500" />

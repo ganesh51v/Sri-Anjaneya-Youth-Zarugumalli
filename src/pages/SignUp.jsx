@@ -139,7 +139,7 @@ const SignUp = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={t('fullNamePlaceholder')}
-                    className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:border-transparent transition-all"
+                    className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
                     required
                   />
                 </div>
@@ -157,7 +157,7 @@ const SignUp = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t('emailAddressPlaceholder')}
-                    className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:border-transparent transition-all"
+                    className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
                     required
                   />
                 </div>
@@ -175,7 +175,7 @@ const SignUp = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder={t('phoneNumberPlaceholder')}
-                    className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:border-transparent transition-all"
+                    className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
                     required
                   />
                 </div>
@@ -193,7 +193,7 @@ const SignUp = () => {
                     value={village}
                     onChange={(e) => setVillage(e.target.value)}
                     placeholder={t('villageAreaPlaceholder')}
-                    className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:border-transparent transition-all"
+                    className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
                     required
                   />
                 </div>
@@ -211,7 +211,7 @@ const SignUp = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={t('passwordPlaceholder')}
-                    className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:border-transparent transition-all"
+                    className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
                     required
                   />
                 </div>
@@ -229,7 +229,7 @@ const SignUp = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder={t('passwordPlaceholder')}
-                    className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-saffron-500 focus:border-transparent transition-all"
+                    className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
                     required
                   />
                 </div>

@@ -19,22 +19,22 @@ const EventCard = ({ event, onEdit, onDelete }) => {
   const isUpcoming = event.status === 'upcoming';
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-cream-200 overflow-hidden hover:border-saffron-300 hover:shadow-md transition-all duration-300 flex flex-col group h-full">
+    <div className="bg-white rounded-2xl shadow-sm border border-cream-200 overflow-hidden hover-lift hover-glow-saffron transition-all duration-300 flex flex-col group h-full">
       {/* Decorative top accent */}
       <div className={`h-1.5 ${isUpcoming ? 'bg-gradient-to-r from-saffron-500 to-gold-500' : 'bg-slate-400'} w-full`} />
 
       <div className="p-5 flex-1 flex flex-col">
         {/* Header & Status Badge */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+        <div className="flex items-center justify-between gap-2 mb-3.5">
+          <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
             isUpcoming 
-              ? 'bg-saffron-50 text-saffron-700 border border-saffron-100 animate-pulse-slow' 
-              : 'bg-slate-100 text-slate-600 border border-slate-200'
+              ? 'bg-saffron-50 text-saffron-600 border border-saffron-100/50 pulse-glow-badge text-saffron-600' 
+              : 'bg-slate-100 text-slate-500 border border-slate-200'
           }`}>
             {event.status}
           </span>
           
-          <span className="text-xs text-slate-500 font-medium">
+          <span className="text-xs text-slate-400 font-semibold tracking-wide">
             {formatDate(event.date)}
           </span>
         </div>
