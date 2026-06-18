@@ -138,11 +138,11 @@ function App() {
                 } 
               />
 
-              {/* Expenditure Management — Admin Only */}
+              {/* Expenditure Management — all logged-in users can view */}
               <Route 
                 path="/expenditure" 
                 element={
-                  <ProtectedRoute adminOnly={true}>
+                  <ProtectedRoute>
                     <Expenditure />
                   </ProtectedRoute>
                 } 

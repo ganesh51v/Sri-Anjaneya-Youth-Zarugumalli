@@ -439,13 +439,20 @@ const Expenditure = () => {
           >
             <RefreshCw className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => { setEditTarget(null); setShowForm(true); }}
-            className="saffron-gradient-btn rounded-xl px-5 py-2.5 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm"
-          >
-            <PlusCircle className="w-4 h-4" />
-            Add Expense
-          </button>
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => { setEditTarget(null); setShowForm(true); }}
+              className="saffron-gradient-btn rounded-xl px-5 py-2.5 text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Add Expense
+            </button>
+          )}
+          {user?.role !== 'admin' && (
+            <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wide">
+              View Only
+            </span>
+          )}
         </div>
       </div>
 
@@ -633,7 +640,9 @@ const Expenditure = () => {
                   <th className="px-5 py-4">Payment</th>
                   <th className="px-5 py-4">Paid To</th>
                   <th className="px-5 py-4">Receipt</th>
-                  <th className="px-5 py-4 text-right">Actions</th>
+                  {user?.role === 'admin' && (
+                    <th className="px-5 py-4 text-right">Actions</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-cream-50 dark:divide-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300">
@@ -688,25 +697,27 @@ const Expenditure = () => {
                         <span className="text-slate-300 dark:text-slate-600 text-[10px]">—</span>
                       )}
                     </td>
-                    {/* Actions */}
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => { setEditTarget(exp); setShowForm(true); }}
-                          className="p-1.5 rounded-lg bg-saffron-50 dark:bg-saffron-950/30 text-saffron-600 hover:bg-saffron-100 transition-colors cursor-pointer"
-                          title="Edit"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteTarget(exp)}
-                          className="p-1.5 rounded-lg bg-devored-50 dark:bg-devored-900/30 text-devored-600 hover:bg-devored-100 transition-colors cursor-pointer"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
+                    {/* Actions — admin only */}
+                    {user?.role === 'admin' && (
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-1.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => { setEditTarget(exp); setShowForm(true); }}
+                            className="p-1.5 rounded-lg bg-saffron-50 dark:bg-saffron-950/30 text-saffron-600 hover:bg-saffron-100 transition-colors cursor-pointer"
+                            title="Edit"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setDeleteTarget(exp)}
+                            className="p-1.5 rounded-lg bg-devored-50 dark:bg-devored-900/30 text-devored-600 hover:bg-devored-100 transition-colors cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -715,8 +726,8 @@ const Expenditure = () => {
         )}
       </div>
 
-      {/* ── Modals ───────────────────────────────────────────────────────────── */}
-      {showForm && (
+      {/* ── Modals — admin only ───────────────────────────────────────────────── */}
+      {showForm && user?.role === 'admin' && (
         <ExpenditureFormModal
           initialData={editTarget}
           onSave={editTarget ? handleEdit : handleAdd}
@@ -724,7 +735,7 @@ const Expenditure = () => {
           currentUser={user}
         />
       )}
-      {deleteTarget && (
+      {deleteTarget && user?.role === 'admin' && (
         <ConfirmModal
           title="Delete Expenditure Record"
           message={`Are you sure you want to permanently delete "${deleteTarget.title}" (${fmt(deleteTarget.amount)})? This action cannot be undone.`}
