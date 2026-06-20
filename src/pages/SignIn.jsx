@@ -17,6 +17,7 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [loginMethod, setLoginMethod] = useState('email'); // 'email' | 'phone'
+  const [countryCode, setCountryCode] = useState('+91');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -43,20 +44,33 @@ const SignIn = () => {
     e.preventDefault();
     setError('');
     setInfo('');
-    if (!phone) {
+    
+    const trimmedPhone = phone.trim();
+    if (!trimmedPhone) {
       setError('Please enter your phone number.');
+      return;
+    }
+    
+    // Basic digit length validation
+    if (countryCode === '+91' && !/^\d{10}$/.test(trimmedPhone)) {
+      setError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    if (!/^\d{7,12}$/.test(trimmedPhone)) {
+      setError('Please enter a valid phone number.');
       return;
     }
 
     setLoading(true);
     try {
+      const fullPhone = `${countryCode}${trimmedPhone}`;
       const appVerifier = authService.setupRecaptcha('phone-signin-btn');
-      const result = await authService.sendOtp(phone.trim(), appVerifier);
+      const result = await authService.sendOtp(fullPhone, appVerifier);
       setConfirmationResult(result);
       setOtpSent(true);
       setInfo('Verification code (OTP) sent to your mobile number.');
     } catch (err) {
-      setError(err.message || 'Failed to send OTP. Make sure it is in valid international format (e.g. +919876543210).');
+      setError(err.message || 'Failed to send OTP. Make sure your number and country code are correct.');
       if (window.recaptchaVerifier) {
         try { window.recaptchaVerifier.clear(); } catch(e){}
       }
@@ -336,16 +350,32 @@ const SignIn = () => {
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 pl-1">
                       {t('phoneNumberLabel')}
                     </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+919876543210"
-                        className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
-                        required
-                      />
+                    <div className="flex gap-2">
+                      <div className="relative w-28 shrink-0">
+                        <select
+                          value={countryCode}
+                          onChange={(e) => setCountryCode(e.target.value)}
+                          className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 px-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all cursor-pointer font-bold"
+                        >
+                          <option value="+91" className="dark:bg-slate-950 dark:text-white">🇮🇳 +91</option>
+                          <option value="+1" className="dark:bg-slate-950 dark:text-white">🇺🇸 +1</option>
+                          <option value="+44" className="dark:bg-slate-950 dark:text-white">🇬🇧 +44</option>
+                          <option value="+61" className="dark:bg-slate-950 dark:text-white">🇦🇺 +61</option>
+                          <option value="+971" className="dark:bg-slate-950 dark:text-white">🇦🇪 +971</option>
+                          <option value="+65" className="dark:bg-slate-950 dark:text-white">🇸🇬 +65</option>
+                        </select>
+                      </div>
+                      <div className="relative flex-1">
+                        <Phone className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                          placeholder={countryCode === '+91' ? '9876543210' : 'Phone number'}
+                          className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
+                          required
+                        />
+                      </div>
                     </div>
                   </div>
                 ) : (
