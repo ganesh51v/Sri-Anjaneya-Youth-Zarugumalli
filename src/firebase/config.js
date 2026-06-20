@@ -155,6 +155,10 @@ if (isFirebaseConfigured) {
         console.log('[Firebase] Phone auth test mode enabled (reCAPTCHA bypassed for localhost).');
       }
 
+      // Firebase App Check is temporarily disabled to prevent reCAPTCHA token exchange errors
+      // from blocking user authentication. If you wish to enforce App Check in the future,
+      // uncomment this block and register your reCAPTCHA v3 key in the Firebase Console.
+      /*
       const reCaptchaKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
       if (reCaptchaKey) {
         try {
@@ -172,6 +176,7 @@ if (isFirebaseConfigured) {
       } else if (!isDev) {
         console.warn('[Firebase] VITE_RECAPTCHA_SITE_KEY not set — App Check disabled. Auth may fail if App Check is enforced.');
       }
+      */
     }
 
     console.log('Firebase initialized successfully with offline persistence.');
