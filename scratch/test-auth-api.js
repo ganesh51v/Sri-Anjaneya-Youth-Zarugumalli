@@ -1,7 +1,25 @@
-// Quick test: check if Firebase Auth REST API accepts the API key
-// Run with: node scratch/test-auth-api.js
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const API_KEY = 'AIzaSyDNbTAhOCXjZpnAFtTjF7pSBCBpvhC0RwE';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Read .env file without external dependencies
+const envPath = path.join(__dirname, '../.env');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf-8');
+  envContent.split('\n').forEach(line => {
+    const parts = line.split('=');
+    if (parts.length >= 2) {
+      const key = parts[0].trim();
+      const val = parts.slice(1).join('=').trim();
+      process.env[key] = val;
+    }
+  });
+}
+
+const API_KEY = process.env.VITE_FIREBASE_API_KEY || '';
 
 const testSignIn = async () => {
   console.log('\n🔑 Testing Firebase Auth REST API...\n');
