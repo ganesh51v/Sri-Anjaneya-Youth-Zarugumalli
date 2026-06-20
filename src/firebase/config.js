@@ -6,6 +6,7 @@ import {
   createUserWithEmailAndPassword, 
   signOut as firebaseSignOut, 
   sendPasswordResetEmail,
+  sendEmailVerification,
   GoogleAuthProvider,
   signInWithPopup,
   onAuthStateChanged as firebaseOnAuthStateChanged,
@@ -227,25 +228,77 @@ let currentUserMock = (() => {
 const triggerAuthChange = (user) => {
   currentUserMock = user;
   if (user) {
-    localStorage.setItem('sa_current_user', JSON.stringify(user));
+    localStorage.setItem('sa_current_user', JSON.stringify({
+      ...user,
+      sessionCreatedAt: Date.now()
+    }));
   } else {
     localStorage.removeItem('sa_current_user');
   }
   authListeners.forEach(listener => listener(user));
 };
 
+// Simple helper to hash mock password using SHA-256 (Web Crypto API)
+const hashPassword = async (password) => {
+  if (!password) return '';
+  try {
+    const msgBuffer = new TextEncoder().encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (err) {
+    return password;
+  }
+};
+
+// Rate limiting helper for mock mode
+const checkMockRateLimit = (email) => {
+  const attempts = safeParseLS('sa_login_attempts', {});
+  const record = attempts[email.toLowerCase()];
+  if (record && record.lockUntil && Date.now() < record.lockUntil) {
+    const remainingSec = Math.ceil((record.lockUntil - Date.now()) / 1000);
+    throw new Error(`Too many failed login attempts. This account is temporarily locked. Please try again in ${remainingSec} seconds.`);
+  }
+};
+
+const recordMockLoginAttempt = (email, success) => {
+  const attempts = safeParseLS('sa_login_attempts', {});
+  const key = email.toLowerCase();
+  if (success) {
+    delete attempts[key];
+  } else {
+    const record = attempts[key] || { count: 0, lockUntil: 0 };
+    record.count += 1;
+    if (record.count >= 5) {
+      record.lockUntil = Date.now() + 5 * 60 * 1000; // Lock for 5 minutes
+      record.count = 0; // Reset
+    }
+    attempts[key] = record;
+  }
+  localStorage.setItem('sa_login_attempts', JSON.stringify(attempts));
+};
+
 // Normalize user shape: always include both `id` and `uid` so Firebase + mock paths are consistent
-const normalizeUser = (uid, extra = {}) => ({
-  id: uid,
-  uid,
-  phone: '',
-  village: '',
-  photoUrl: '',
-  committeeStatus: 'none',
-  welcomeEmailSent: false,
-  welcomeMessageSent: false,
-  ...extra,
-});
+const normalizeUser = (uid, extra = {}) => {
+  // Capture emailVerified from Firebase if available
+  const currentUser = auth?.currentUser;
+  const emailVerified = (currentUser && currentUser.uid === uid) 
+    ? currentUser.emailVerified 
+    : (extra && extra.emailVerified !== undefined ? extra.emailVerified : false);
+
+  return {
+    id: uid,
+    uid,
+    phone: '',
+    village: '',
+    photoUrl: '',
+    committeeStatus: 'none',
+    welcomeEmailSent: false,
+    welcomeMessageSent: false,
+    emailVerified,
+    ...extra,
+  };
+};
 
 // Trigger welcome email/message API asynchronously on registration
 const triggerWelcomeNotifications = async (userData) => {
@@ -366,19 +419,43 @@ export const authService = {
       }
     } else {
       // Mock sign in
+      checkMockRateLimit(email);
       const users = safeParseLS('sa_users');
       const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
       
-      if (!user) throw new Error('User not found in local mock database.');
+      if (!user) {
+        recordMockLoginAttempt(email, false);
+        throw new Error('User not found in local mock database.');
+      }
+      
+      const inputHash = await hashPassword(password);
       
       if (user.password) {
-        if (password !== user.password) throw new Error('Invalid password credentials.');
+        // Support both legacy plain text and hashed passwords for mock mode
+        const isMatch = (password === user.password) || (inputHash === user.password);
+        if (!isMatch) {
+          recordMockLoginAttempt(email, false);
+          throw new Error('Invalid password credentials.');
+        }
+        
+        // Auto-upgrade plain text to SHA-256 hash in storage
+        if (password === user.password && password !== inputHash) {
+          user.password = inputHash;
+          localStorage.setItem('sa_users', JSON.stringify(users));
+        }
       } else {
         const expectedPassword = user.email.split('@')[0] + '123';
         if (password !== expectedPassword && password !== 'admin123' && password !== 'member123') {
+          recordMockLoginAttempt(email, false);
           throw new Error("Invalid credentials. For mock accounts, use: '" + user.email.split('@')[0] + "123' or 'admin123'/'member123'");
         }
+        
+        // Auto-initialize legacy accounts with hashed default password
+        user.password = await hashPassword(password);
+        localStorage.setItem('sa_users', JSON.stringify(users));
       }
+      
+      recordMockLoginAttempt(email, true);
       triggerAuthChange(user);
       return user;
     }
@@ -388,6 +465,15 @@ export const authService = {
     if (isFirebaseConfigured && auth) {
       try {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Send email verification link
+        try {
+          await sendEmailVerification(cred.user);
+          console.log('[signUp] Email verification link sent to:', email);
+        } catch (verifyErr) {
+          console.warn('[signUp] Failed to send email verification link:', verifyErr.message);
+        }
+
         const userData = normalizeUser(cred.user.uid, {
           name, email, phone, village,
           role: 'user',
@@ -413,13 +499,15 @@ export const authService = {
       if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
         throw new Error('Email address already registered.');
       }
+      const hashedPassword = await hashPassword(password);
       const newUser = {
         id: 'u_' + Math.random().toString(36).substr(2, 9),
         name, email, phone, village,
         role: 'user',
         photoUrl: '',
         committeeStatus: 'none',
-        password,
+        password: hashedPassword,
+        emailVerified: true, // Auto-verified in mock mode
         createdAt: new Date().toISOString()
       };
       users.push(newUser);
@@ -557,6 +645,21 @@ export const authService = {
     }
   },
 
+  sendVerificationEmail: async () => {
+    if (isFirebaseConfigured && auth && auth.currentUser) {
+      try {
+        await sendEmailVerification(auth.currentUser);
+        console.log('[sendVerificationEmail] Sent verification email link.');
+      } catch (err) {
+        if (isOfflineError(err)) throw new Error('No internet connection. Please try again when online.');
+        throw err;
+      }
+    } else {
+      console.log('[Mock Auth] Mock email verification link sent.');
+      return true;
+    }
+  },
+
   onAuthStateChanged: (callback) => {
     if (isFirebaseConfigured && auth) {
       return firebaseOnAuthStateChanged(auth, async (user) => {
@@ -610,6 +713,16 @@ export const authService = {
         }
       });
     } else {
+      // For mock mode: check session expiry (e.g. 1 hour = 3600000 ms)
+      const current = safeParseLS('sa_current_user', null);
+      if (current && current.sessionCreatedAt) {
+        const sessionAge = Date.now() - current.sessionCreatedAt;
+        if (sessionAge > 3600000) {
+          console.warn('[Mock Auth] Session expired after 1 hour.');
+          localStorage.removeItem('sa_current_user');
+          currentUserMock = null;
+        }
+      }
       authListeners.push(callback);
       callback(currentUserMock);
       return () => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { dbService } from '../firebase/config';
+import { dbService, authService } from '../firebase/config';
 import { Users, Calendar, Bell, Heart, MapPin, Mail, Phone, Info, ChevronRight, MessageSquare, Award } from 'lucide-react';
 import SEO from '../components/SEO';
 
@@ -69,6 +69,34 @@ const Dashboard = () => {
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
       <SEO title="Dashboard" description="Your Sri Anjaneya Youth Zarugumalli member dashboard — view upcoming events, recent announcements, gallery highlights and community news." path="/" />
+      
+      {/* Email Verification Banner */}
+      {user && !user.emailVerified && !authService.isMock && (
+        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
+          <div className="flex items-center gap-2.5 text-amber-800 dark:text-amber-300">
+            <Info className="w-5 h-5 shrink-0" />
+            <div>
+              <span className="font-extrabold text-[13px]">Your email address is not verified.</span>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">Please check your inbox (and spam folder) for a verification link to secure your account.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await authService.sendVerificationEmail();
+                alert("Verification link has been sent to your email address!");
+              } catch (e) {
+                alert("Failed to send verification link: " + e.message);
+              }
+            }}
+            className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold transition-all shadow-sm shrink-0 self-start sm:self-auto cursor-pointer"
+          >
+            Resend Verification Link
+          </button>
+        </div>
+      )}
+
       {/* Devotional Hero Greeting */}
       <div className="welcome-banner rounded-3xl p-6 sm:p-8 relative overflow-hidden backdrop-blur-md">
         {/* Decorative background radial pattern */}
