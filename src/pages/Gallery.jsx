@@ -88,8 +88,8 @@ const Gallery = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 800 * 1024) {
-      setError(language === 'en' ? 'Image file size must be less than 800KB.' : 'చిత్రం ఫైల్ పరిమాణం 800KB కంటే తక్కువగా ఉండాలి.');
+    if (file.size > 4 * 1024 * 1024) {
+      setError(language === 'en' ? 'Image file size must be less than 4MB.' : 'చిత్రం ఫైల్ పరిమాణం 4MB కంటే తక్కువగా ఉండాలి.');
       return;
     }
 
@@ -116,21 +116,25 @@ const Gallery = () => {
     try {
       // If the image is a base64 local file upload, upload to Cloudinary via serverless helper
       if (imageUrl.startsWith('data:')) {
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ file: imageUrl })
-        });
-        
-        const uploadData = await uploadRes.json();
-        
-        if (!uploadRes.ok) {
-          throw new Error(uploadData.error || 'Failed to upload image to Cloudinary');
+        try {
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ file: imageUrl })
+          });
+          
+          const uploadData = await uploadRes.json();
+          
+          if (uploadRes.ok && uploadData.secure_url) {
+            finalImageUrl = uploadData.secure_url;
+          } else {
+            console.warn('[Gallery] Cloudinary upload failed, falling back to direct Base64 storage:', uploadData.error);
+          }
+        } catch (uploadErr) {
+          console.warn('[Gallery] Cloudinary helper failed, falling back to direct Base64 storage:', uploadErr.message);
         }
-        
-        finalImageUrl = uploadData.secure_url;
       }
 
       const newPhoto = { imageUrl: finalImageUrl, caption, category, redirectUrl };
@@ -336,7 +340,7 @@ const Gallery = () => {
                     >
                       {t('chooseImage')}
                     </label>
-                    <p className="text-[9px] text-slate-400 mt-0.5">PNG/JPG, max 800KB</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5">PNG/JPG, max 4MB</p>
                   </div>
                   {imageUrl && (
                     <button
