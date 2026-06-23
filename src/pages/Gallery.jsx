@@ -22,6 +22,7 @@ const Gallery = () => {
   const [caption, setCaption] = useState('');
   const [category, setCategory] = useState('Temple Events');
   const [redirectUrl, setRedirectUrl] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Preset beautiful devotional/service Unsplash image choices
   const imagePresets = [
@@ -109,14 +110,38 @@ const Gallery = () => {
       return;
     }
 
-    const newPhoto = { imageUrl, caption, category, redirectUrl };
+    setIsSaving(true);
+    let finalImageUrl = imageUrl;
 
     try {
+      // If the image is a base64 local file upload, upload to Cloudinary via serverless helper
+      if (imageUrl.startsWith('data:')) {
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ file: imageUrl })
+        });
+        
+        const uploadData = await uploadRes.json();
+        
+        if (!uploadRes.ok) {
+          throw new Error(uploadData.error || 'Failed to upload image to Cloudinary');
+        }
+        
+        finalImageUrl = uploadData.secure_url;
+      }
+
+      const newPhoto = { imageUrl: finalImageUrl, caption, category, redirectUrl };
       const added = await dbService.gallery.add(newPhoto);
       setGallery(prev => [added, ...prev]); // Prepend new image
       setIsModalOpen(false);
     } catch (err) {
-      setError(t('failedSavePhoto'));
+      console.error('[Gallery] Save error:', err);
+      setError(err.message || t('failedSavePhoto'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -404,8 +429,10 @@ const Gallery = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 saffron-gradient-btn rounded-xl font-bold cursor-pointer"
+                  disabled={isSaving}
+                  className="px-5 py-2 saffron-gradient-btn rounded-xl font-bold cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
+                  {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   {t('savePhoto')}
                 </button>
               </div>
