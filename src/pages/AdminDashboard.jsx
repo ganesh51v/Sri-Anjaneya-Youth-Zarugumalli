@@ -21,7 +21,11 @@ import {
   AlertCircle,
   IndianRupee,
   Banknote,
-  TrendingDown
+  TrendingDown,
+  Plus,
+  X,
+  Edit2,
+  Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -35,8 +39,269 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'donations'
+  const [activeTab, setActiveTab] = useState('users'); // 'users' | 'donations' | 'gallery'
   
+  // Gallery Management States
+  const [gallery, setGallery] = useState([]);
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [editingGalleryItem, setEditingGalleryItem] = useState(null);
+  const [galleryForm, setGalleryForm] = useState({
+    title: '',
+    description: '',
+    eventDate: '',
+    coverImage: '',
+    newGalleryImages: [],
+    existingGalleryImages: []
+  });
+  const [isSavingGallery, setIsSavingGallery] = useState(false);
+  const [galleryError, setGalleryError] = useState('');
+  const [gallerySuccess, setGallerySuccess] = useState('');
+
+  // Image compressor using HTML5 canvas
+  const compressImage = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.75) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new window.Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedDataUrl);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
+  const openGalleryModal = (item = null) => {
+    setGalleryError('');
+    setGallerySuccess('');
+    if (item) {
+      setEditingGalleryItem(item);
+      setGalleryForm({
+        title: item.title || item.caption || '',
+        description: item.description || item.category || '',
+        eventDate: item.eventDate || (item.uploadedAt ? item.uploadedAt.split('T')[0] : ''),
+        coverImage: item.coverImageUrl || item.imageUrl || '',
+        newGalleryImages: [],
+        existingGalleryImages: item.imageUrls || (item.imageUrl ? [item.imageUrl] : [])
+      });
+    } else {
+      setEditingGalleryItem(null);
+      setGalleryForm({
+        title: '',
+        description: '',
+        eventDate: new Date().toISOString().split('T')[0],
+        coverImage: '',
+        newGalleryImages: [],
+        existingGalleryImages: []
+      });
+    }
+    setIsGalleryModalOpen(true);
+  };
+
+  const handleCoverImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setGalleryError('Only image files (JPG, PNG, WEBP) are allowed.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setGalleryError('Original image size cannot exceed 5MB.');
+      return;
+    }
+
+    setGalleryError('');
+    try {
+      const compressed = await compressImage(file);
+      setGalleryForm(prev => ({ ...prev, coverImage: compressed }));
+    } catch (err) {
+      console.error(err);
+      setGalleryError('Failed to process cover image.');
+    }
+  };
+
+  const handleGalleryImagesChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setGalleryError('');
+    const newCompressedImages = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        setGalleryError('Only image files (JPG, PNG, WEBP) are allowed.');
+        continue;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setGalleryError('Original image size cannot exceed 5MB.');
+        continue;
+      }
+
+      try {
+        const compressed = await compressImage(file);
+        newCompressedImages.push(compressed);
+      } catch (err) {
+        console.error(err);
+        setGalleryError('Failed to process some gallery images.');
+      }
+    }
+
+    if (newCompressedImages.length > 0) {
+      setGalleryForm(prev => ({
+        ...prev,
+        newGalleryImages: [...prev.newGalleryImages, ...newCompressedImages]
+      }));
+    }
+  };
+
+  const handleRemoveExistingImage = (idxToRemove) => {
+    setGalleryForm(prev => ({
+      ...prev,
+      existingGalleryImages: prev.existingGalleryImages.filter((_, idx) => idx !== idxToRemove)
+    }));
+  };
+
+  const handleRemoveNewImage = (idxToRemove) => {
+    setGalleryForm(prev => ({
+      ...prev,
+      newGalleryImages: prev.newGalleryImages.filter((_, idx) => idx !== idxToRemove)
+    }));
+  };
+
+  const handleSaveGallery = async (e) => {
+    e.preventDefault();
+    setGalleryError('');
+    setGallerySuccess('');
+
+    const { title, description, eventDate, coverImage, newGalleryImages, existingGalleryImages } = galleryForm;
+
+    if (!title || !description || !eventDate) {
+      setGalleryError('Please fill in Title, Description, and Event Date.');
+      return;
+    }
+
+    if (!editingGalleryItem && !coverImage) {
+      setGalleryError('Please upload a Cover Image.');
+      return;
+    }
+
+    setIsSavingGallery(true);
+    try {
+      // 1. Upload Cover Image (if provided as data URI)
+      let coverImageUrl = editingGalleryItem ? editingGalleryItem.coverImageUrl : '';
+      if (coverImage && coverImage.startsWith('data:')) {
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: coverImage })
+        });
+        const uploadData = await uploadRes.json();
+        if (uploadRes.ok && uploadData.secure_url) {
+          coverImageUrl = uploadData.secure_url;
+        } else {
+          throw new Error(uploadData.error || 'Failed to upload cover image to Cloudinary.');
+        }
+      } else if (coverImage) {
+        coverImageUrl = coverImage;
+      }
+
+      // 2. Upload New Gallery Images
+      const uploadedGalleryUrls = [];
+      for (const base64Img of newGalleryImages) {
+        if (base64Img.startsWith('data:')) {
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file: base64Img })
+          });
+          const uploadData = await uploadRes.json();
+          if (uploadRes.ok && uploadData.secure_url) {
+            uploadedGalleryUrls.push(uploadData.secure_url);
+          } else {
+            throw new Error(uploadData.error || 'Failed to upload a gallery image.');
+          }
+        } else {
+          uploadedGalleryUrls.push(base64Img);
+        }
+      }
+
+      // Combine existing and new gallery images
+      const imageUrls = [...existingGalleryImages, ...uploadedGalleryUrls];
+
+      const galleryData = {
+        title,
+        description,
+        coverImageUrl: coverImageUrl || (imageUrls.length > 0 ? imageUrls[0] : ''),
+        eventDate,
+        imageUrls,
+        imageUrl: coverImageUrl || (imageUrls.length > 0 ? imageUrls[0] : '') // compatibility field
+      };
+
+      if (editingGalleryItem) {
+        const updated = await dbService.gallery.update(editingGalleryItem.id, galleryData);
+        setGallery(prev => prev.map(g => g.id === editingGalleryItem.id ? updated : g));
+        setGallerySuccess('Gallery card updated successfully!');
+      } else {
+        const added = await dbService.gallery.add(galleryData);
+        setGallery(prev => [added, ...prev]);
+        setCounts(prev => ({ ...prev, gallery: prev.gallery + 1 }));
+        setGallerySuccess('Gallery card created successfully!');
+      }
+
+      // Close modal after delay
+      setTimeout(() => {
+        setIsGalleryModalOpen(false);
+        setEditingGalleryItem(null);
+      }, 1500);
+
+    } catch (err) {
+      console.error(err);
+      setGalleryError(err.message || 'An error occurred while saving the gallery card.');
+    } finally {
+      setIsSavingGallery(false);
+    }
+  };
+
+  const handleDeleteGallery = async (id) => {
+    if (window.confirm('Warning! Are you sure you want to permanently delete this entire gallery album?')) {
+      try {
+        await dbService.gallery.delete(id);
+        setGallery(prev => prev.filter(g => g.id !== id));
+        setCounts(prev => ({ ...prev, gallery: Math.max(0, prev.gallery - 1) }));
+        alert('Gallery album deleted successfully!');
+      } catch (err) {
+        console.error(err);
+        alert('Failed to delete gallery album.');
+      }
+    }
+  };
+
   // Search & Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -57,6 +322,7 @@ const AdminDashboard = () => {
 
       setUsers(allUsers);
       setDonations(allDonations);
+      setGallery(allGallery);
       setCounts({
         members: allMembers.length,
         events: allEvents.length,
@@ -297,16 +563,21 @@ const AdminDashboard = () => {
           </div>
         </Link>
 
-        <Link to="/gallery" className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 p-4 rounded-2xl flex flex-col justify-between hover:border-saffron-400 hover:shadow-sm transition-all group">
+        <div 
+          onClick={() => { setActiveTab('gallery'); }}
+          className={`bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 p-4 rounded-2xl flex flex-col justify-between hover:border-saffron-400 hover:shadow-sm transition-all group cursor-pointer ${
+            activeTab === 'gallery' ? 'ring-2 ring-saffron-500 border-transparent shadow' : ''
+          }`}
+        >
           <div className="flex justify-between items-start mb-2">
             <Image className="w-5 h-5 text-saffron-500" />
-            <span className="text-[10px] font-bold text-slate-400 group-hover:text-saffron-500 transition-colors uppercase">Manage</span>
+            <span className="text-[10px] font-bold text-slate-400 group-hover:text-saffron-500 transition-colors uppercase font-mono">Manage</span>
           </div>
           <div>
             <span className="block text-xl sm:text-2xl font-black text-slate-800 dark:text-white">{counts.gallery}</span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Gallery Photos</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Gallery Albums</span>
           </div>
-        </Link>
+        </div>
 
         {/* Total Donations stat card */}
         <div 
@@ -367,6 +638,16 @@ const AdminDashboard = () => {
           }`}
         >
           Donations Ledger ({donations.length})
+        </button>
+        <button
+          onClick={() => { setActiveTab('gallery'); setSearchTerm(''); }}
+          className={`pb-3 text-xs uppercase tracking-wider font-black transition-all border-b-2 cursor-pointer ${
+            activeTab === 'gallery'
+              ? 'border-saffron-500 text-saffron-600'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          Gallery Management ({counts.gallery})
         </button>
       </div>
 
@@ -470,7 +751,7 @@ const AdminDashboard = () => {
             </div>
           )}
         </div>
-      ) : (
+      ) : activeTab === 'donations' ? (
         /* DONATIONS TAB PANEL */
         <div className="space-y-6 animate-fade-in">
           {/* Donations Stat grid */}
@@ -667,6 +948,293 @@ const AdminDashboard = () => {
               </div>
             )}
 
+          </div>
+        </div>
+      ) : activeTab === 'gallery' ? (
+        /* GALLERY TAB PANEL */
+        <div className="space-y-6 animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 dark:border-slate-800 pb-4">
+              <div>
+                <h2 className="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                  <Image className="w-5 h-5 text-saffron-600" />
+                  Gallery Album Management ({gallery.length})
+                </h2>
+                <p className="text-xs text-slate-400 font-semibold mt-1">
+                  Create, edit, and delete photo albums displayed in the public gallery section.
+                </p>
+              </div>
+              <button
+                onClick={() => openGalleryModal()}
+                className="px-4 py-2.5 bg-saffron-500 hover:bg-saffron-600 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 self-start sm:self-auto cursor-pointer shadow-sm shadow-saffron-500/25 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                Create New Album
+              </button>
+            </div>
+
+            {gallery.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {gallery.map(album => {
+                  const images = album.imageUrls && album.imageUrls.length > 0 ? album.imageUrls : (album.imageUrl ? [album.imageUrl] : []);
+                  return (
+                    <div key={album.id} className="bg-cream-50/20 dark:bg-slate-950/20 border border-cream-250 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
+                      <div>
+                        {/* Cover Image Box */}
+                        <div className="aspect-video relative bg-slate-950">
+                          <img
+                            src={album.coverImageUrl || album.imageUrl || (images[0] || '/placeholder.png')}
+                            alt={album.title || album.caption}
+                            className="w-full h-full object-cover"
+                          />
+                          <span className="absolute bottom-3 left-3 bg-black/60 text-white px-2 py-0.5 rounded-md text-[9px] font-bold tracking-widest font-mono">
+                            {images.length} PHOTOS
+                          </span>
+                        </div>
+                        {/* Album info */}
+                        <div className="p-4 space-y-2">
+                          <h3 className="font-extrabold text-slate-800 dark:text-white text-sm line-clamp-1">
+                            {album.title || album.caption || 'Untitled Album'}
+                          </h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                            {album.description || album.category || 'No description provided.'}
+                          </p>
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold block">
+                            Event Date: {album.eventDate ? new Date(album.eventDate).toLocaleDateString('en-IN') : 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Action buttons */}
+                      <div className="p-4 border-t border-cream-200/50 dark:border-slate-800/50 flex items-center justify-between gap-3 text-xs bg-cream-50/10 dark:bg-slate-950/10">
+                        <button
+                          onClick={() => openGalleryModal(album)}
+                          className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-cream-300 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 font-bold hover:bg-cream-50 dark:hover:bg-slate-800 cursor-pointer flex items-center gap-1.5 transition-colors"
+                        >
+                          <Edit2 className="w-3.5 h-3.5 text-saffron-600" />
+                          Edit Album
+                        </button>
+                        <button
+                          onClick={() => handleDeleteGallery(album.id)}
+                          className="p-2 bg-devored-50 hover:bg-devored-100 text-devored-600 dark:bg-devored-950/20 dark:text-devored-400 rounded-xl cursor-pointer transition-colors"
+                          title="Delete Album"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-xs border border-dashed border-cream-300 dark:border-slate-800 rounded-2xl">
+                No gallery albums found. Click 'Create New Album' to get started.
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {/* GALLERY MANAGEMENT FORM MODAL */}
+      {isGalleryModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full shadow-2xl border border-cream-200 dark:border-slate-800 overflow-hidden animate-slide-up my-auto">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-saffron-500 to-saffron-600 text-white px-6 py-4 flex justify-between items-center">
+              <h2 className="font-extrabold text-sm uppercase tracking-wider">
+                {editingGalleryItem ? 'Edit Gallery Album' : 'Create New Gallery Album'}
+              </h2>
+              <button 
+                onClick={() => { setIsGalleryModalOpen(false); setEditingGalleryItem(null); }} 
+                className="text-white hover:text-saffron-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveGallery} className="p-6 space-y-5">
+              {/* Feedback messages */}
+              {galleryError && (
+                <div className="bg-devored-50 border border-devored-200 text-devored-700 p-3.5 rounded-xl text-xs flex gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{galleryError}</span>
+                </div>
+              )}
+              {gallerySuccess && (
+                <div className="bg-emerald-50 border border-emerald-250 text-emerald-700 p-3.5 rounded-xl text-xs flex gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{gallerySuccess}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Left side text inputs */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 pl-1">
+                      Album Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={galleryForm.title}
+                      onChange={(e) => setGalleryForm(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="e.g. Annual Hanuman Jayanthi Seva"
+                      className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500 dark:text-white"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 pl-1">
+                      Short Description *
+                    </label>
+                    <textarea
+                      value={galleryForm.description}
+                      onChange={(e) => setGalleryForm(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Write a brief overview of the event/album..."
+                      rows="3"
+                      className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500 dark:text-white resize-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 pl-1">
+                      Event Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={galleryForm.eventDate}
+                      onChange={(e) => setGalleryForm(prev => ({ ...prev, eventDate: e.target.value }))}
+                      className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500 dark:text-white cursor-pointer"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Right side image uploads */}
+                <div className="space-y-4">
+                  {/* Cover image uploader */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 pl-1">
+                      Cover Image *
+                    </label>
+                    <div className="bg-cream-50/30 dark:bg-slate-950/20 border border-cream-350 dark:border-slate-800 rounded-xl p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="admin-cover-input"
+                          onChange={handleCoverImageChange}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="admin-cover-input"
+                          className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-cream-300 dark:border-slate-800 rounded-lg text-[10px] font-extrabold text-slate-700 dark:text-slate-350 hover:bg-cream-50 dark:hover:bg-slate-800 cursor-pointer transition-colors shadow-sm"
+                        >
+                          Choose Cover Image
+                        </label>
+                        <span className="text-[9px] text-slate-400">JPG/PNG, Max 5MB</span>
+                      </div>
+                      
+                      {galleryForm.coverImage && (
+                        <div className="relative aspect-video rounded-lg overflow-hidden border border-cream-300 dark:border-slate-800 max-h-24 bg-slate-950">
+                          <img src={galleryForm.coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setGalleryForm(prev => ({ ...prev, coverImage: '' }))}
+                            className="absolute top-1 right-1 bg-devored-600 hover:bg-devored-700 text-white p-1 rounded-full shadow-md transition-transform hover:scale-110 cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Album images uploader */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 pl-1">
+                      Album Images (Multiple)
+                    </label>
+                    <div className="bg-cream-50/30 dark:bg-slate-950/20 border border-cream-350 dark:border-slate-800 rounded-xl p-3 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="admin-gallery-input"
+                          onChange={handleGalleryImagesChange}
+                          multiple
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="admin-gallery-input"
+                          className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-cream-300 dark:border-slate-800 rounded-lg text-[10px] font-extrabold text-slate-700 dark:text-slate-350 hover:bg-cream-50 dark:hover:bg-slate-800 cursor-pointer transition-colors shadow-sm"
+                        >
+                          Choose Photos
+                        </label>
+                        <span className="text-[9px] text-slate-400">Can select multiple</span>
+                      </div>
+
+                      {/* Display previews of existing and new images */}
+                      {(galleryForm.existingGalleryImages.length > 0 || galleryForm.newGalleryImages.length > 0) && (
+                        <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto p-1 border-t border-cream-200 dark:border-slate-800 pt-2.5">
+                          {/* Existing photos (loaded from DB) */}
+                          {galleryForm.existingGalleryImages.map((url, idx) => (
+                            <div key={`existing-${idx}`} className="relative aspect-square rounded-lg overflow-hidden border border-cream-300 dark:border-slate-800 bg-slate-950 group">
+                              <img src={url} alt="Album existing" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveExistingImage(idx)}
+                                className="absolute -top-1 -right-1 bg-devored-600 hover:bg-devored-750 text-white p-1 rounded-full shadow-md transition-transform hover:scale-115 cursor-pointer"
+                                title="Remove existing image"
+                              >
+                                <X className="w-2.5 h-2.5" />
+                              </button>
+                            </div>
+                          ))}
+
+                          {/* Newly selected local photos */}
+                          {galleryForm.newGalleryImages.map((base64, idx) => (
+                            <div key={`new-${idx}`} className="relative aspect-square rounded-lg overflow-hidden border border-saffron-300 dark:border-saffron-950 bg-slate-950 group">
+                              <img src={base64} alt="Album new" className="w-full h-full object-cover" />
+                              <span className="absolute bottom-0 inset-x-0 bg-saffron-500/80 text-[7px] text-white font-bold text-center py-0.5">NEW</span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveNewImage(idx)}
+                                className="absolute -top-1 -right-1 bg-devored-600 hover:bg-devored-750 text-white p-1 rounded-full shadow-md transition-transform hover:scale-115 cursor-pointer"
+                                title="Remove new image"
+                              >
+                                <X className="w-2.5 h-2.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="pt-3 border-t border-cream-200 dark:border-slate-800 flex justify-end gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => { setIsGalleryModalOpen(false); setEditingGalleryItem(null); }}
+                  className="px-4 py-2 border border-cream-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-cream-50 dark:hover:bg-slate-850 rounded-xl font-bold cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingGallery}
+                  className="px-5 py-2 bg-saffron-500 hover:bg-saffron-600 disabled:opacity-50 text-white rounded-xl font-bold cursor-pointer flex items-center justify-center gap-1.5 transition-colors shadow-sm shadow-saffron-500/10"
+                >
+                  {isSavingGallery && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  {isSavingGallery ? 'Saving Album...' : (editingGalleryItem ? 'Save Album' : 'Create Album')}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

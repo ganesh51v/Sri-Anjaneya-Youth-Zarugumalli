@@ -992,6 +992,24 @@ export const dbService = {
       localStorage.setItem('sa_gallery', JSON.stringify(gallery));
       return newGalleryItem;
     },
+    update: async (id, galleryData) => {
+      const { id: _drop, ...rest } = galleryData;
+      if (isFirebaseConfigured && db) {
+        return firestoreOp(async () => {
+          const docRef = doc(db, 'gallery', id);
+          await setDoc(docRef, rest, { merge: true });
+          return { id, ...rest };
+        }, null, 'gallery.update');
+      }
+      const gallery = safeParseLS('sa_gallery', []);
+      const idx = gallery.findIndex(g => g.id === id);
+      if (idx !== -1) {
+        gallery[idx] = { ...gallery[idx], ...rest };
+        localStorage.setItem('sa_gallery', JSON.stringify(gallery));
+        return gallery[idx];
+      }
+      return null;
+    },
     delete: async (id) => {
       if (isFirebaseConfigured && db) {
         return firestoreOp(() => deleteDoc(doc(db, 'gallery', id)).then(() => id), null, 'gallery.delete');
