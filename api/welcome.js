@@ -4,17 +4,20 @@ import nodemailer from 'nodemailer';
 const sendWelcomeEmail = async (user) => {
   const emailUser = process.env.EMAIL_USER;
   const emailPass = process.env.EMAIL_PASS;
+  const smtpHost = process.env.SMTP_HOST || 'in-v3.mailjet.com';
+  const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10);
+  const smtpSecure = process.env.SMTP_SECURE !== 'false';
 
   if (!emailUser || !emailPass) {
     console.warn('[welcome.js] EMAIL_USER or EMAIL_PASS environment variables are missing. Mocking welcome email.');
     return { success: true, mocked: true };
   }
 
-  // Set up SMTP transport (e.g. Gmail or custom SMTP server)
+  // Set up SMTP transport (defaults to Mailjet)
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // true for port 465
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpSecure,
     auth: {
       user: emailUser,
       pass: emailPass,
