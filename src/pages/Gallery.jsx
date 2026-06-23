@@ -24,15 +24,7 @@ const Gallery = () => {
   const [redirectUrl, setRedirectUrl] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Preset beautiful devotional/service Unsplash image choices
-  const imagePresets = [
-    { name: 'Diya Oil Lamp', url: 'https://images.unsplash.com/photo-1545128485-c400e7702796?w=800' },
-    { name: 'Seva Annadanam', url: 'https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?w=800' },
-    { name: 'Youth Volunteering', url: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800' },
-    { name: 'Indian Temple', url: 'https://images.unsplash.com/photo-1609137144814-72782e46c7de?w=800' },
-    { name: 'Festival Lights', url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800' },
-    { name: 'River Aarti', url: 'https://images.unsplash.com/photo-1566838217578-d90231362740?w=800' }
-  ];
+  // Preset images removed to support direct local file uploads only
 
   const fetchGallery = async () => {
     setLoading(true);
@@ -353,37 +345,6 @@ const Gallery = () => {
                   )}
                 </div>
 
-                <div className="relative flex py-2 items-center">
-                  <div className="flex-grow border-t border-cream-200"></div>
-                  <span className="flex-shrink mx-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest">{t('orUseUrl')}</span>
-                  <div className="flex-grow border-t border-cream-200"></div>
-                </div>
-
-                <input
-                  type="url"
-                  value={imageUrl.startsWith('data:') ? '' : imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/photo-..."
-                  className="w-full bg-cream-50 border border-cream-300 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500"
-                />
-                
-                {/* Image presets */}
-                <div className="mt-2.5">
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase mb-1">{t('imagePresetLabel')}</span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {imagePresets.map((preset, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setImageUrl(preset.url)}
-                        className="border border-cream-300 hover:border-saffron-500 rounded-lg overflow-hidden h-10 transition-colors cursor-pointer"
-                        title={preset.name}
-                      >
-                        <img src={preset.url} className="w-full h-full object-cover" alt="preset" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               <div>
