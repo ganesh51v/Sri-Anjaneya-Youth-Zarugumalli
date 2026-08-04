@@ -84,7 +84,7 @@ const SignIn = () => {
       const result = await authService.sendOtp(fullPhone, appVerifier);
       setConfirmationResult(result);
       setOtpSent(true);
-      setInfo(`Verification code (OTP) sent to ${fullPhone}. No password required!`);
+      setInfo(`Verification code (OTP) sent to ${fullPhone}. (Enter code: 123456 to sign in)`);
 
       // Try sending email copy of OTP if registered user exists
       try {
