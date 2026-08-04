@@ -778,6 +778,7 @@ export const authService = {
         window.confirmationResult = confirmationResult;
         return confirmationResult;
       } catch (err) {
+        console.error('[Firebase Phone Auth Error Detail]:', err);
         console.warn('[Firebase Phone Auth Error/Fallback]', err.code || err.message);
         // If Firebase Phone Auth throws 400 Bad Request, reCAPTCHA error, or missing SMS provider config,
         // fallback gracefully to test OTP verification code '123456'
