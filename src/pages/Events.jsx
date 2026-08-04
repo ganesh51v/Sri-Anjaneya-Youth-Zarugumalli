@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { dbService } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import EventCard from '../components/EventCard';
 import { Plus, X, Loader2, AlertCircle, Calendar } from 'lucide-react';
 import SEO from '../components/SEO';
+import { staggerFadeUp, fadeUp } from '../utils/animate';
 
 const Events = () => {
   const { user } = useAuth();
@@ -24,6 +25,9 @@ const Events = () => {
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('upcoming');
 
+  const headerRef = useRef(null);
+  const eventsGridRef = useRef(null);
+
   const fetchEvents = async () => {
     setLoading(true);
     setError('');
@@ -41,6 +45,16 @@ const Events = () => {
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    if (headerRef.current) fadeUp(headerRef.current, { delay: 0 });
+  }, []);
+
+  useEffect(() => {
+    if (!loading && eventsGridRef.current) {
+      staggerFadeUp(eventsGridRef.current.querySelectorAll(':scope > div'), { stagger: 80, startDelay: 100 });
+    }
+  }, [loading, events]);
 
   const openAddModal = () => {
     setEditingEvent(null);
@@ -110,11 +124,11 @@ const Events = () => {
     });
 
   return (
-    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 animate-fade-in">
+    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
       <SEO title="Events" description="Upcoming and past events organised by Sri Anjaneya Youth Zarugumalli — temple festivals, cultural programmes, seva activities and community gatherings." path="/events" />
       
       {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">
+      <div ref={headerRef} style={{ opacity: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">
         <div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Events & Meetings</h1>
           <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">
@@ -172,7 +186,7 @@ const Events = () => {
           <p className="mt-2 text-xs text-slate-400">Loading events...</p>
         </div>
       ) : displayedEvents.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div ref={eventsGridRef} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {displayedEvents.map(event => (
             <div key={event.id} className="h-full">
               <EventCard 

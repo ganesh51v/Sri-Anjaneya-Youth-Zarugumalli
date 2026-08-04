@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { authService } from '../firebase/config';
 import { Mail, Lock, LogIn, Download, AlertCircle, Info, Globe, Phone, User } from 'lucide-react';
 import SEO from '../components/SEO';
+import { fadeUp, shake } from '../utils/animate';
 
 const SignIn = () => {
   const { user, loginUser } = useAuth();
@@ -22,6 +23,20 @@ const SignIn = () => {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState(null);
+
+  // Animation refs
+  const cardRef = useRef(null);
+  const errorRef = useRef(null);
+
+  // Animate card on mount
+  useEffect(() => {
+    if (cardRef.current) fadeUp(cardRef.current, { delay: 50, distance: 40 });
+  }, []);
+
+  // Shake on error
+  useEffect(() => {
+    if (error && errorRef.current) shake(errorRef.current);
+  }, [error]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -215,7 +230,7 @@ const SignIn = () => {
       <div className="h-1.5 bg-gradient-to-r from-saffron-500 via-gold-500 to-devored-600 w-full" />
       
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-cream-200 overflow-hidden relative glass-panel">
+        <div ref={cardRef} style={{ opacity: 0 }} className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-cream-200 overflow-hidden relative glass-panel">
           {/* Logo/Banner Header */}
           <div className="bg-gradient-to-br from-saffron-500 via-saffron-600 to-devored-700 text-white px-6 py-8 text-center relative overflow-hidden">
             {/* Background Halo */}

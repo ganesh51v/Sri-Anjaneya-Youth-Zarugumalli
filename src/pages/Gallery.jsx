@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { dbService } from '../firebase/config';
 import { useLanguage } from '../context/LanguageContext';
 import { 
@@ -13,6 +13,7 @@ import {
   Grid
 } from 'lucide-react';
 import SEO from '../components/SEO';
+import { staggerScaleFade, fadeUp, modalOpen } from '../utils/animate';
 
 const Gallery = () => {
   const { language, t } = useLanguage();
@@ -24,6 +25,9 @@ const Gallery = () => {
   // UI State
   const [selectedAlbum, setSelectedAlbum] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(-1);
+
+  const albumsGridRef = useRef(null);
+  const modalPanelRef = useRef(null);
 
   // Fetch albums on mount
   const fetchAlbums = async () => {
@@ -43,6 +47,18 @@ const Gallery = () => {
   useEffect(() => {
     fetchAlbums();
   }, []);
+
+  useEffect(() => {
+    if (!loading && albums.length > 0 && albumsGridRef.current) {
+      staggerScaleFade(albumsGridRef.current.querySelectorAll(':scope > div'), { stagger: 70, startDelay: 100 });
+    }
+  }, [loading, albums]);
+
+  useEffect(() => {
+    if (selectedAlbum && modalPanelRef.current) {
+      modalOpen(modalPanelRef.current);
+    }
+  }, [selectedAlbum]);
 
   // Helper to map old data shapes to new album shape
   const normalizeAlbum = (item) => {
@@ -65,7 +81,7 @@ const Gallery = () => {
   };
 
   return (
-    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
+    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       <SEO 
         title="Gallery" 
         description="Photo gallery of Sri Anjaneya Youth Zarugumalli events — temple festivals, seva activities, and community celebrations." 
@@ -97,7 +113,7 @@ const Gallery = () => {
           <p className="mt-2 text-xs text-slate-400">{t('loadingGallery')}</p>
         </div>
       ) : albums.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8">
+        <div ref={albumsGridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8">
           {albums.map((item) => {
             const album = normalizeAlbum(item);
             return (
@@ -156,7 +172,7 @@ const Gallery = () => {
       {/* ALBUM DETAILS GRID MODAL */}
       {selectedAlbum && (
         <div className="fixed inset-0 z-40 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 md:p-8 overflow-y-auto animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-slide-up shadow-2xl">
+          <div ref={modalPanelRef} style={{ opacity: 0 }} className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-saffron-500 to-saffron-600 text-white px-6 py-5 flex justify-between items-start gap-4">
               <div>

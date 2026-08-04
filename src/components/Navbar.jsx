@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { dbService } from '../firebase/config';
 import { Menu, X, Home, Users, Calendar, Image, Bell, User, Settings, LogOut, ChevronDown, ShieldAlert, Globe, Sun, Moon, Heart, Banknote } from 'lucide-react';
+import { navbarEntrance, navLinksEntrance } from '../utils/animate';
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -21,6 +22,8 @@ const Navbar = () => {
 
   const dropdownRef = useRef(null);
   const notificationRef = useRef(null);
+  const navbarRef = useRef(null);
+  const navLinksRef = useRef(null);
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'te' : 'en');
@@ -38,6 +41,14 @@ const Navbar = () => {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Navbar entrance animation on mount
+  useEffect(() => {
+    if (navbarRef.current) navbarEntrance(navbarRef.current, { delay: 50 });
+    if (navLinksRef.current) {
+      navLinksEntrance(navLinksRef.current.querySelectorAll('a, button'), { stagger: 50, startDelay: 250 });
+    }
   }, []);
 
   // Fetch notifications for the notification center
@@ -109,7 +120,7 @@ const Navbar = () => {
   if (!user) return null; // Don't show navbar if not logged in
 
   return (
-    <div className="w-full flex justify-center sticky top-3 z-50 px-4">
+    <div ref={navbarRef} style={{ opacity: 0 }} className="w-full flex justify-center sticky top-3 z-50 px-4">
       {/* Floating glassmorphic navbar container */}
       <nav className="navbar-capsule w-full max-w-7xl rounded-2xl transition-all duration-305 relative">
         

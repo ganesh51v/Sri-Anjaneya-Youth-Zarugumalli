@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { dbService } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Plus, X, Loader2, AlertCircle, Bell, Trash2 } from 'lucide-react';
 import SEO from '../components/SEO';
+import { staggerSlideLeft, fadeUp } from '../utils/animate';
 
 const Announcements = () => {
   const { user } = useAuth();
@@ -18,6 +19,9 @@ const Announcements = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
+
+  const listRef = useRef(null);
+  const headerRef = useRef(null);
 
   const fetchAnnouncements = async () => {
     setLoading(true);
@@ -36,6 +40,16 @@ const Announcements = () => {
   useEffect(() => {
     fetchAnnouncements();
   }, []);
+
+  useEffect(() => {
+    if (headerRef.current) fadeUp(headerRef.current, { delay: 0 });
+  }, []);
+
+  useEffect(() => {
+    if (!loading && listRef.current) {
+      staggerSlideLeft(listRef.current.querySelectorAll(':scope > div'), { stagger: 80, startDelay: 100 });
+    }
+  }, [loading, announcements]);
 
   const openAddModal = () => {
     setTitle('');
@@ -73,11 +87,11 @@ const Announcements = () => {
   };
 
   return (
-    <div className="flex-1 max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 animate-fade-in">
+    <div className="flex-1 max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
       <SEO title="Announcements" description="Latest announcements from Sri Anjaneya Youth Zarugumalli — important updates, upcoming events, seva opportunities and community notices." path="/announcements" />
       
       {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">
+      <div ref={headerRef} style={{ opacity: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">
         <div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">{t('announcements')}</h1>
           <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">
@@ -111,7 +125,7 @@ const Announcements = () => {
           <p className="mt-2 text-xs text-slate-400">{t('loadingAnnouncements')}</p>
         </div>
       ) : announcements.length > 0 ? (
-        <div className="relative border-l border-cream-300 pl-6 space-y-8 ml-2">
+        <div ref={listRef} className="relative border-l border-cream-300 pl-6 space-y-8 ml-2">
           {announcements.map((ann, index) => (
             <div key={ann.id} className="relative group">
               {/* Timeline dot */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { dbService } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { fadeUp, staggerScaleFade, tabFade } from '../utils/animate';
 
 const AdminDashboard = () => {
   const { user: currentUser } = useAuth();
@@ -40,6 +41,18 @@ const AdminDashboard = () => {
   const [error, setError] = useState('');
   
   const [activeTab, setActiveTab] = useState('users'); // 'users' | 'donations' | 'gallery'
+
+  // Animation refs
+  const headerRef = useRef(null);
+  const statCardsRef = useRef(null);
+  const tabContentRef = useRef(null);
+
+  useEffect(() => {
+    if (!loading) {
+      if (headerRef.current) fadeUp(headerRef.current, { delay: 0 });
+      if (statCardsRef.current) staggerScaleFade(statCardsRef.current.querySelectorAll(':scope > div'), { stagger: 80, startDelay: 150 });
+    }
+  }, [loading]);
   
   // Gallery Management States
   const [gallery, setGallery] = useState([]);
@@ -466,11 +479,11 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
+    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       <SEO title="Admin Dashboard" description="Sri Anjaneya Youth Zarugumalli admin control panel — manage members, events, announcements, gallery and donations." path="/admin" />
       
       {/* Page Header */}
-      <div className="border-b border-cream-200 pb-5">
+      <div ref={headerRef} style={{ opacity: 0 }} className="border-b border-cream-200 pb-5">
         <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
           <Settings className="w-6 h-6 text-saffron-600 animate-spin" style={{ animationDuration: '6s' }} />
           Administrative Control Panel

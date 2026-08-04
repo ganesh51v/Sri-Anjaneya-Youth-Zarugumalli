@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -23,6 +23,7 @@ import {
   Check
 } from 'lucide-react';
 import SEO from '../components/SEO';
+import { fadeUp, staggerScaleFade, heartbeat } from '../utils/animate';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -66,6 +67,19 @@ const Donate = () => {
 
   // Selected Bank for Netbanking
   const [selectedBank, setSelectedBank] = useState('');
+
+  // Animation refs
+  const cardRef = useRef(null);
+  const heartRef = useRef(null);
+  const amountBtnsRef = useRef(null);
+
+  useEffect(() => {
+    if (cardRef.current) fadeUp(cardRef.current, { delay: 100, distance: 30 });
+    if (heartRef.current) heartbeat(heartRef.current, { delay: 600 });
+    if (amountBtnsRef.current) {
+      staggerScaleFade(amountBtnsRef.current.querySelectorAll(':scope > button'), { stagger: 60, startDelay: 400 });
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -208,7 +222,7 @@ const Donate = () => {
   };
 
   return (
-    <div className="flex-1 max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 animate-fade-in">
+    <div className="flex-1 max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
       <SEO title="Donate" description="Support Sri Anjaneya Youth Zarugumalli with your generous donation. Contribute to temple seva, annadanam, cultural preservation and community welfare activities." path="/donate" />
       
       {/* Page Header */}
@@ -227,13 +241,13 @@ const Donate = () => {
       </div>
 
       {/* Main Container */}
-      <div className="donation-card rounded-3xl overflow-hidden">
+      <div ref={cardRef} style={{ opacity: 0 }} className="donation-card rounded-3xl overflow-hidden">
         
         {/* Banner header */}
         <div className="donation-banner text-white p-6 sm:p-8 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_0%,transparent_70%)] animate-pulse-slow" />
           <div className="relative z-10 flex justify-center mb-2">
-            <Heart className="w-10 h-10 text-gold-300 fill-current drop-shadow animate-float" />
+            <Heart ref={heartRef} className="w-10 h-10 text-gold-300 fill-current drop-shadow animate-float" />
           </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight">{t('supportSeva')}</h1>
           <p className="text-xs text-saffron-100 max-w-xl mx-auto mt-2 leading-relaxed">

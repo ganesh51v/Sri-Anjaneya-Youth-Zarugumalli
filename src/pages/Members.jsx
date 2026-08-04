@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { dbService } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import MemberCard from '../components/MemberCard';
 import { Plus, Search, X, Loader2, AlertCircle, Camera } from 'lucide-react';
 import SEO from '../components/SEO';
+import { staggerScaleFade, fadeUp } from '../utils/animate';
 
 const Members = () => {
   const { user } = useAuth();
@@ -25,6 +26,9 @@ const Members = () => {
   const [phone, setPhone] = useState('');
   const [area, setArea] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
+
+  const membersGridRef = useRef(null);
+  const headerRef = useRef(null);
 
   // Preset avatar options for convenience
   const avatarPresets = [
@@ -53,6 +57,16 @@ const Members = () => {
   useEffect(() => {
     fetchMembers();
   }, []);
+
+  useEffect(() => {
+    if (headerRef.current) fadeUp(headerRef.current, { delay: 0, distance: 20 });
+  }, []);
+
+  useEffect(() => {
+    if (!loading && membersGridRef.current) {
+      staggerScaleFade(membersGridRef.current.querySelectorAll(':scope > div'), { stagger: 60, startDelay: 100 });
+    }
+  }, [loading, filteredMembers]);
 
   // Handle live search
   useEffect(() => {
@@ -140,10 +154,10 @@ const Members = () => {
   };
 
   return (
-    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 animate-fade-in">
+    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
       <SEO title="Members" description="Meet the active members of Sri Anjaneya Youth Association Zarugumalli — a dedicated group of youth committed to seva, culture and community welfare." path="/members" />
       {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">
+      <div ref={headerRef} style={{ opacity: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">
         <div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">{t('associationMembers')}</h1>
           <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">
@@ -197,7 +211,7 @@ const Members = () => {
           <p className="mt-2 text-xs text-slate-400">{t('loadingMembers')}</p>
         </div>
       ) : filteredMembers.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div ref={membersGridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {filteredMembers.map(member => (
             <MemberCard 
               key={member.id} 

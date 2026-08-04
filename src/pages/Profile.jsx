@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { dbService, authService } from '../firebase/config';
 import { User, Phone, MapPin, Mail, ShieldAlert, Check, Edit, LogOut, Loader2, AlertCircle, Lock, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { fadeUp, rotateFadeIn, slideDown } from '../utils/animate';
 
 const Profile = () => {
   const { user, loginUser, signOut } = useAuth();
@@ -19,6 +20,14 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  // Animation refs
+  const cardRef = useRef(null);
+  const avatarRef = useRef(null);
+  useEffect(() => {
+    if (cardRef.current) fadeUp(cardRef.current, { delay: 50, distance: 30 });
+    if (avatarRef.current) rotateFadeIn(avatarRef.current, { delay: 200 });
+  }, []);
 
   // Sync state with user when it changes
   useEffect(() => {
@@ -153,16 +162,16 @@ const Profile = () => {
   };
 
   return (
-    <div className="flex-1 max-w-xl mx-auto px-4 py-12 animate-fade-in w-full">
+    <div className="flex-1 max-w-xl mx-auto px-4 py-12 w-full">
       <SEO title="My Profile" description="Manage your Sri Anjaneya Youth Zarugumalli member profile — update your information, view your membership details and activity history." path="/profile" />
-      <div className="bg-white rounded-3xl border border-cream-200 shadow-sm overflow-hidden relative glass-panel">
+      <div ref={cardRef} style={{ opacity: 0 }} className="bg-white rounded-3xl border border-cream-200 shadow-sm overflow-hidden relative glass-panel">
         
         {/* Header Ribbon */}
         <div className="h-2 bg-gradient-to-r from-saffron-500 via-gold-500 to-devored-600 w-full" />
 
         {/* Profile Card Header */}
         <div className="p-8 text-center border-b border-cream-100 bg-cream-50/20 relative">
-          <div className="w-24 h-24 rounded-full bg-saffron-100 border-4 border-white shadow-md mx-auto flex items-center justify-center text-saffron-600 text-3xl font-black overflow-hidden relative group">
+          <div ref={avatarRef} style={{ opacity: 0 }} className="w-24 h-24 rounded-full bg-saffron-100 border-4 border-white shadow-md mx-auto flex items-center justify-center text-saffron-600 text-3xl font-black overflow-hidden relative group">
             {photoUrl ? (
               <img src={photoUrl} alt={name || 'User'} className="w-full h-full object-cover" />
             ) : (

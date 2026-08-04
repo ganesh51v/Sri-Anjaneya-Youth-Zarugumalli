@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { authService } from '../firebase/config';
 import { User, Mail, Phone, MapPin, Lock, UserPlus, AlertCircle, Globe } from 'lucide-react';
 import SEO from '../components/SEO';
+import { fadeUp, shake } from '../utils/animate';
 
 const SignUp = () => {
   const { user, loginUser } = useAuth();
@@ -18,6 +19,15 @@ const SignUp = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Animation
+  const cardRef = useRef(null);
+  useEffect(() => {
+    if (cardRef.current) fadeUp(cardRef.current, { delay: 50, distance: 40 });
+  }, []);
+  useEffect(() => {
+    if (error && cardRef.current) shake(cardRef.current);
+  }, [error]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -104,7 +114,7 @@ const SignUp = () => {
       <div className="h-1.5 bg-gradient-to-r from-saffron-500 via-gold-500 to-devored-600 w-full" />
       
       <div className="flex-grow flex items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-lg bg-white rounded-3xl shadow-xl border border-cream-200 overflow-hidden relative glass-panel">
+        <div ref={cardRef} style={{ opacity: 0 }} className="w-full max-w-lg bg-white rounded-3xl shadow-xl border border-cream-200 overflow-hidden relative glass-panel">
           {/* Header */}
           <div className="bg-gradient-to-br from-saffron-500 via-saffron-600 to-devored-700 text-white px-6 py-6 text-center relative overflow-hidden">
             {/* Background Halo */}

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { dbService, authService } from '../firebase/config';
 import { Users, Calendar, Bell, Heart, MapPin, Mail, Phone, Info, ChevronRight, MessageSquare, Award } from 'lucide-react';
 import SEO from '../components/SEO';
+import { heroEntrance, staggerScaleFade, staggerFadeUp, staggerSlideLeft, fadeUp, countUp } from '../utils/animate';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -14,6 +15,18 @@ const Dashboard = () => {
   const [recentAnnouncements, setRecentAnnouncements] = useState([]);
   const [galleryPreview, setGalleryPreview] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Animation refs
+  const heroRef = useRef(null);
+  const statCardsRef = useRef(null);
+  const membersCountRef = useRef(null);
+  const eventsCountRef = useRef(null);
+  const announcementsCountRef = useRef(null);
+  const eventsGridRef = useRef(null);
+  const announcementsListRef = useRef(null);
+  const galleryGridRef = useRef(null);
+  const sidebarRef = useRef(null);
+  const sevaRef = useRef(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -54,6 +67,31 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  // Fire animations after data loads
+  useEffect(() => {
+    if (loading) return;
+    // Hero entrance
+    if (heroRef.current) heroEntrance(heroRef.current, { delay: 0 });
+    // Stat cards staggered
+    if (statCardsRef.current) {
+      staggerScaleFade(statCardsRef.current.querySelectorAll(':scope > div'), { stagger: 100, startDelay: 200 });
+    }
+    // Count-up numbers
+    if (membersCountRef.current) countUp(membersCountRef.current, stats.members, { delay: 350 });
+    if (eventsCountRef.current) countUp(eventsCountRef.current, stats.events, { delay: 450 });
+    if (announcementsCountRef.current) countUp(announcementsCountRef.current, stats.announcements, { delay: 550 });
+    // Events grid
+    if (eventsGridRef.current) staggerFadeUp(eventsGridRef.current.querySelectorAll(':scope > div'), { stagger: 80, startDelay: 400 });
+    // Announcements list
+    if (announcementsListRef.current) staggerSlideLeft(announcementsListRef.current.querySelectorAll(':scope > div'), { stagger: 80, startDelay: 500 });
+    // Gallery
+    if (galleryGridRef.current) staggerScaleFade(galleryGridRef.current.querySelectorAll(':scope > div'), { stagger: 60, startDelay: 600 });
+    // Sidebar
+    if (sidebarRef.current) fadeUp(sidebarRef.current, { delay: 300, distance: 20 });
+    // Seva section
+    if (sevaRef.current) fadeUp(sevaRef.current, { delay: 700 });
+  }, [loading, stats]);
+
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center py-20">
@@ -67,7 +105,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
+    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       <SEO title="Dashboard" description="Your Sri Anjaneya Youth Zarugumalli member dashboard — view upcoming events, recent announcements, gallery highlights and community news." path="/" />
       
       {/* Email Verification Banner */}
@@ -98,7 +136,7 @@ const Dashboard = () => {
       )}
 
       {/* Devotional Hero Greeting */}
-      <div className="welcome-banner rounded-3xl p-6 sm:p-8 relative overflow-hidden backdrop-blur-md">
+      <div ref={heroRef} style={{ opacity: 0 }} className="welcome-banner rounded-3xl p-6 sm:p-8 relative overflow-hidden backdrop-blur-md">
         {/* Decorative background radial pattern */}
         <div className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-saffron-500/5 blur-3xl pointer-events-none" />
         
@@ -116,13 +154,13 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Counter Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div ref={statCardsRef} className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className="bg-white border border-cream-200 p-5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-saffron transition-all duration-300 shadow-sm">
           <div className="bg-saffron-100 p-3 rounded-xl text-saffron-600">
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <span className="block text-2xl font-black text-slate-800">{stats.members}</span>
+            <span ref={membersCountRef} className="block text-2xl font-black text-slate-800">{stats.members}</span>
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('youthMembers')}</span>
           </div>
         </div>
@@ -132,7 +170,7 @@ const Dashboard = () => {
             <Calendar className="w-6 h-6" />
           </div>
           <div>
-            <span className="block text-2xl font-black text-slate-800">{stats.events}</span>
+            <span ref={eventsCountRef} className="block text-2xl font-black text-slate-800">{stats.events}</span>
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('upcomingEvents')}</span>
           </div>
         </div>
@@ -142,7 +180,7 @@ const Dashboard = () => {
             <Bell className="w-6 h-6" />
           </div>
           <div>
-            <span className="block text-2xl font-black text-slate-800">{stats.announcements}</span>
+            <span ref={announcementsCountRef} className="block text-2xl font-black text-slate-800">{stats.announcements}</span>
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('announcements')}</span>
           </div>
         </div>
@@ -166,7 +204,7 @@ const Dashboard = () => {
             </div>
             
             {upcomingEvents.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div ref={eventsGridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {upcomingEvents.map(event => (
                   <div key={event.id} className="bg-white border border-cream-200 rounded-2xl p-5 hover-lift hover-glow-saffron transition-all duration-300 flex flex-col shadow-sm">
                     <span className="text-[10px] bg-saffron-50 text-saffron-700 border border-saffron-100 px-2 py-0.5 rounded-full font-bold uppercase w-max mb-3">
@@ -201,7 +239,7 @@ const Dashboard = () => {
             </div>
 
             {recentAnnouncements.length > 0 ? (
-              <div className="space-y-3">
+              <div ref={announcementsListRef} className="space-y-3">
                 {recentAnnouncements.map(ann => (
                   <div key={ann.id} className="bg-white border border-cream-200 rounded-2xl p-4 hover-lift hover-glow-gold transition-all duration-300 flex gap-3 shadow-sm">
                     <div className="bg-saffron-50 text-saffron-600 rounded-xl p-2.5 h-10 w-10 flex items-center justify-center shrink-0">
@@ -225,7 +263,7 @@ const Dashboard = () => {
           </div>
 
           {/* Donation Stats Section */}
-          <div className="seva-section rounded-3xl p-6 sm:p-8 space-y-5 relative shadow-inner">
+          <div ref={sevaRef} style={{ opacity: 0 }} className="seva-section rounded-3xl p-6 sm:p-8 space-y-5 relative shadow-inner">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-3">
                 <div className="bg-saffron-500 text-white p-2.5 rounded-xl">
@@ -285,7 +323,7 @@ const Dashboard = () => {
             </div>
 
             {galleryPreview.length > 0 ? (
-              <div className="grid grid-cols-3 gap-3">
+              <div ref={galleryGridRef} className="grid grid-cols-3 gap-3">
                 {galleryPreview.map(item => (
                   <div key={item.id} className="relative rounded-xl overflow-hidden aspect-video group shadow-sm hover-lift transition-all duration-300">
                     <img 
@@ -309,7 +347,7 @@ const Dashboard = () => {
         </div>
 
         {/* Right Sidebar Column (About, Contact Details) */}
-        <div className="space-y-8">
+        <div ref={sidebarRef} style={{ opacity: 0 }} className="space-y-8">
           
           {/* About Section */}
           <div className="bg-white border border-cream-200 rounded-3xl p-6 space-y-4 shadow-sm">
