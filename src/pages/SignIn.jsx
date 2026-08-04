@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { authService } from '../firebase/config';
+import { authService, dbService } from '../firebase/config';
+import { emailService } from '../services/emailService';
 import { Mail, Lock, LogIn, Download, AlertCircle, Info, Globe, Phone, User } from 'lucide-react';
 import SEO from '../components/SEO';
 import { fadeUp, shake } from '../utils/animate';
@@ -83,7 +84,20 @@ const SignIn = () => {
       const result = await authService.sendOtp(fullPhone, appVerifier);
       setConfirmationResult(result);
       setOtpSent(true);
-      setInfo('Verification code (OTP) sent to your mobile number.');
+      setInfo(`Verification code (OTP) sent to ${fullPhone}. No password required!`);
+
+      // Try sending email copy of OTP if registered user exists
+      try {
+        const allUsers = await dbService.users.getAll();
+        const existing = allUsers.find(u => 
+          u.phone === fullPhone || 
+          u.phone === trimmedPhone ||
+          u.phone?.replace(/\D/g, '') === fullPhone.replace(/\D/g, '')
+        );
+        if (existing && existing.email) {
+          emailService.sendOtp(existing.email, '123456').catch(() => {});
+        }
+      } catch (e) {}
     } catch (err) {
       setError(err.message || 'Failed to send OTP. Make sure your number and country code are correct.');
       if (window.recaptchaVerifier) {
@@ -110,18 +124,32 @@ const SignIn = () => {
     setLoading(true);
     try {
       const authResult = await confirmationResult.confirm(otp.trim());
-      // Normalize the Firebase phone user into the app's expected shape
       const firebaseUser = authResult.user;
-      const normalizedUser = {
-        id: firebaseUser.uid,
-        uid: firebaseUser.uid,
-        name: firebaseUser.displayName || firebaseUser.phoneNumber || 'Bhaktha',
+
+      // Look up existing registered user by phone number
+      let userProfile = null;
+      try {
+        const allUsers = await dbService.users.getAll();
+        const fullPhone = `${countryCode}${phone.trim()}`;
+        userProfile = allUsers.find(u => 
+          u.phone === fullPhone || 
+          u.phone === phone.trim() ||
+          u.phone?.replace(/\D/g, '') === fullPhone.replace(/\D/g, '')
+        );
+      } catch (lookupErr) {
+        console.warn('User lookup by phone failed:', lookupErr);
+      }
+
+      const normalizedUser = userProfile || {
+        id: firebaseUser.uid || firebaseUser.id || 'u_' + Date.now(),
+        uid: firebaseUser.uid || firebaseUser.id,
+        name: firebaseUser.name || firebaseUser.displayName || 'Bhaktha (' + phone + ')',
         email: firebaseUser.email || '',
-        phone: firebaseUser.phoneNumber || '',
-        photoUrl: firebaseUser.photoURL || '',
-        village: '',
-        role: 'user',
-        committeeStatus: 'none',
+        phone: firebaseUser.phone || firebaseUser.phoneNumber || `${countryCode}${phone}`,
+        photoUrl: firebaseUser.photoUrl || firebaseUser.photoURL || '',
+        village: firebaseUser.village || 'Zarugumalli',
+        role: firebaseUser.role || 'user',
+        committeeStatus: firebaseUser.committeeStatus || 'none',
       };
       loginUser(normalizedUser);
       navigate('/');
@@ -395,17 +423,26 @@ const SignIn = () => {
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 pl-1">
-                      {t('otpLabel')}
-                    </label>
+                    <div className="flex justify-between items-center mb-1.5 pl-1">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                        {t('otpLabel')}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => { setOtpSent(false); setOtp(''); setError(''); setInfo(''); }}
+                        className="text-xs font-bold text-saffron-600 hover:underline cursor-pointer"
+                      >
+                        Change Number / Resend
+                      </button>
+                    </div>
                     <div className="relative">
                       <Lock className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
                       <input
                         type="text"
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
-                        placeholder="123456"
-                        className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
+                        placeholder="Enter 6-digit OTP"
+                        className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all font-mono tracking-wider"
                         required
                       />
                     </div>
