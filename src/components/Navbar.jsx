@@ -43,13 +43,11 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Navbar entrance animation on mount
+  // Navbar entrance animation — fires when user loads (component was null before)
   useEffect(() => {
+    if (!user) return;
     if (navbarRef.current) navbarEntrance(navbarRef.current, { delay: 50 });
-    if (navLinksRef.current) {
-      navLinksEntrance(navLinksRef.current.querySelectorAll('a, button'), { stagger: 50, startDelay: 250 });
-    }
-  }, []);
+  }, [user]);
 
   // Fetch notifications for the notification center
   useEffect(() => {
@@ -120,7 +118,7 @@ const Navbar = () => {
   if (!user) return null; // Don't show navbar if not logged in
 
   return (
-    <div ref={navbarRef} style={{ opacity: 0 }} className="w-full flex justify-center sticky top-3 z-50 px-4">
+    <div ref={navbarRef} style={{ opacity: 0, transform: 'translateY(-80px)' }} className="w-full flex justify-center sticky top-3 z-50 px-4">
       {/* Floating glassmorphic navbar container */}
       <nav className="navbar-capsule w-full max-w-7xl rounded-2xl transition-all duration-305 relative">
         

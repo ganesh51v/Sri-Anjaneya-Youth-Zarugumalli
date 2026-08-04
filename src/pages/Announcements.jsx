@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { Plus, X, Loader2, AlertCircle, Bell, Trash2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { staggerSlideLeft, fadeUp } from '../utils/animate';
+import { emailService } from '../services/emailService';
 
 const Announcements = () => {
   const { user } = useAuth();
@@ -81,6 +82,14 @@ const Announcements = () => {
       const added = await dbService.announcements.add({ title, message });
       setAnnouncements(prev => [added, ...prev]);
       setIsModalOpen(false);
+
+      // Dispatch announcement email to registered members
+      dbService.users.getAll().then(allUsers => {
+        const emails = allUsers.map(u => u.email).filter(Boolean);
+        if (emails.length > 0) {
+          emailService.sendAnnouncement(added, emails).catch(e => console.error('Announcement email error:', e));
+        }
+      }).catch(err => console.warn('Could not fetch user emails for announcement:', err));
     } catch (err) {
       setError('Failed to save announcement.');
     }

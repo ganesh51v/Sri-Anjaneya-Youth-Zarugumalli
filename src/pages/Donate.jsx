@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { paymentService } from '../services/payment';
+import { emailService } from '../services/emailService';
 import { 
   Heart, 
   User, 
@@ -188,6 +189,9 @@ const Donate = () => {
             );
             setPaymentResult(savedDonation);
             setStep('receipt');
+            if (savedDonation && savedDonation.email) {
+              emailService.sendDonationReceipt(savedDonation).catch(e => console.error('Receipt email error:', e));
+            }
           } catch (err) {
             console.error(err);
             alert('Verification Failed: ' + err.message);

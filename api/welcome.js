@@ -1,33 +1,22 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Helper to send a welcome email using SMTP
+// Helper to send a welcome email using Resend Node.js SDK
 const sendWelcomeEmail = async (user) => {
-  const emailUser = process.env.EMAIL_USER;
-  const emailPass = process.env.EMAIL_PASS;
-  const smtpHost = process.env.SMTP_HOST || 'in-v3.mailjet.com';
-  const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10);
-  const smtpSecure = process.env.SMTP_SECURE !== 'false';
+  const resendApiKey = process.env.RESEND_API_KEY;
 
-  if (!emailUser || !emailPass) {
-    console.warn('[welcome.js] EMAIL_USER or EMAIL_PASS environment variables are missing. Mocking welcome email.');
+  if (!resendApiKey) {
+    console.warn('[welcome.js] RESEND_API_KEY environment variable missing. Mocking welcome email.');
     return { success: true, mocked: true };
   }
 
-  // Set up SMTP transport (defaults to Mailjet)
-  const transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpSecure,
-    auth: {
-      user: emailUser,
-      pass: emailPass,
-    },
-  });
+  const resend = new Resend(resendApiKey);
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Sri Anjaneya Youth <onboarding@resend.dev>';
 
-  const mailOptions = {
-    from: `"Sri Anjaneya Youth Zarugumalli" <${emailUser}>`,
-    to: user.email,
+  const { data, error } = await resend.emails.send({
+    from: fromEmail,
+    to: [user.email],
     subject: '🙏 Welcome to Sri Anjaneya Youth Association, Zarugumalli!',
+    idempotencyKey: `welcome-user/${user.id || user.email}`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #faf7f0;">
         <!-- Header Ribbon -->
@@ -67,10 +56,14 @@ const sendWelcomeEmail = async (user) => {
         </p>
       </div>
     `
-  };
+  });
 
-  await transporter.sendMail(mailOptions);
-  return { success: true };
+  if (error) {
+    console.error('[welcome.js] Resend error:', error);
+    throw new Error(error.message || 'Resend error sending welcome email');
+  }
+
+  return { success: true, data };
 };
 
 // Helper to send a welcome message (SMS) using process.env.SMS_API_KEY / MESSAGE_API_KEY
@@ -79,7 +72,6 @@ const sendWelcomeMessage = async (user) => {
   const phone = user.phone;
 
   if (!phone || phone.trim() === '') {
-    // Mark as done (no retry) — no phone number registered, skip permanently
     console.warn('[welcome.js] User has no registered phone number. Marking SMS as done to prevent future retries.');
     return { success: true, skipped: true, reason: 'No phone number' };
   }
@@ -91,7 +83,6 @@ const sendWelcomeMessage = async (user) => {
 
   const message = `Namaste ${user.name}, welcome to Sri Anjaneya Youth Zarugumalli! Your registration is complete. Jai Hanuman!`;
 
-  // Example request to a generic SMS API gateway using built-in fetch
   const url = `https://api.sms-gateway.com/send?apiKey=${apiKey}&to=${encodeURIComponent(phone)}&message=${encodeURIComponent(message)}`;
   
   const res = await fetch(url, { method: 'POST' });
@@ -103,8 +94,6 @@ const sendWelcomeMessage = async (user) => {
 };
 
 export default async function handler(req, res) {
-  // Set CORS headers for cross-origin requests (e.g. from Firebase hosting or localhost)
-  // Allow specific origins; wildcard + credentials is invalid per CORS spec
   const allowedOrigins = [
     'https://sri-anjaneya-youth-zarugumalli.web.app',
     'https://sri-anjaneya-youth-zarugumalli.firebaseapp.com',
@@ -122,12 +111,10 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
-  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed. Use POST.' });
   }
@@ -142,7 +129,6 @@ export default async function handler(req, res) {
   let messageSent = false;
   let errors = {};
 
-  // 1. Send Email if not already sent
   if (user.welcomeEmailSent) {
     console.log('[welcome.js] Welcome email already marked as sent in payload. Skipping email send.');
     emailSent = true;
@@ -156,7 +142,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // 2. Send SMS if not already sent
   if (user.welcomeMessageSent) {
     console.log('[welcome.js] Welcome SMS already marked as sent in payload. Skipping SMS send.');
     messageSent = true;
@@ -170,7 +155,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // Return status response
   return res.status(200).json({
     success: true,
     emailSent,

@@ -5,6 +5,7 @@ import EventCard from '../components/EventCard';
 import { Plus, X, Loader2, AlertCircle, Calendar } from 'lucide-react';
 import SEO from '../components/SEO';
 import { staggerFadeUp, fadeUp } from '../utils/animate';
+import { emailService } from '../services/emailService';
 
 const Events = () => {
   const { user } = useAuth();
@@ -107,6 +108,14 @@ const Events = () => {
       } else {
         const added = await dbService.events.add(eventData);
         setEvents(prev => [...prev, added]);
+
+        // Notify members about new event
+        dbService.users.getAll().then(allUsers => {
+          const emails = allUsers.map(u => u.email).filter(Boolean);
+          if (emails.length > 0) {
+            emailService.sendEvent(added, emails).catch(e => console.error('Event email error:', e));
+          }
+        }).catch(err => console.warn('Could not fetch user emails for event notification:', err));
       }
       setIsModalOpen(false);
     } catch (err) {
