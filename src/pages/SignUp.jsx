@@ -159,7 +159,7 @@ const SignUp = () => {
     try {
       const result = await authService.sendRegistrationOtp(destination, otpChannel);
       setStep(2);
-      setCountdown(300); // 5 min
+      setCountdown(90); // 1.5 min resend cooldown
 
       const channelLabel = otpChannel === 'phone'
         ? `📱 ${destination}`
@@ -211,7 +211,7 @@ const SignUp = () => {
     setLoading(true);
     try {
       const result = await authService.sendRegistrationOtp(destination, otpChannel);
-      setCountdown(300);
+      setCountdown(90);
       setOtpValue('');
       setInfo('A new OTP has been sent.');
       if (result.code) setOtpFallbackCode(result.code);
