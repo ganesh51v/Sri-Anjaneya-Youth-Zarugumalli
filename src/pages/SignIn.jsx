@@ -77,27 +77,58 @@ const SignIn = () => {
       return;
     }
 
+    const fullPhone = `${countryCode}${trimmedPhone}`;
+
     setLoading(true);
     try {
-      const fullPhone = `${countryCode}${trimmedPhone}`;
+      // 1. Check if this phone number has ALREADY completed first-time OTP verification
+      const verifiedPhones = JSON.parse(localStorage.getItem('sa_verified_phones') || '[]');
+      const allUsers = await dbService.users.getAll().catch(() => []);
+      
+      const existingUser = allUsers.find(u => 
+        u.phone === fullPhone || 
+        u.phone === trimmedPhone ||
+        (u.phone && u.phone.replace(/\D/g, '') === fullPhone.replace(/\D/g, ''))
+      );
+
+      const isVerifiedOnDevice = verifiedPhones.includes(fullPhone) || verifiedPhones.includes(trimmedPhone);
+      const isVerifiedInDB = existingUser && (existingUser.phoneVerified || existingUser.firstLoginCompleted);
+
+      // RETURNING USER: First-time OTP was already completed -> Log in directly without repeated OTP!
+      if (isVerifiedOnDevice || isVerifiedInDB) {
+        console.log('[Phone Login] Returning user detected (first-time OTP already verified). Logging in directly!');
+        const normalizedUser = existingUser || {
+          id: 'u_phone_' + fullPhone.replace(/\D/g, ''),
+          uid: 'u_phone_' + fullPhone.replace(/\D/g, ''),
+          name: 'Bhaktha (' + trimmedPhone + ')',
+          phone: fullPhone,
+          role: 'user',
+          phoneVerified: true,
+          firstLoginCompleted: true
+        };
+        
+        if (!verifiedPhones.includes(fullPhone)) {
+          verifiedPhones.push(fullPhone);
+          localStorage.setItem('sa_verified_phones', JSON.stringify(verifiedPhones));
+        }
+
+        loginUser(normalizedUser);
+        navigate('/');
+        return;
+      }
+
+      // FIRST TIME LOGIN: Send OTP verification code
+      console.log('[Phone Login] First time login for mobile number. Sending OTP code...');
       const appVerifier = authService.setupRecaptcha('phone-signin-btn');
       const result = await authService.sendOtp(fullPhone, appVerifier);
       setConfirmationResult(result);
       setOtpSent(true);
-      setInfo(`Verification code (OTP) sent to ${fullPhone}. (Enter code: 123456 to sign in)`);
+      setInfo(`First-time login: Verification code (OTP) sent to ${fullPhone}. (Enter code: 123456 to verify & sign in)`);
 
       // Try sending email copy of OTP if registered user exists
-      try {
-        const allUsers = await dbService.users.getAll();
-        const existing = allUsers.find(u => 
-          u.phone === fullPhone || 
-          u.phone === trimmedPhone ||
-          u.phone?.replace(/\D/g, '') === fullPhone.replace(/\D/g, '')
-        );
-        if (existing && existing.email) {
-          emailService.sendOtp(existing.email, '123456').catch(() => {});
-        }
-      } catch (e) {}
+      if (existingUser && existingUser.email) {
+        emailService.sendOtp(existingUser.email, '123456').catch(() => {});
+      }
     } catch (err) {
       setError(err.message || 'Failed to send OTP. Make sure your number and country code are correct.');
       if (window.recaptchaVerifier) {
@@ -125,16 +156,23 @@ const SignIn = () => {
     try {
       const authResult = await confirmationResult.confirm(otp.trim());
       const firebaseUser = authResult.user;
+      const fullPhone = `${countryCode}${phone.trim()}`;
+
+      // Save phone as verified for future direct logins!
+      const verifiedPhones = JSON.parse(localStorage.getItem('sa_verified_phones') || '[]');
+      if (!verifiedPhones.includes(fullPhone)) {
+        verifiedPhones.push(fullPhone);
+        localStorage.setItem('sa_verified_phones', JSON.stringify(verifiedPhones));
+      }
 
       // Look up existing registered user by phone number
       let userProfile = null;
       try {
         const allUsers = await dbService.users.getAll();
-        const fullPhone = `${countryCode}${phone.trim()}`;
         userProfile = allUsers.find(u => 
           u.phone === fullPhone || 
           u.phone === phone.trim() ||
-          u.phone?.replace(/\D/g, '') === fullPhone.replace(/\D/g, '')
+          (u.phone && u.phone.replace(/\D/g, '') === fullPhone.replace(/\D/g, ''))
         );
       } catch (lookupErr) {
         console.warn('User lookup by phone failed:', lookupErr);
@@ -145,12 +183,15 @@ const SignIn = () => {
         uid: firebaseUser.uid || firebaseUser.id,
         name: firebaseUser.name || firebaseUser.displayName || 'Bhaktha (' + phone + ')',
         email: firebaseUser.email || '',
-        phone: firebaseUser.phone || firebaseUser.phoneNumber || `${countryCode}${phone}`,
+        phone: firebaseUser.phone || firebaseUser.phoneNumber || fullPhone,
         photoUrl: firebaseUser.photoUrl || firebaseUser.photoURL || '',
         village: firebaseUser.village || 'Zarugumalli',
         role: firebaseUser.role || 'user',
         committeeStatus: firebaseUser.committeeStatus || 'none',
+        phoneVerified: true,
+        firstLoginCompleted: true
       };
+
       loginUser(normalizedUser);
       navigate('/');
     } catch (err) {
