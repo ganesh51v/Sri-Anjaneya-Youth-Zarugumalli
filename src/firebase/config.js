@@ -406,29 +406,26 @@ export const authService = {
   // Returns the user data object or null if not found
   // ---------------------------------------------------------------
   _findUserByPhone: async (normalizedPhone) => {
-    if (!isFirebaseConfigured || !db) {
-      // Mock mode: search localStorage
+    const raw = normalizedPhone.replace(/\D/g, '');
+    const getLocal = () => {
       const users = safeParseLS('sa_users');
-      const raw = normalizedPhone.replace(/\D/g, '');
       return users.find(u => u.phone && u.phone.replace(/\D/g, '') === raw) || null;
-    }
+    };
+
+    if (!isFirebaseConfigured || !db) return getLocal();
+
     try {
       const snap = await getDocs(query(collection(db, 'users'), where('phone', '==', normalizedPhone)));
       if (!snap.empty) return { uid: snap.docs[0].id, ...snap.docs[0].data() };
-      // Fallback: digit-strip match across all users
+      
       const allSnap = await getDocs(collection(db, 'users'));
-      const rawDigits = normalizedPhone.replace(/\D/g, '');
-      const match = allSnap.docs.find(d => {
-        const phone = d.data().phone || '';
-        return phone.replace(/\D/g, '') === rawDigits;
-      });
-      return match ? { uid: match.id, ...match.data() } : null;
+      const match = allSnap.docs.find(d => (d.data().phone || '').replace(/\D/g, '') === raw);
+      if (match) return { uid: match.id, ...match.data() };
+
+      return getLocal();
     } catch (err) {
-      if (err.code === 'permission-denied' || err.message?.includes('permissions')) {
-        return null;
-      }
-      console.warn('[_findUserByPhone] Firestore query error:', err.message);
-      return null;
+      console.warn('[_findUserByPhone] Firestore query notice:', err.message);
+      return getLocal();
     }
   },
 
@@ -438,20 +435,20 @@ export const authService = {
   _findUserByEmail: async (email) => {
     const trimmed = String(email || '').trim().toLowerCase();
     if (!trimmed) return null;
-    if (!isFirebaseConfigured || !db) {
+    const getLocal = () => {
       const users = safeParseLS('sa_users');
       return users.find(u => u.email && u.email.toLowerCase() === trimmed) || null;
-    }
+    };
+
+    if (!isFirebaseConfigured || !db) return getLocal();
+
     try {
       const snap = await getDocs(query(collection(db, 'users'), where('email', '==', trimmed)));
       if (!snap.empty) return { uid: snap.docs[0].id, ...snap.docs[0].data() };
-      return null;
+      return getLocal();
     } catch (err) {
-      if (err.code === 'permission-denied' || err.message?.includes('permissions')) {
-        return null;
-      }
-      console.warn('[_findUserByEmail] Firestore query error:', err.message);
-      return null;
+      console.warn('[_findUserByEmail] Firestore query notice:', err.message);
+      return getLocal();
     }
   },
 
