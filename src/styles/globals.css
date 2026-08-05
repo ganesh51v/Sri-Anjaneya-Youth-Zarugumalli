@@ -4,43 +4,44 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================
-   DESIGN TOKENS — LIGHT MODE (Default)
+   DESIGN TOKENS — REGAL DEVOTIONAL PALETTE (User Custom)
+   Background: #120707 | Maroon: #3B0D0D | Red: #8B1E1E
+   Gold: #D4AF37 | Bright Gold: #FFD966 | White: #FFF8E7
    ============================================================ */
 :root {
   /* Brand */
-  --saffron: #ff7700;
-  --saffron-light: #ff9233;
-  --saffron-dark: #d96100;
-  --gold: #d4af37;
-  --gold-light: #e5cd3a;
-  --gold-dark: #ad8b25;
-  --devored: #b71c1c;
-  --devored-light: #ef4444;
+  --saffron: #8B1E1E;            /* Royal Devotional Red */
+  --saffron-light: #b82828;
+  --saffron-dark: #3B0D0D;       /* Royal Maroon */
+  --gold: #D4AF37;               /* Royal Gold */
+  --gold-light: #FFD966;         /* Bright Gold */
+  --gold-dark: #a38222;
+  --devored: #8B1E1E;
+  --devored-light: #b82828;
 
-  /* Light Theme Surfaces */
-  --bg-page: #f7f4ef;          /* warm off-white */
-  --bg-card: #ffffff;
-  --bg-card-hover: #fdfcf9;
-  --bg-muted: #f7f2e4;
-  --bg-input: #ffffff;
+  /* Surfaces */
+  --bg-page: #120707;            /* Deep Maroon-Black */
+  --bg-card: #1c0b0b;            /* Rich Dark Maroon Card */
+  --bg-card-hover: #261010;
+  --bg-muted: #3B0D0D;           /* Royal Maroon Container */
+  --bg-input: #1f0c0c;
 
-  /* Light Theme Text */
-  --text-primary: #1a1a2e;     /* deep charcoal */
-  --text-secondary: #44475a;
-  --text-muted: #6b7280;
-  --text-subtle: #9ca3af;
+  /* Text */
+  --text-primary: #FFF8E7;       /* Warm Devotional White */
+  --text-secondary: #ebdcc4;     /* Soft Warm Cream */
+  --text-muted: #D4AF37;         /* Royal Gold */
+  --text-subtle: #a8947d;
 
-  /* Borders */
-  --border: rgba(212, 175, 55, 0.18);
-  --border-strong: rgba(212, 175, 55, 0.35);
-  --border-input: #e5e7eb;
+  /* Borders & Shadows */
+  --border: rgba(212, 175, 55, 0.28);
+  --border-strong: rgba(255, 217, 102, 0.45);
+  --border-input: rgba(212, 175, 55, 0.35);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.05);
-  --shadow-saffron: 0 8px 24px rgba(255,119,0,0.18);
-  --shadow-gold: 0 8px 24px rgba(212,175,55,0.18);
+  --shadow-sm: 0 2px 6px rgba(0,0,0,0.6);
+  --shadow-md: 0 6px 20px rgba(0,0,0,0.7), 0 0 15px rgba(212, 175, 55, 0.08);
+  --shadow-lg: 0 12px 36px rgba(0,0,0,0.85), 0 0 25px rgba(212, 175, 55, 0.15);
+  --shadow-saffron: 0 8px 24px rgba(139, 30, 30, 0.4);
+  --shadow-gold: 0 8px 24px rgba(212, 175, 55, 0.3);
 
   /* Radius */
   --radius-sm: 10px;
@@ -50,34 +51,31 @@
   --radius-full: 9999px;
 
   /* Transitions */
-  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-spring: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ============================================================
-   DESIGN TOKENS — DARK MODE
-   ============================================================ */
 .dark {
-  --bg-page: #080d18;          /* midnight navy */
-  --bg-card: #111827;          /* deep slate blue */
-  --bg-card-hover: #1a2235;
-  --bg-muted: #0f172a;
-  --bg-input: #1e293b;
+  --bg-page: #0a0404;            /* Deepest Obsidian Maroon */
+  --bg-card: #170909;            /* Deep Maroon Card */
+  --bg-card-hover: #210d0d;
+  --bg-muted: #3B0D0D;
+  --bg-input: #1a0a0a;
 
-  --text-primary: #f1f5f9;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
+  --text-primary: #FFF8E7;
+  --text-secondary: #ebdcc4;
+  --text-muted: #FFD966;
+  --text-subtle: #998369;
 
-  --border: rgba(212, 175, 55, 0.12);
-  --border-strong: rgba(212, 175, 55, 0.25);
-  --border-input: rgba(255,255,255,0.1);
+  --border: rgba(212, 175, 55, 0.3);
+  --border-strong: rgba(255, 217, 102, 0.5);
+  --border-input: rgba(212, 175, 55, 0.4);
 
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.5);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.6);
-  --shadow-saffron: 0 8px 32px rgba(255,119,0,0.25);
-  --shadow-gold: 0 8px 32px rgba(212,175,55,0.2);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.8);
+  --shadow-md: 0 6px 24px rgba(0,0,0,0.9), 0 0 20px rgba(212, 175, 55, 0.12);
+  --shadow-lg: 0 14px 44px rgba(0,0,0,0.95), 0 0 30px rgba(255, 217, 102, 0.2);
+  --shadow-saffron: 0 8px 28px rgba(139, 30, 30, 0.5);
+  --shadow-gold: 0 8px 28px rgba(255, 217, 102, 0.35);
 }
 
 @theme {
@@ -633,11 +631,8 @@ p {
    WELCOME BANNER (Dashboard Hero)
    ============================================================ */
 .welcome-banner {
-  background: linear-gradient(135deg,
-    rgba(255,119,0,0.06) 0%,
-    rgba(212,175,55,0.04) 50%,
-    rgba(247,242,228,0.8) 100%);
-  border: 1px solid rgba(212,175,55,0.2);
+  background: #ffffff;
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
@@ -647,22 +642,19 @@ p {
   position: absolute;
   top: -40%;
   right: -10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(255,119,0,0.08) 0%, transparent 70%);
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(255,119,0,0.06) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
 .welcome-banner h1 {
-  background: linear-gradient(135deg, #e65c00 0%, #b8860b 60%, #d96100 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text-primary);
 }
 .welcome-banner .badge {
-  background: rgba(255,119,0,0.1);
-  color: #d96100;
-  border: 1px solid rgba(255,119,0,0.22);
+  background: rgba(255,119,0,0.08);
+  color: #ea580c;
+  border: 1px solid rgba(255,119,0,0.2);
 }
 
 .dark .welcome-banner {
@@ -826,10 +818,8 @@ p {
    SEVA SECTION
    ============================================================ */
 .seva-section {
-  background: linear-gradient(135deg,
-    rgba(231,215,173,0.18) 0%,
-    rgba(250,247,240,0.6)  100%);
-  border: 1px solid rgba(231,215,173,0.45);
+  background: #ffffff;
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
 }
 .dark .seva-section {
