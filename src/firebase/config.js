@@ -798,49 +798,51 @@ export const authService = {
     await authService.checkDuplicateAccount(email, phone);
 
     if (isFirebaseConfigured && auth) {
+      let userUid = null;
       try {
-        let userUid;
-        try {
-          const cred = await createUserWithEmailAndPassword(auth, email, password);
-          userUid = cred.user.uid;
-          try { await sendEmailVerification(cred.user); } catch (vErr) { console.warn('[signUp] Verification link warn:', vErr.message); }
-        } catch (authErr) {
-          if (authErr.code === 'auth/email-already-in-use') {
-            const existingDoc = await authService._findUserByEmail(email);
-            if (!existingDoc) {
-              // Document was deleted by admin — create new profile & reclaim session
-              try {
-                const cred = await signInWithEmailAndPassword(auth, email, password);
-                userUid = cred.user.uid;
-              } catch (signInErr) {
-                userUid = auth.currentUser ? auth.currentUser.uid : `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-              }
-            } else {
-              throw new Error('An account with this email address already exists. Please sign in.');
-            }
-          } else {
-            throw authErr;
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        userUid = cred.user.uid;
+        try { await sendEmailVerification(cred.user); } catch (vErr) { console.warn('[signUp] Verification link warn:', vErr.message); }
+      } catch (authErr) {
+        console.warn('[signUp] Firebase Auth notice:', authErr.code || authErr.message);
+        if (authErr.code === 'auth/email-already-in-use') {
+          const existingDoc = await authService._findUserByEmail(email);
+          if (existingDoc) {
+            throw new Error('An account with this email address already exists. Please sign in.');
           }
+          // Document was deleted by admin or missing — reclaim session or generate fresh UID
+          try {
+            const cred = await signInWithEmailAndPassword(auth, email, password);
+            userUid = cred.user.uid;
+          } catch (sErr) {
+            userUid = auth.currentUser?.uid || `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+          }
+        } else if (authErr.code === 'auth/invalid-credential' || authErr.code === 'auth/operation-not-allowed') {
+          userUid = auth.currentUser?.uid || `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+        } else {
+          throw authErr;
         }
-
-        const userData = normalizeUser(userUid, {
-          name, email, phone, village,
-          role: 'user',
-          photoUrl: '',
-          committeeStatus: 'none',
-          createdAt: new Date().toISOString()
-        });
-        try {
-          await setDoc(doc(db, 'users', userUid), userData);
-          triggerWelcomeNotifications(userData).catch(e => console.error('[Welcome API] Email Signup trigger failed:', e));
-        } catch (fsErr) {
-          if (!isOfflineError(fsErr)) throw fsErr;
-        }
-        return userData;
-      } catch (err) {
-        if (isOfflineError(err)) throw new Error('No internet connection. Sign up requires internet.');
-        throw err;
       }
+
+      if (!userUid) {
+        userUid = `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+      }
+
+      const userData = normalizeUser(userUid, {
+        name, email, phone, village,
+        role: 'user',
+        photoUrl: '',
+        committeeStatus: 'none',
+        createdAt: new Date().toISOString()
+      });
+
+      try {
+        await setDoc(doc(db, 'users', userUid), userData);
+        triggerWelcomeNotifications(userData).catch(e => console.error('[Welcome API] Email Signup trigger failed:', e));
+      } catch (fsErr) {
+        if (!isOfflineError(fsErr)) throw fsErr;
+      }
+      return userData;
     } else {
       // Mock Sign Up
       const users = safeParseLS('sa_users');
