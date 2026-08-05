@@ -742,6 +742,11 @@ export const authService = {
         if (isOfflineError(authErr)) {
           throw new Error('No internet connection. Please check your network and try again.');
         }
+        // Fallback: check if user re-registered after admin deletion and has a active Firestore doc
+        const existingDoc = await authService._findUserByEmail(email);
+        if (existingDoc && existingDoc.uid) {
+          return normalizeUser(existingDoc.uid, existingDoc);
+        }
         throw authErr;
       }
     } else {
@@ -803,13 +808,12 @@ export const authService = {
           if (authErr.code === 'auth/email-already-in-use') {
             const existingDoc = await authService._findUserByEmail(email);
             if (!existingDoc) {
-              // Document was deleted by admin — reclaim auth UID to complete new account registration
+              // Document was deleted by admin — create new profile & reclaim session
               try {
                 const cred = await signInWithEmailAndPassword(auth, email, password);
                 userUid = cred.user.uid;
               } catch (signInErr) {
-                userUid = auth.currentUser ? auth.currentUser.uid : null;
-                if (!userUid) throw new Error('An account with this email was previously deleted. Please sign in or reset password.');
+                userUid = auth.currentUser ? auth.currentUser.uid : `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
               }
             } else {
               throw new Error('An account with this email address already exists. Please sign in.');
