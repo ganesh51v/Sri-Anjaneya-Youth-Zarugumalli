@@ -810,13 +810,8 @@ export const authService = {
           if (existingDoc) {
             throw new Error('An account with this email address already exists. Please sign in.');
           }
-          // Document was deleted by admin or missing — reclaim session or generate fresh UID
-          try {
-            const cred = await signInWithEmailAndPassword(auth, email, password);
-            userUid = cred.user.uid;
-          } catch (sErr) {
-            userUid = auth.currentUser?.uid || `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-          }
+          // Document was deleted by admin — reclaim UID directly without extra failing signIn call
+          userUid = auth.currentUser?.uid || `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
         } else if (authErr.code === 'auth/invalid-credential' || authErr.code === 'auth/operation-not-allowed') {
           userUid = auth.currentUser?.uid || `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
         } else {
