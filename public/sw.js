@@ -1,10 +1,10 @@
-const CACHE_NAME = 'sa-youth-v5';
+const CACHE_NAME = 'sa-youth-v6';
 
 // ─── Install ───────────────────────────────────────────────────────────────
 // Skip pre-caching entirely; assets are cached on first successful fetch.
 // This avoids install failures caused by stale/broken previous SWs.
 self.addEventListener('install', () => {
-  console.log('[SW] v5 installing…');
+  console.log('[SW] v6 installing…');
   self.skipWaiting(); // take over immediately
 });
 
