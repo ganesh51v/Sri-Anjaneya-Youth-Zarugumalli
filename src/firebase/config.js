@@ -28,6 +28,7 @@ import {
   setDoc,
   getDoc,
   query,
+  where,
   orderBy
 } from 'firebase/firestore';
 
@@ -385,7 +386,194 @@ const triggerWelcomeNotifications = async (userData) => {
 export const authService = {
   get isMock() { return !(isFirebaseConfigured && db && auth); },
 
+  // ---------------------------------------------------------------
+  // Normalize a raw phone input into E.164 (+91XXXXXXXXXX) format
+  // ---------------------------------------------------------------
+  _normalizePhone: (raw) => {
+    const digits = String(raw).replace(/\D/g, '');
+    if (digits.length === 10) return '+91' + digits;                     // bare 10-digit Indian number
+    if (digits.length === 12 && digits.startsWith('91')) return '+' + digits; // 919876543210
+    if (digits.length > 7) return '+' + digits;                          // already has country code digits
+    return raw.trim();
+  },
+
+  // ---------------------------------------------------------------
+  // Detect whether an identifier string is a phone number or email
+  // ---------------------------------------------------------------
+  _isPhone: (identifier) => {
+    const trimmed = String(identifier).trim();
+    // Contains '@' → treat as email
+    if (trimmed.includes('@')) return false;
+    // Otherwise expect phone: digits, spaces, dashes, parens, +
+    return /^[+\d\s\-()\u00A0]{7,}$/.test(trimmed);
+  },
+
+  // ---------------------------------------------------------------
+  // Look up a Firestore user document by phone number (any format)
+  // Returns the user data object or null if not found
+  // ---------------------------------------------------------------
+  _findUserByPhone: async (normalizedPhone) => {
+    if (!isFirebaseConfigured || !db) {
+      // Mock mode: search localStorage
+      const users = safeParseLS('sa_users');
+      const raw = normalizedPhone.replace(/\D/g, '');
+      return users.find(u => u.phone && u.phone.replace(/\D/g, '') === raw) || null;
+    }
+    try {
+      const snap = await getDocs(query(collection(db, 'users'), where('phone', '==', normalizedPhone)));
+      if (!snap.empty) return { uid: snap.docs[0].id, ...snap.docs[0].data() };
+      // Fallback: digit-strip match across all users
+      const allSnap = await getDocs(collection(db, 'users'));
+      const rawDigits = normalizedPhone.replace(/\D/g, '');
+      const match = allSnap.docs.find(d => {
+        const phone = d.data().phone || '';
+        return phone.replace(/\D/g, '') === rawDigits;
+      });
+      return match ? { uid: match.id, ...match.data() } : null;
+    } catch (err) {
+      console.warn('[_findUserByPhone] Firestore query error:', err.message);
+      return null;
+    }
+  },
+
+  // ---------------------------------------------------------------
+  // NEW: Sign in with Email OR Phone + Password
+  // ---------------------------------------------------------------
+  signInWithIdentifier: async (identifier, password) => {
+    const trimmed = String(identifier).trim();
+    if (!trimmed || !password) throw new Error('Please enter your email/phone and password.');
+
+    let emailToUse = trimmed;
+
+    if (authService._isPhone(trimmed)) {
+      const normalized = authService._normalizePhone(trimmed);
+      const userDoc = await authService._findUserByPhone(normalized);
+      if (!userDoc || !userDoc.email) {
+        throw new Error('Invalid email/phone number or password.');
+      }
+      emailToUse = userDoc.email;
+    }
+
+    try {
+      return await authService.signIn(emailToUse, password);
+    } catch (err) {
+      // Swallow Firebase-specific codes and surface a generic message
+      if (
+        err.code === 'auth/wrong-password' ||
+        err.code === 'auth/user-not-found' ||
+        err.code === 'auth/invalid-credential' ||
+        err.code === 'auth/invalid-email' ||
+        err.message?.includes('not found in local mock database') ||
+        err.message?.includes('Invalid password') ||
+        err.message?.includes('Invalid credentials')
+      ) {
+        throw new Error('Invalid email/phone number or password.');
+      }
+      throw err;
+    }
+  },
+
+  // ---------------------------------------------------------------
+  // NEW: Reset password using Email OR Phone
+  // If phone is supplied, look up the registered email first
+  // ---------------------------------------------------------------
+  resetPasswordWithIdentifier: async (identifier) => {
+    const trimmed = String(identifier).trim();
+    if (!trimmed) throw new Error('Please enter your email or phone number.');
+
+    let emailToUse = trimmed;
+
+    if (authService._isPhone(trimmed)) {
+      const normalized = authService._normalizePhone(trimmed);
+      const userDoc = await authService._findUserByPhone(normalized);
+      if (!userDoc || !userDoc.email) {
+        throw new Error('No account found with this phone number.');
+      }
+      emailToUse = userDoc.email;
+    }
+
+    return authService.resetPassword(emailToUse);
+  },
+
+  // ---------------------------------------------------------------
+  // NEW: Send registration OTP (used by SignUp before account creation)
+  // method = 'phone' | 'email'
+  // Returns { success, code (shown as fallback in dev), destination }
+  // ---------------------------------------------------------------
+  sendRegistrationOtp: async (destination, method = 'phone') => {
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+    sessionStorage.setItem('sa_reg_otp', JSON.stringify({ destination, method, code, expiry }));
+    console.log(`[Registration OTP] Code for ${destination}: ${code}`);
+
+    const apiBase = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
+      ? ''
+      : 'https://sri-anjaneya-youth-zarugumalli.vercel.app';
+
+    if (method === 'phone') {
+      try {
+        const res = await fetch(`${apiBase}/api/send-twilio-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: destination, code })
+        });
+        const result = await res.json();
+        if (result.success) {
+          console.log('[Registration OTP] Twilio SMS dispatched successfully.');
+        } else {
+          console.warn('[Registration OTP] Twilio SMS failed:', result.error, '— code shown in console for dev/trial.');
+        }
+      } catch (smsErr) {
+        console.warn('[Registration OTP] SMS dispatch network error:', smsErr.message);
+      }
+    } else {
+      // Email OTP via Resend
+      try {
+        const res = await fetch(`${apiBase}/api/send-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'otp',
+            to: destination,
+            data: { code }
+          })
+        });
+        const result = await res.json();
+        if (result.success) {
+          console.log('[Registration OTP] Resend email dispatched successfully.');
+        } else {
+          console.warn('[Registration OTP] Email send failed:', result.error);
+        }
+      } catch (emailErr) {
+        console.warn('[Registration OTP] Email dispatch network error:', emailErr.message);
+      }
+    }
+
+    return { success: true, code, destination };
+  },
+
+  // ---------------------------------------------------------------
+  // NEW: Verify registration OTP entered by the user
+  // ---------------------------------------------------------------
+  verifyRegistrationOtp: (enteredCode) => {
+    const raw = sessionStorage.getItem('sa_reg_otp');
+    if (!raw) throw new Error('No OTP session found. Please request a new OTP.');
+    let session;
+    try { session = JSON.parse(raw); } catch { throw new Error('Invalid OTP session. Please request a new OTP.'); }
+
+    if (Date.now() > session.expiry) {
+      sessionStorage.removeItem('sa_reg_otp');
+      throw new Error('OTP has expired. Please request a new one.');
+    }
+    if (String(enteredCode).trim() !== session.code) {
+      throw new Error('Incorrect OTP. Please check and try again.');
+    }
+    sessionStorage.removeItem('sa_reg_otp');
+    return true;
+  },
+
   signIn: async (email, password) => {
+
     if (isFirebaseConfigured && auth) {
       try {
         const cred = await signInWithEmailAndPassword(auth, email, password);

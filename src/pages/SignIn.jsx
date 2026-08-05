@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { authService, dbService } from '../firebase/config';
-import { emailService, smsService } from '../services/emailService';
-import { Mail, Lock, LogIn, Download, AlertCircle, Info, Globe, Phone, User } from 'lucide-react';
+import { authService } from '../firebase/config';
+import { Mail, Phone, Lock, LogIn, Download, AlertCircle, Info, Globe, Eye, EyeOff } from 'lucide-react';
 import SEO from '../components/SEO';
 import { fadeUp, shake } from '../utils/animate';
 
@@ -12,22 +11,20 @@ const SignIn = () => {
   const { user, loginUser } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+
+  const [identifier, setIdentifier] = useState(''); // email OR phone
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [loginMethod, setLoginMethod] = useState('email'); // 'email' | 'phone'
-  const [countryCode, setCountryCode] = useState('+91');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [confirmationResult, setConfirmationResult] = useState(null);
 
-  // Animation refs
   const cardRef = useRef(null);
   const errorRef = useRef(null);
+
+  // Detect whether identifier looks like a phone or email for the icon
+  const looksLikePhone = identifier.trim() !== '' && authService._isPhone && authService._isPhone(identifier.trim());
 
   // Animate card on mount
   useEffect(() => {
@@ -41,203 +38,28 @@ const SignIn = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user) {
-      navigate('/');
-    }
+    if (user) navigate('/');
   }, [user, navigate]);
 
-  // Listen for PWA installation prompt
+  // PWA install prompt
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
-
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
-    setError('');
-    setInfo('');
-    
-    const trimmedPhone = phone.trim();
-    if (!trimmedPhone) {
-      setError('Please enter your phone number.');
-      return;
-    }
-    
-    // Basic digit length validation
-    if (countryCode === '+91' && !/^\d{10}$/.test(trimmedPhone)) {
-      setError('Please enter a valid 10-digit mobile number.');
-      return;
-    }
-    if (!/^\d{7,12}$/.test(trimmedPhone)) {
-      setError('Please enter a valid phone number.');
-      return;
-    }
-
-    const fullPhone = `${countryCode}${trimmedPhone}`;
-
-    setLoading(true);
-    try {
-      // 1. Check if this phone number has ALREADY completed first-time OTP verification
-      const verifiedPhones = JSON.parse(localStorage.getItem('sa_verified_phones') || '[]');
-      const allUsers = await dbService.users.getAll().catch(() => []);
-      
-      const existingUser = allUsers.find(u => 
-        u.phone === fullPhone || 
-        u.phone === trimmedPhone ||
-        (u.phone && u.phone.replace(/\D/g, '') === fullPhone.replace(/\D/g, ''))
-      );
-
-      const isVerifiedOnDevice = verifiedPhones.includes(fullPhone) || verifiedPhones.includes(trimmedPhone);
-      const isVerifiedInDB = existingUser && (existingUser.phoneVerified || existingUser.firstLoginCompleted);
-
-      // RETURNING USER: First-time OTP was already completed -> Log in directly without repeated OTP!
-      if (isVerifiedOnDevice || isVerifiedInDB) {
-        console.log('[Phone Login] Returning user detected (first-time OTP already verified). Logging in directly!');
-        const normalizedUser = existingUser || {
-          id: 'u_phone_' + fullPhone.replace(/\D/g, ''),
-          uid: 'u_phone_' + fullPhone.replace(/\D/g, ''),
-          name: 'Bhaktha (' + trimmedPhone + ')',
-          phone: fullPhone,
-          role: 'user',
-          phoneVerified: true,
-          firstLoginCompleted: true
-        };
-        
-        if (!verifiedPhones.includes(fullPhone)) {
-          verifiedPhones.push(fullPhone);
-          localStorage.setItem('sa_verified_phones', JSON.stringify(verifiedPhones));
-        }
-
-        loginUser(normalizedUser);
-        navigate('/');
-        return;
-      }
-
-      // FIRST TIME LOGIN: Send OTP verification code
-      console.log('[Phone Login] First time login for mobile number. Sending OTP code...');
-      const appVerifier = authService.setupRecaptcha('phone-signin-btn');
-      const result = await authService.sendOtp(fullPhone, appVerifier);
-      setConfirmationResult(result);
-      setOtpSent(true);
-      setInfo(`First-time login: Verification code (OTP) sent to ${fullPhone}. (Enter code: 123456 to verify & sign in)`);
-
-      // Dispatch Twilio SMS OTP
-      smsService.sendTwilioOtp(fullPhone, '123456').catch(err => console.warn('Twilio SMS trigger error:', err));
-
-      // Try sending email copy of OTP if registered user exists
-      if (existingUser && existingUser.email) {
-        emailService.sendOtp(existingUser.email, '123456').catch(() => {});
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to send OTP. Make sure your number and country code are correct.');
-      if (window.recaptchaVerifier) {
-        try { window.recaptchaVerifier.clear(); } catch(e){}
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    setError('');
-    setInfo('');
-    if (!otp) {
-      setError('Please enter the verification code.');
-      return;
-    }
-    if (!confirmationResult) {
-      setError('Please request OTP first by clicking Send OTP.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const authResult = await confirmationResult.confirm(otp.trim());
-      const firebaseUser = authResult.user;
-      const fullPhone = `${countryCode}${phone.trim()}`;
-
-      // Save phone as verified for future direct logins!
-      const verifiedPhones = JSON.parse(localStorage.getItem('sa_verified_phones') || '[]');
-      if (!verifiedPhones.includes(fullPhone)) {
-        verifiedPhones.push(fullPhone);
-        localStorage.setItem('sa_verified_phones', JSON.stringify(verifiedPhones));
-      }
-
-      // Look up existing registered user by phone number
-      let userProfile = null;
-      try {
-        const allUsers = await dbService.users.getAll();
-        userProfile = allUsers.find(u => 
-          u.phone === fullPhone || 
-          u.phone === phone.trim() ||
-          (u.phone && u.phone.replace(/\D/g, '') === fullPhone.replace(/\D/g, ''))
-        );
-      } catch (lookupErr) {
-        console.warn('User lookup by phone failed:', lookupErr);
-      }
-
-      const normalizedUser = userProfile || {
-        id: firebaseUser.uid || firebaseUser.id || 'u_' + Date.now(),
-        uid: firebaseUser.uid || firebaseUser.id,
-        name: firebaseUser.name || firebaseUser.displayName || 'Bhaktha (' + phone + ')',
-        email: firebaseUser.email || '',
-        phone: firebaseUser.phone || firebaseUser.phoneNumber || fullPhone,
-        photoUrl: firebaseUser.photoUrl || firebaseUser.photoURL || '',
-        village: firebaseUser.village || 'Zarugumalli',
-        role: firebaseUser.role || 'user',
-        committeeStatus: firebaseUser.committeeStatus || 'none',
-        phoneVerified: true,
-        firstLoginCompleted: true
-      };
-
-      loginUser(normalizedUser);
-      navigate('/');
-    } catch (err) {
-      setError(err.message || 'Invalid verification code. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInstallApp = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        console.log('User accepted the install prompt');
-      }
-      setDeferredPrompt(null);
-    } else {
-      alert("To install, use your browser's 'Add to Home Screen' or 'Install' menu option. (The app is PWA-compatible!)");
-    }
-  };
-
-  const validateForm = () => {
-    if (!email || !password) {
-      setError('Please fill in all fields.');
-      return false;
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setError('Please enter a valid email address.');
-      return false;
-    }
-    return true;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setInfo('');
-    if (!validateForm()) return;
+
+    const id = identifier.trim();
+    if (!id) { setError('Please enter your email or phone number.'); return; }
+    if (!password) { setError('Please enter your password.'); return; }
 
     setLoading(true);
     try {
-      const loggedUser = await authService.signIn(email, password);
+      const loggedUser = await authService.signInWithIdentifier(id, password);
       loginUser(loggedUser);
       navigate('/');
     } catch (err) {
@@ -248,9 +70,7 @@ const SignIn = () => {
   };
 
   const handleGoogleSignIn = async () => {
-    setError('');
-    setInfo('');
-    setLoading(true);
+    setError(''); setInfo(''); setLoading(true);
     try {
       const loggedUser = await authService.signInWithGoogle();
       loginUser(loggedUser);
@@ -263,33 +83,42 @@ const SignIn = () => {
   };
 
   const handleForgotPassword = async () => {
-    setError('');
-    setInfo('');
-    if (!email) {
-      setError('Please enter your email address first to reset password.');
+    setError(''); setInfo('');
+    const id = identifier.trim();
+    if (!id) {
+      setError('Please enter your email or phone number first, then click Forgot Password.');
       return;
     }
     setLoading(true);
     try {
-      await authService.resetPassword(email);
-      setInfo('Password reset link sent to your email (or simulated locally).');
+      await authService.resetPasswordWithIdentifier(id);
+      setInfo('Password reset link sent to your registered email address.');
     } catch (err) {
-      setError(err.message || 'Failed to reset password.');
+      setError(err.message || 'Failed to send reset link.');
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'te' : 'en');
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+    } else {
+      alert("To install, use your browser's 'Add to Home Screen' or 'Install' menu option.");
+    }
   };
+
+  const toggleLanguage = () => setLanguage(language === 'en' ? 'te' : 'en');
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-cream-100/30 relative">
       <SEO title="Sign In" description="Sign in to your Sri Anjaneya Youth Zarugumalli member account. Access events, announcements, gallery and community updates." path="/signin" />
-      {/* Floating Language Switcher */}
+
+      {/* Language Switcher */}
       <div className="absolute top-4 right-4 z-50">
-        <button 
+        <button
           onClick={toggleLanguage}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur border border-cream-200 text-slate-700 hover:text-saffron-600 shadow-sm transition-all font-extrabold text-[11px] cursor-pointer"
         >
@@ -298,45 +127,40 @@ const SignIn = () => {
         </button>
       </div>
 
-      {/* Decorative accent top */}
+      {/* Top accent stripe */}
       <div className="h-1.5 bg-gradient-to-r from-saffron-500 via-gold-500 to-devored-600 w-full" />
-      
+
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
         <div ref={cardRef} style={{ opacity: 0 }} className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-cream-200 overflow-hidden relative glass-panel">
-          {/* Logo/Banner Header */}
+
+          {/* Header */}
           <div className="bg-gradient-to-br from-saffron-500 via-saffron-600 to-devored-700 text-white px-6 py-8 text-center relative overflow-hidden">
-            {/* Background Halo */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_70%)] animate-pulse-slow" />
-            
-            {/* Custom Logo Image */}
             <div className="relative z-10 flex justify-center mb-3">
-              <img 
-                src="/icon.png" 
-                alt="Sri Anjaneya Youth Logo" 
+              <img
+                src="/icon.png"
+                alt="Sri Anjaneya Youth Logo"
                 className="w-16 h-16 rounded-full object-cover border-2 border-gold-300 shadow-lg animate-float"
               />
             </div>
-            
-            <h2 className="text-2xl font-extrabold tracking-tight relative z-10">
-              {t('websiteName')}
-            </h2>
-            <p className="text-xs uppercase tracking-widest font-bold text-gold-300 relative z-10 mt-1">
-              {t('zarugumalli')}
-            </p>
-            <p className="text-[10px] italic text-saffron-100 relative z-10 mt-2">
-              "{t('unitedQuote')}"
-            </p>
+            <h2 className="text-2xl font-extrabold tracking-tight relative z-10">{t('websiteName')}</h2>
+            <p className="text-xs uppercase tracking-widest font-bold text-gold-300 relative z-10 mt-1">{t('zarugumalli')}</p>
+            <p className="text-[10px] italic text-saffron-100 relative z-10 mt-2">"{t('unitedQuote')}"</p>
           </div>
 
-          {/* Form Area */}
+          {/* Form */}
           <div className="p-6 sm:p-8 space-y-5">
+
+            {/* Welcome Back label */}
+            <h1 className="text-lg font-extrabold text-slate-800 text-center tracking-tight">Welcome Back 🙏</h1>
+
+            {/* Error / Info alerts */}
             {error && (
-              <div className="bg-devored-50 border border-devored-200 text-devored-700 p-3.5 rounded-xl text-xs flex items-start gap-2 animate-fade-in">
+              <div ref={errorRef} className="bg-devored-50 border border-devored-200 text-devored-700 p-3.5 rounded-xl text-xs flex items-start gap-2 animate-fade-in">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
-
             {info && (
               <div className="bg-saffron-50 border border-saffron-200 text-saffron-800 p-3.5 rounded-xl text-xs flex items-start gap-2 animate-fade-in">
                 <Info className="w-4 h-4 shrink-0 mt-0.5" />
@@ -344,186 +168,100 @@ const SignIn = () => {
               </div>
             )}
 
-            {/* Login Method Tab Selection */}
-            <div className="flex border border-cream-200 dark:border-slate-800/80 mb-5 text-center p-1.5 bg-cream-50 dark:bg-slate-950 rounded-2xl">
-              <button
-                type="button"
-                onClick={() => { setLoginMethod('email'); setError(''); setInfo(''); }}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
-                  loginMethod === 'email'
-                    ? 'bg-gradient-to-r from-saffron-500 to-saffron-600 text-white shadow-md shadow-saffron-500/15'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
-              >
-                {t('emailAddressLabel')}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setLoginMethod('phone'); setError(''); setInfo(''); }}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
-                  loginMethod === 'phone'
-                    ? 'bg-gradient-to-r from-saffron-500 to-saffron-600 text-white shadow-md shadow-saffron-500/15'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
-              >
-                {t('phoneNumberLabel')}
-              </button>
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Identifier: Email or Phone */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 pl-1">
+                  Email or Phone Number
+                </label>
+                <div className="relative">
+                  {looksLikePhone
+                    ? <Phone className="absolute left-3.5 top-3 w-4 h-4 text-saffron-500" />
+                    : <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+                  }
+                  <input
+                    id="identifier"
+                    type="text"
+                    inputMode="email"
+                    autoComplete="username"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="user@gmail.com  or  +919876543210"
+                    className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
+                    required
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1 pl-1">Enter your registered email address or mobile number</p>
+              </div>
 
-            {loginMethod === 'email' ? (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 pl-1">
-                    {t('emailAddressLabel')}
+              {/* Password */}
+              <div>
+                <div className="flex justify-between items-center mb-1.5 pl-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                    {t('passwordLabel')}
                   </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder={t('emailAddressPlaceholder')}
-                      className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
-                      required
-                    />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-xs font-bold text-saffron-600 hover:text-saffron-700 transition-colors cursor-pointer"
+                  >
+                    {t('forgotPassword')}
+                  </button>
                 </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-1.5 pl-1">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
-                      {t('passwordLabel')}
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleForgotPassword}
-                      className="text-xs font-bold text-saffron-600 hover:text-saffron-700 transition-colors"
-                    >
-                      {t('forgotPassword')}
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder={t('passwordPlaceholder')}
-                      className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
-                      required
-                    />
-                  </div>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t('passwordPlaceholder')}
+                    className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-11 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    tabIndex={-1}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full saffron-gradient-btn rounded-xl py-3 text-sm flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <LogIn className="w-4 h-4" />
-                      {t('signInBtn')}
-                    </>
-                  )}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={otpSent ? handleVerifyOtp : handleSendOtp} className="space-y-4">
-                {!otpSent ? (
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 pl-1">
-                      {t('phoneNumberLabel')}
-                    </label>
-                    <div className="flex gap-2">
-                      <div className="relative w-28 shrink-0">
-                        <select
-                          value={countryCode}
-                          onChange={(e) => setCountryCode(e.target.value)}
-                          className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 px-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all cursor-pointer font-bold"
-                        >
-                          <option value="+91" className="dark:bg-slate-950 dark:text-white">🇮🇳 +91</option>
-                          <option value="+1" className="dark:bg-slate-950 dark:text-white">🇺🇸 +1</option>
-                          <option value="+44" className="dark:bg-slate-950 dark:text-white">🇬🇧 +44</option>
-                          <option value="+61" className="dark:bg-slate-950 dark:text-white">🇦🇺 +61</option>
-                          <option value="+971" className="dark:bg-slate-950 dark:text-white">🇦🇪 +971</option>
-                          <option value="+65" className="dark:bg-slate-950 dark:text-white">🇸🇬 +65</option>
-                        </select>
-                      </div>
-                      <div className="relative flex-1">
-                        <Phone className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-                        <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                          placeholder={countryCode === '+91' ? '9876543210' : 'Phone number'}
-                          className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all"
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
+              {/* Submit */}
+              <button
+                type="submit"
+                id="signin-btn"
+                disabled={loading}
+                className="w-full saffron-gradient-btn rounded-xl py-3 text-sm flex items-center justify-center gap-2 mt-2"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5 pl-1">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
-                        {t('otpLabel')}
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => { setOtpSent(false); setOtp(''); setError(''); setInfo(''); }}
-                        className="text-xs font-bold text-saffron-600 hover:underline cursor-pointer"
-                      >
-                        Change Number / Resend
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <Lock className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                        placeholder="Enter 6-digit OTP"
-                        className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-saffron-500 transition-all font-mono tracking-wider"
-                        required
-                      />
-                    </div>
-                  </div>
+                  <>
+                    <LogIn className="w-4 h-4" />
+                    {t('signInBtn')}
+                  </>
                 )}
+              </button>
+            </form>
 
-                <div id="recaptcha-container"></div>
-
-                <button
-                  type="submit"
-                  id="phone-signin-btn"
-                  disabled={loading}
-                  className="w-full saffron-gradient-btn rounded-xl py-3 text-sm flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      {otpSent ? <User className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
-                      {otpSent ? t('verifyOtp') : t('sendOtp')}
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-
+            {/* Divider */}
             <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-cream-200"></div>
+              <div className="flex-grow border-t border-cream-200" />
               <span className="flex-shrink mx-3 text-xs text-slate-400 uppercase tracking-widest font-semibold">{t('or')}</span>
-              <div className="flex-grow border-t border-cream-200"></div>
+              <div className="flex-grow border-t border-cream-200" />
             </div>
 
             {/* Google Sign-in */}
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full border border-cream-300 hover:bg-cream-100/30 text-slate-700 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-colors"
+              className="w-full border border-cream-300 hover:bg-cream-100/30 text-slate-700 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -534,7 +272,7 @@ const SignIn = () => {
               {t('continueWithGoogle')}
             </button>
 
-            {/* Sign Up Redirect */}
+            {/* Sign Up link */}
             <p className="text-center text-xs text-slate-500">
               {t('signUpRedirectText')}{' '}
               <Link to="/signup" className="text-saffron-600 font-bold hover:underline">
@@ -542,7 +280,7 @@ const SignIn = () => {
               </Link>
             </p>
 
-            {/* Mock Info Alert Box */}
+            {/* Mock credentials hint */}
             {authService.isMock && (
               <div className="bg-cream-200/40 border border-cream-300 rounded-xl p-3.5 text-[11px] text-slate-500 leading-normal space-y-1">
                 <span className="font-bold text-slate-700 block">{t('mockAccountsText')}</span>
@@ -551,10 +289,10 @@ const SignIn = () => {
               </div>
             )}
 
-            {/* PWA Install Button */}
+            {/* PWA Install */}
             <button
               onClick={handleInstallApp}
-              className="w-full bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors"
+              className="w-full bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors cursor-pointer"
             >
               <Download className="w-4 h-4 text-gold-400" />
               {t('installAppBtn')}
@@ -563,7 +301,6 @@ const SignIn = () => {
         </div>
       </div>
 
-      {/* Footer text */}
       <footer className="text-center py-4 text-xs text-slate-500 font-medium">
         {t('developedBy')} <span className="text-saffron-600 font-bold">Ganesh Nalamalapu</span>
       </footer>
