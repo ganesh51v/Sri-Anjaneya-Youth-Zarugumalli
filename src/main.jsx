@@ -9,16 +9,20 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   </React.StrictMode>,
 );
 
-// Register Service Worker for PWA compliance
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('PWA ServiceWorker registered with scope: ', registration.scope);
-        registration.update();
-      })
-      .catch((error) => {
-        console.error('PWA ServiceWorker registration failed: ', error);
-      });
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        registration.unregister();
+      }
+    }).catch(() => null);
+
+    if ('caches' in window) {
+      caches.keys().then((keys) => {
+        for (const key of keys) {
+          caches.delete(key);
+        }
+      }).catch(() => null);
+    }
   });
 }
