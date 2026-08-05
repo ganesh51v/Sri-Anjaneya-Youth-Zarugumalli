@@ -4,44 +4,43 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================
-   DESIGN TOKENS — REGAL DEVOTIONAL PALETTE (User Custom)
-   Background: #120707 | Maroon: #3B0D0D | Red: #8B1E1E
-   Gold: #D4AF37 | Bright Gold: #FFD966 | White: #FFF8E7
+   DESIGN TOKENS — DEEP MAROON & RICH GOLD PALETTE
+   🟥 Deep Maroon: #240A0A | 🟡 Rich Gold: #D4AF37 | 🤍 Warm White: #FFF8E7
    ============================================================ */
 :root {
-  /* Brand */
-  --saffron: #8B1E1E;            /* Royal Devotional Red */
-  --saffron-light: #b82828;
-  --saffron-dark: #3B0D0D;       /* Royal Maroon */
-  --gold: #D4AF37;               /* Royal Gold */
-  --gold-light: #FFD966;         /* Bright Gold */
+  /* Brand Tokens */
+  --saffron: #D4AF37;            /* Rich Gold Primary Accent */
+  --saffron-light: #edd379;
+  --saffron-dark: #b59124;
+  --gold: #D4AF37;               /* Rich Gold */
+  --gold-light: #f5de93;
   --gold-dark: #a38222;
   --devored: #8B1E1E;
   --devored-light: #b82828;
 
   /* Surfaces */
-  --bg-page: #120707;            /* Deep Maroon-Black */
-  --bg-card: #1c0b0b;            /* Rich Dark Maroon Card */
-  --bg-card-hover: #261010;
-  --bg-muted: #3B0D0D;           /* Royal Maroon Container */
-  --bg-input: #1f0c0c;
+  --bg-page: #240A0A;            /* 🟥 Deep Maroon Page Background */
+  --bg-card: #1a0707;            /* Deep Dark Maroon Card Surface */
+  --bg-card-hover: #2e0d0d;
+  --bg-muted: #330f0f;           /* Deep Maroon Muted Container */
+  --bg-input: #1b0707;
 
   /* Text */
-  --text-primary: #FFF8E7;       /* Warm Devotional White */
+  --text-primary: #FFF8E7;       /* 🤍 Warm White Primary Text */
   --text-secondary: #ebdcc4;     /* Soft Warm Cream */
-  --text-muted: #D4AF37;         /* Royal Gold */
+  --text-muted: #D4AF37;         /* 🟡 Rich Gold Muted Text */
   --text-subtle: #a8947d;
 
   /* Borders & Shadows */
-  --border: rgba(212, 175, 55, 0.28);
-  --border-strong: rgba(255, 217, 102, 0.45);
-  --border-input: rgba(212, 175, 55, 0.35);
+  --border: rgba(212, 175, 55, 0.32);
+  --border-strong: rgba(212, 175, 55, 0.60);
+  --border-input: rgba(212, 175, 55, 0.40);
 
-  --shadow-sm: 0 2px 6px rgba(0,0,0,0.6);
-  --shadow-md: 0 6px 20px rgba(0,0,0,0.7), 0 0 15px rgba(212, 175, 55, 0.08);
-  --shadow-lg: 0 12px 36px rgba(0,0,0,0.85), 0 0 25px rgba(212, 175, 55, 0.15);
-  --shadow-saffron: 0 8px 24px rgba(139, 30, 30, 0.4);
-  --shadow-gold: 0 8px 24px rgba(212, 175, 55, 0.3);
+  --shadow-sm: 0 2px 6px rgba(0,0,0,0.65);
+  --shadow-md: 0 6px 20px rgba(0,0,0,0.8), 0 0 18px rgba(212, 175, 55, 0.12);
+  --shadow-lg: 0 12px 36px rgba(0,0,0,0.9), 0 0 28px rgba(212, 175, 55, 0.20);
+  --shadow-saffron: 0 8px 24px rgba(212, 175, 55, 0.35);
+  --shadow-gold: 0 8px 24px rgba(212, 175, 55, 0.40);
 
   /* Radius */
   --radius-sm: 10px;
@@ -56,26 +55,26 @@
 }
 
 .dark {
-  --bg-page: #0a0404;            /* Deepest Obsidian Maroon */
-  --bg-card: #170909;            /* Deep Maroon Card */
-  --bg-card-hover: #210d0d;
-  --bg-muted: #3B0D0D;
-  --bg-input: #1a0a0a;
+  --bg-page: #1a0707;            /* Deepest Obsidian Maroon */
+  --bg-card: #140505;            /* Ultra Dark Maroon Card */
+  --bg-card-hover: #260a0a;
+  --bg-muted: #2c0c0c;
+  --bg-input: #140505;
 
   --text-primary: #FFF8E7;
   --text-secondary: #ebdcc4;
-  --text-muted: #FFD966;
+  --text-muted: #D4AF37;
   --text-subtle: #998369;
 
-  --border: rgba(212, 175, 55, 0.3);
-  --border-strong: rgba(255, 217, 102, 0.5);
-  --border-input: rgba(212, 175, 55, 0.4);
+  --border: rgba(212, 175, 55, 0.35);
+  --border-strong: rgba(212, 175, 55, 0.65);
+  --border-input: rgba(212, 175, 55, 0.45);
 
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.8);
-  --shadow-md: 0 6px 24px rgba(0,0,0,0.9), 0 0 20px rgba(212, 175, 55, 0.12);
-  --shadow-lg: 0 14px 44px rgba(0,0,0,0.95), 0 0 30px rgba(255, 217, 102, 0.2);
-  --shadow-saffron: 0 8px 28px rgba(139, 30, 30, 0.5);
-  --shadow-gold: 0 8px 28px rgba(255, 217, 102, 0.35);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.85);
+  --shadow-md: 0 6px 24px rgba(0,0,0,0.92), 0 0 22px rgba(212, 175, 55, 0.15);
+  --shadow-lg: 0 14px 44px rgba(0,0,0,0.98), 0 0 32px rgba(212, 175, 55, 0.25);
+  --shadow-saffron: 0 8px 28px rgba(212, 175, 55, 0.45);
+  --shadow-gold: 0 8px 28px rgba(212, 175, 55, 0.45);
 }
 
 @theme {
