@@ -883,7 +883,7 @@ export const authService = {
         try {
           const userDoc = await getDoc(userRef);
           if (userDoc.exists()) {
-            return { uid: cred.user.uid, ...userDoc.data() };
+            return normalizeUser(cred.user.uid, userDoc.data());
           } else {
             const userData = normalizeUser(cred.user.uid, {
               name: cred.user.displayName || 'Google User',
@@ -1011,11 +1011,12 @@ export const authService = {
       const current = safeParseLS('sa_current_user', null);
       if (!current) throw new Error('No active mock user session.');
       const users = safeParseLS('sa_users');
-      const index = users.findIndex(u => u.id === current.id);
+      const index = users.findIndex(u => u.id === current.id || u.uid === current.id);
       if (index > -1) {
-        users[index].password = newPassword;
+        const hashed = await hashPassword(newPassword);
+        users[index].password = hashed;
         localStorage.setItem('sa_users', JSON.stringify(users));
-        current.password = newPassword;
+        current.password = hashed;
         localStorage.setItem('sa_current_user', JSON.stringify(current));
       } else {
         throw new Error('Mock account not found in list.');
@@ -1112,7 +1113,13 @@ export const authService = {
             }
           }
         } else {
-          callback(null);
+          const localUser = safeParseLS('sa_current_user', null);
+          if (localUser) {
+            console.log('[onAuthStateChanged] Preserving active user session on refresh:', localUser.email);
+            callback(localUser);
+          } else {
+            callback(null);
+          }
         }
       });
     } else {
@@ -1458,12 +1465,12 @@ export const dbService = {
         }, null, 'users.updateRole');
       }
       const users = safeParseLS('sa_users', []);
-      const index = users.findIndex(u => u.id === id);
+      const index = users.findIndex(u => u.id === id || u.uid === id);
       if (index > -1) {
         users[index].role = newRole;
         localStorage.setItem('sa_users', JSON.stringify(users));
         const current = safeParseLS('sa_current_user', null);
-        if (current && current.id === id) {
+        if (current && (current.id === id || current.uid === id)) {
           current.role = newRole;
           localStorage.setItem('sa_current_user', JSON.stringify(current));
           triggerAuthChange(current);
@@ -1481,12 +1488,12 @@ export const dbService = {
         }, null, 'users.updateDetails');
       }
       const users = safeParseLS('sa_users', []);
-      const index = users.findIndex(u => u.id === id);
+      const index = users.findIndex(u => u.id === id || u.uid === id);
       if (index > -1) {
         users[index] = { ...users[index], name, phone, village, photoUrl };
         localStorage.setItem('sa_users', JSON.stringify(users));
         const current = safeParseLS('sa_current_user', null);
-        if (current && current.id === id) {
+        if (current && (current.id === id || current.uid === id)) {
           const updatedCurrent = { ...current, name, phone, village, photoUrl };
           localStorage.setItem('sa_current_user', JSON.stringify(updatedCurrent));
           triggerAuthChange(updatedCurrent);
@@ -1503,12 +1510,12 @@ export const dbService = {
         }, null, 'users.updateCommitteeStatus');
       }
       const users = safeParseLS('sa_users', []);
-      const index = users.findIndex(u => u.id === id);
+      const index = users.findIndex(u => u.id === id || u.uid === id);
       if (index > -1) {
         users[index].committeeStatus = status;
         localStorage.setItem('sa_users', JSON.stringify(users));
         const current = safeParseLS('sa_current_user', null);
-        if (current && current.id === id) {
+        if (current && (current.id === id || current.uid === id)) {
           current.committeeStatus = status;
           localStorage.setItem('sa_current_user', JSON.stringify(current));
           triggerAuthChange(current);

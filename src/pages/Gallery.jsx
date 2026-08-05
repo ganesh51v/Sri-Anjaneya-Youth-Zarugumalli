@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { dbService } from '../firebase/config';
 import { useLanguage } from '../context/LanguageContext';
 import { 
@@ -246,13 +246,13 @@ const Lightbox = ({ album, index, setIndex, onClose }) => {
   const [touchEnd, setTouchEnd] = useState(null);
   const minSwipeDistance = 50;
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     setIndex(prev => (prev === 0 ? album.imageUrls.length - 1 : prev - 1));
-  };
+  }, [album.imageUrls.length, setIndex]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setIndex(prev => (prev === album.imageUrls.length - 1 ? 0 : prev + 1));
-  };
+  }, [album.imageUrls.length, setIndex]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -263,7 +263,7 @@ const Lightbox = ({ album, index, setIndex, onClose }) => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [index]);
+  }, [onClose, handlePrev, handleNext]);
 
   // Swipe Navigation Handlers
   const onTouchStart = (e) => {

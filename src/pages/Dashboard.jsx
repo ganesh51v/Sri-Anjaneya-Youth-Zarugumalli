@@ -11,7 +11,7 @@ import SEO from '../components/SEO';
 import { heroEntrance, staggerScaleFade, staggerFadeUp, staggerSlideLeft, fadeUp, countUp } from '../utils/animate';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, checkEmailVerification } = useAuth();
   const { language, t } = useLanguage();
   const [stats, setStats] = useState({ members: 0, events: 0, announcements: 0, donationCount: 0, totalAmount: 0 });
   const [upcomingEvents, setUpcomingEvents] = useState([]);
@@ -114,7 +114,7 @@ const Dashboard = () => {
               type="button"
               onClick={async () => {
                 try {
-                  const res = await authService.checkEmailVerification();
+                  const res = await checkEmailVerification();
                   if (res && res.isVerified) {
                     alert("🎉 Email verified successfully! Your account status has been updated.");
                   } else {

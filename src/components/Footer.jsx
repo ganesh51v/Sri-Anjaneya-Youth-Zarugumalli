@@ -31,7 +31,7 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <img src="/icon.png" alt="Logo" className="w-8 h-8 rounded-full object-cover border border-saffron-300/50" />
+              <img src="/logo.svg" alt="Logo" className="w-8 h-8 rounded-full object-cover border border-saffron-300/50" />
               <div>
                 <span className="block font-black text-sm text-saffron-600 leading-tight">{t('websiteName')}</span>
                 <span className="block text-[9px] font-bold text-gold-600 uppercase tracking-widest">{t('zarugumalli')}</span>

@@ -182,7 +182,7 @@ const SignIn = () => {
                 <div className="relative">
                   <div className="absolute -inset-1.5 bg-gradient-to-r from-saffron-400 to-gold-400 rounded-full blur opacity-40 animate-pulse" />
                   <img
-                    src="/icon.png"
+                    src="/logo.svg"
                     alt="Sri Anjaneya Youth Logo"
                     className="relative w-13 h-13 rounded-full object-cover border-2 border-gold-400 shadow-[0_0_18px_rgba(217,119,6,0.45)] animate-float"
                   />

@@ -32,8 +32,14 @@ const OtpInput = ({ value, onChange }) => {
     if (i < 5 && refs[i + 1].current) refs[i + 1].current.focus();
   };
 
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pasted) onChange(pasted);
+  };
+
   return (
-    <div className="flex gap-2 justify-center">
+    <div className="flex gap-2 justify-center" onPaste={handlePaste}>
       {refs.map((ref, i) => (
         <input
           key={i}

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 const BASE_TITLE = 'Sri Anjaneya Youth Zarugumalli';
 const BASE_URL   = 'https://sri-anjaneya-youth-zarugumalli.web.app';
-const BASE_IMAGE = `${BASE_URL}/icon.png`;
+const BASE_IMAGE = `${BASE_URL}/logo.svg`;
 
 /**
  * SEO component — updates document <title> and <meta> tags dynamically per page.

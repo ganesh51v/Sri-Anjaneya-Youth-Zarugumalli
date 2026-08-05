@@ -16,6 +16,15 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const safeParseReadIds = () => {
+    try {
+      return JSON.parse(localStorage.getItem('sa_read_announcements') || '[]');
+    } catch {
+      localStorage.removeItem('sa_read_announcements');
+      return [];
+    }
+  };
   
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -71,7 +80,7 @@ const Navbar = () => {
       try {
         const data = await dbService.announcements.getAll();
         setNotifications(data);
-        const readIds = JSON.parse(localStorage.getItem('sa_read_announcements') || '[]');
+        const readIds = safeParseReadIds();
         const unread = data.filter(ann => !readIds.includes(ann.id)).length;
         setUnreadCount(unread);
       } catch (err) {
@@ -128,7 +137,7 @@ const Navbar = () => {
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-saffron-400 to-gold-400 rounded-full blur opacity-20 group-hover:opacity-50 transition duration-300" />
                 <img 
-                  src="/icon.png" 
+                  src="/logo.svg" 
                   alt="Sri Anjaneya Youth Logo" 
                   className="relative w-8 h-8 rounded-full object-cover filter drop-shadow group-hover:scale-105 transition-all duration-300 border border-saffron-500/30"
                 />
@@ -222,7 +231,7 @@ const Navbar = () => {
                     <div className="max-h-64 overflow-y-auto divide-y divide-[var(--border)]">
                       {notifications.length > 0 ? (
                         notifications.slice(0, 4).map(ann => {
-                          const readIds = JSON.parse(localStorage.getItem('sa_read_announcements') || '[]');
+                          const readIds = safeParseReadIds();
                           const isRead = readIds.includes(ann.id);
                           return (
                             <div

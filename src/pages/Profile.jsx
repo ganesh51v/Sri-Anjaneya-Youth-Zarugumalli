@@ -114,6 +114,8 @@ const Profile = () => {
     }
   };
 
+  const userId = user?.uid || user?.id;
+
   const handleUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -127,7 +129,7 @@ const Profile = () => {
     }
 
     try {
-      await dbService.users.updateDetails(user.id, { name, phone, village, photoUrl });
+      await dbService.users.updateDetails(userId, { name, phone, village, photoUrl });
       const sessionUser = { ...user, name, phone, village, photoUrl };
       localStorage.setItem('sa_current_user', JSON.stringify(sessionUser));
       loginUser(sessionUser);
@@ -146,7 +148,7 @@ const Profile = () => {
     setError('');
     setSuccess(false);
     try {
-      await dbService.users.updateCommitteeStatus(user.id, 'pending');
+      await dbService.users.updateCommitteeStatus(userId, 'pending');
       const updatedUser = { ...user, committeeStatus: 'pending' };
       localStorage.setItem('sa_current_user', JSON.stringify(updatedUser));
       loginUser(updatedUser);
