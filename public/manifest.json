@@ -4,9 +4,9 @@
   "description": "United for Seva, Culture, and Community",
   "icons": [
     {
-      "src": "/logo.svg",
-      "type": "image/svg+xml",
-      "sizes": "any"
+      "src": "/icon.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512"
     }
   ],
   "start_url": "/",

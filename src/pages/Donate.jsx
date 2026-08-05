@@ -167,7 +167,7 @@ const Donate = () => {
         currency: 'INR',
         name: 'Sri Anjaneya Youth Association',
         description: `${purpose} Donation`,
-        image: '/logo.svg',
+        image: '/icon.png',
         prefill: {
           name: donorName,
           contact: phone,
