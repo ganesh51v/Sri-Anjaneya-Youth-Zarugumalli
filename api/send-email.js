@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
   // CORS configuration for cross-origin requests
@@ -26,15 +26,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: false, error: 'Recipient email address (to) is required.' });
     }
 
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
-      console.warn('[send-email] RESEND_API_KEY environment variable missing. Returning mocked success.');
-      return res.status(200).json({
-        success: true,
-        mocked: true,
-        data: { id: `mock_${Date.now()}` }
-      });
-    }
+    const gmailUser = process.env.GMAIL_USER || 'srianjaneyayouth9@gmail.com';
+    const gmailPass = process.env.GMAIL_APP_PASSWORD || 'fmvvbtvfmrvbauce';
 
     let emailSubject = subject;
     let htmlContent = '';
@@ -175,8 +168,8 @@ export default async function handler(req, res) {
             <div style="height: 6px; background: linear-gradient(to right, #ff7700, #d4af37, #dc2626); border-top-left-radius: 16px; border-top-right-radius: 16px; margin: -24px -24px 20px -24px;"></div>
 
             <div style="text-align: center; margin-bottom: 20px;">
-              <h2 style="color: #ff7700; margin-top: 12px; font-size: 20px; font-weight: 800;">Account Verification</h2>
-              <p style="font-size: 13px; color: #475569;">Use the verification code below to complete your request:</p>
+              <h2 style="color: #ff7700; margin-top: 12px; font-size: 20px; font-weight: 800;">Account Verification Code</h2>
+              <p style="font-size: 13px; color: #475569;">Use the verification code below to complete your sign-up:</p>
             </div>
 
             <div style="background-color: #ffffff; padding: 24px; border-radius: 12px; border: 1px dashed #d4af37; text-align: center; margin: 20px 0;">
@@ -201,30 +194,25 @@ export default async function handler(req, res) {
     }
 
     try {
-      const resend = new Resend(resendApiKey);
-      const fromEmail = 'onboarding@resend.dev';
-
-      const { data, error } = await resend.emails.send({
-        from: fromEmail,
-        to: Array.isArray(to) ? to : [to],
-        subject: emailSubject,
-        html: htmlContent || payload?.html || '<p>Notification from Sri Anjaneya Youth Zarugumalli</p>'
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: gmailUser,
+          pass: gmailPass
+        }
       });
 
-      if (error) {
-        console.warn('[Resend Notice]', error);
-        return res.status(200).json({
-          success: true,
-          delivered: false,
-          notice: error.message || 'Resend domain restriction active',
-          data: { id: `queued_${Date.now()}` }
-        });
-      }
+      const info = await transporter.sendMail({
+        from: `"Sri Anjaneya Youth Zarugumalli" <${gmailUser}>`,
+        to: Array.isArray(to) ? to.join(', ') : to,
+        subject: emailSubject,
+        html: htmlContent
+      });
 
-      console.log('[Resend Success]', data);
-      return res.status(200).json({ success: true, delivered: true, data });
+      console.log('[Gmail Success] Email delivered to:', to, '| MessageID:', info.messageId);
+      return res.status(200).json({ success: true, delivered: true, messageId: info.messageId });
     } catch (sendErr) {
-      console.warn('[Resend Execution Exception]', sendErr.message);
+      console.warn('[Gmail Send Exception]', sendErr.message);
       return res.status(200).json({
         success: true,
         delivered: false,
