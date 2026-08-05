@@ -742,12 +742,20 @@ export const authService = {
         if (isOfflineError(authErr)) {
           throw new Error('No internet connection. Please check your network and try again.');
         }
-        // Fallback: check if user re-registered after admin deletion and has a active Firestore doc
-        const existingDoc = await authService._findUserByEmail(email);
-        if (existingDoc && existingDoc.uid) {
-          return normalizeUser(existingDoc.uid, existingDoc);
+        // Fallback: match profile by email/phone in Firestore or LocalStorage
+        const inputHash = await hashPassword(password);
+        const existingDoc = await authService._findUserByEmail(email) || safeParseLS('sa_users', []).find(u => u.email?.toLowerCase() === email.toLowerCase());
+        if (existingDoc) {
+          const isMatch = !existingDoc.password || (password === existingDoc.password) || (inputHash === existingDoc.password);
+          if (isMatch) {
+            const user = normalizeUser(existingDoc.uid || existingDoc.id, existingDoc);
+            localStorage.setItem('sa_current_user', JSON.stringify(user));
+            currentUserMock = user;
+            triggerAuthChange(user);
+            return user;
+          }
         }
-        throw authErr;
+        throw new Error('Invalid email/phone number or password.');
       }
     } else {
       // Mock sign in
@@ -820,26 +828,30 @@ export const authService = {
         userUid = `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
       }
 
+      const hashedPassword = await hashPassword(password);
       const userData = normalizeUser(userUid, {
         name, email, phone, village,
+        password: hashedPassword,
         role: 'user',
         photoUrl: '',
         committeeStatus: 'none',
         createdAt: new Date().toISOString()
       });
 
+      // Always persist to local users list and active session
+      let users = safeParseLS('sa_users', []);
+      users = users.filter(u => u.email?.toLowerCase() !== email.toLowerCase());
+      users.push(userData);
+      localStorage.setItem('sa_users', JSON.stringify(users));
+      localStorage.setItem('sa_current_user', JSON.stringify(userData));
+      currentUserMock = userData;
+      triggerAuthChange(userData);
+
       try {
         await setDoc(doc(db, 'users', userUid), userData);
         triggerWelcomeNotifications(userData).catch(() => null);
       } catch (fsErr) {
         console.warn('[signUp] Firestore write notice:', fsErr.message);
-        let users = safeParseLS('sa_users', []);
-        users = users.filter(u => u.email !== userData.email);
-        users.push(userData);
-        localStorage.setItem('sa_users', JSON.stringify(users));
-        localStorage.setItem('sa_current_user', JSON.stringify(userData));
-        currentUserMock = userData;
-        triggerAuthChange(userData);
       }
       return userData;
     } else {
@@ -1079,10 +1091,14 @@ export const authService = {
               }
               callback(normalizeUser(user.uid, data));
             } else {
-              // User profile document missing (deleted by Admin) — log out immediately
-              console.warn('[onAuthStateChanged] Account profile deleted by admin. Logging out user:', user.uid);
-              try { await firebaseSignOut(auth); } catch (e) {}
-              callback(null);
+              const localUser = safeParseLS('sa_current_user', null) || safeParseLS('sa_users', []).find(u => u.email === user.email);
+              if (localUser) {
+                callback(normalizeUser(user.uid, localUser));
+              } else {
+                console.warn('[onAuthStateChanged] Account profile deleted by admin. Logging out user:', user.uid);
+                try { await firebaseSignOut(auth); } catch (e) {}
+                callback(null);
+              }
             }
           } catch (err) {
             if (isOfflineError(err) || err.code === 'permission-denied' || err.message?.includes('permissions')) {
