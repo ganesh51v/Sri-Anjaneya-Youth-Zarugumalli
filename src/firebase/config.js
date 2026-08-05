@@ -424,7 +424,6 @@ export const authService = {
 
       return getLocal();
     } catch (err) {
-      console.warn('[_findUserByPhone] Firestore query notice:', err.message);
       return getLocal();
     }
   },
@@ -447,7 +446,6 @@ export const authService = {
       if (!snap.empty) return { uid: snap.docs[0].id, ...snap.docs[0].data() };
       return getLocal();
     } catch (err) {
-      console.warn('[_findUserByEmail] Firestore query notice:', err.message);
       return getLocal();
     }
   },
@@ -712,15 +710,27 @@ export const authService = {
   signIn: async (email, password) => {
 
     if (isFirebaseConfigured && auth) {
+      // 1. Direct profile match check (prevents 400 Bad Request if user registered via custom fallback UID)
+      const inputHash = await hashPassword(password);
+      const existingDoc = await authService._findUserByEmail(email);
+      if (existingDoc && existingDoc.password) {
+        const isMatch = (password === existingDoc.password) || (inputHash === existingDoc.password);
+        if (isMatch) {
+          const user = normalizeUser(existingDoc.uid || existingDoc.id, existingDoc);
+          localStorage.setItem('sa_current_user', JSON.stringify(user));
+          currentUserMock = user;
+          triggerAuthChange(user);
+          return user;
+        }
+      }
+
       try {
         const cred = await signInWithEmailAndPassword(auth, email, password);
-        // Fetch user role from Firestore (may use cache if offline)
         try {
           const userDoc = await getDoc(doc(db, 'users', cred.user.uid));
           if (userDoc.exists()) {
             return normalizeUser(cred.user.uid, userDoc.data());
           } else {
-            // If user profile document is missing (deleted by Admin), prevent sign in
             try { await firebaseSignOut(auth); } catch (e) {}
             throw new Error('This account has been deleted by an administrator and no longer exists.');
           }
@@ -728,24 +738,18 @@ export const authService = {
           if (firestoreErr.message?.includes('deleted by an administrator')) {
             throw firestoreErr;
           }
-          if (firestoreErr.code === 'permission-denied' || firestoreErr.message?.includes('permissions')) {
-            console.warn('[signIn] Firestore permission restricted — returning basic authenticated user profile.');
-            return normalizeUser(cred.user.uid, { email: cred.user.email, role: cred.user.email === 'admin@srianjaneya.org' ? 'admin' : 'user' });
-          }
-          console.warn('[Firestore] Failed to retrieve user role document:', firestoreErr);
+          return normalizeUser(cred.user.uid, { email: cred.user.email, role: cred.user.email === 'admin@srianjaneya.org' ? 'admin' : 'user' });
         }
-        return normalizeUser(cred.user.uid, { email: cred.user.email, role: cred.user.email === 'admin@srianjaneya.org' ? 'admin' : 'user' });
       } catch (authErr) {
         if (isOfflineError(authErr)) {
           throw new Error('No internet connection. Please check your network and try again.');
         }
-        // Fallback: match profile by email/phone in Firestore or LocalStorage
-        const inputHash = await hashPassword(password);
-        const existingDoc = await authService._findUserByEmail(email) || safeParseLS('sa_users', []).find(u => u.email?.toLowerCase() === email.toLowerCase());
-        if (existingDoc) {
-          const isMatch = !existingDoc.password || (password === existingDoc.password) || (inputHash === existingDoc.password);
+        // Fallback: match profile by email/phone in LocalStorage
+        const localDoc = safeParseLS('sa_users', []).find(u => u.email?.toLowerCase() === email.toLowerCase());
+        if (localDoc) {
+          const isMatch = !localDoc.password || (password === localDoc.password) || (inputHash === localDoc.password);
           if (isMatch) {
-            const user = normalizeUser(existingDoc.uid || existingDoc.id, existingDoc);
+            const user = normalizeUser(localDoc.uid || localDoc.id, localDoc);
             localStorage.setItem('sa_current_user', JSON.stringify(user));
             currentUserMock = user;
             triggerAuthChange(user);
