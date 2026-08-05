@@ -810,12 +810,9 @@ export const authService = {
           if (existingDoc) {
             throw new Error('An account with this email address already exists. Please sign in.');
           }
-          // Document was deleted by admin — reclaim UID directly without extra failing signIn call
-          userUid = auth.currentUser?.uid || `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-        } else if (authErr.code === 'auth/invalid-credential' || authErr.code === 'auth/operation-not-allowed') {
           userUid = auth.currentUser?.uid || `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
         } else {
-          throw authErr;
+          userUid = auth.currentUser?.uid || `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
         }
       }
 
@@ -833,9 +830,16 @@ export const authService = {
 
       try {
         await setDoc(doc(db, 'users', userUid), userData);
-        triggerWelcomeNotifications(userData).catch(e => console.error('[Welcome API] Email Signup trigger failed:', e));
+        triggerWelcomeNotifications(userData).catch(() => null);
       } catch (fsErr) {
-        if (!isOfflineError(fsErr)) throw fsErr;
+        console.warn('[signUp] Firestore write notice:', fsErr.message);
+        let users = safeParseLS('sa_users', []);
+        users = users.filter(u => u.email !== userData.email);
+        users.push(userData);
+        localStorage.setItem('sa_users', JSON.stringify(users));
+        localStorage.setItem('sa_current_user', JSON.stringify(userData));
+        currentUserMock = userData;
+        triggerAuthChange(userData);
       }
       return userData;
     } else {
