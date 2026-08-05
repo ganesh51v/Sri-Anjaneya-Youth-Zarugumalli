@@ -38,7 +38,7 @@ export default async function handler(req, res) {
   const fromPhone = process.env.TWILIO_PHONE_NUMBER || '+1234567890';
 
   const otpCode = code || '123456';
-  const bodyMessage = `Namaste! Your Sri Anjaneya Youth OTP code is: ${otpCode}. Do not share this code with anyone. Jai Hanuman!`;
+  const bodyMessage = `${otpCode} is your OTP to verify phone number at Sri Anjaneya Youth Zarugumalli. Please do not share OTP with anyone.\n\nthank you\nteam SAYZML`;
 
   if (!accountSid || accountSid.startsWith('AC_your_')) {
     console.warn('[Twilio OTP] TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN missing or placeholder. Returning mocked SMS dispatch.');
@@ -51,7 +51,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const client = twilio(apiKeySid || accountSid, authToken, { accountSid });
+    const client = apiKeySid 
+      ? twilio(apiKeySid, authToken, { accountSid })
+      : twilio(accountSid, authToken);
+
     const message = await client.messages.create({
       body: bodyMessage,
       from: fromPhone,
