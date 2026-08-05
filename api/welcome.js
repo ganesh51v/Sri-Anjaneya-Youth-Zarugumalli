@@ -10,7 +10,7 @@ const sendWelcomeEmail = async (user) => {
   }
 
   const resend = new Resend(resendApiKey);
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'Sri Anjaneya Youth <onboarding@resend.dev>';
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'srianjaneyayouth9@gmail.com';
 
   const { data, error } = await resend.emails.send({
     from: fromEmail,

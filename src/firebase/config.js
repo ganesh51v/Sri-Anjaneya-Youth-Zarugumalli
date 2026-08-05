@@ -288,9 +288,8 @@ const recordMockLoginAttempt = (email, success) => {
 const normalizeUser = (uid, extra = {}) => {
   // Capture emailVerified from Firebase if available
   const currentUser = auth?.currentUser;
-  const emailVerified = (currentUser && currentUser.uid === uid) 
-    ? currentUser.emailVerified 
-    : (extra && extra.emailVerified !== undefined ? extra.emailVerified : false);
+  const isAuthVerified = (currentUser && currentUser.uid === uid) ? currentUser.emailVerified : false;
+  const emailVerified = isAuthVerified || (extra && extra.emailVerified === true);
 
   return {
     id: uid,
@@ -301,8 +300,8 @@ const normalizeUser = (uid, extra = {}) => {
     committeeStatus: 'none',
     welcomeEmailSent: false,
     welcomeMessageSent: false,
-    emailVerified,
     ...extra,
+    emailVerified, // Must come after ...extra so fresh Firebase Auth status takes precedence
   };
 };
 
@@ -348,34 +347,28 @@ const triggerWelcomeNotifications = async (userData) => {
       }
     }
 
-    const apiBase = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
-      ? ''
-      : 'https://sri-anjaneya-youth-zarugumalli.vercel.app';
-
     console.log('[Welcome API] Dispatching welcome notifications for:', userData.email);
-    const res = await fetch(`${apiBase}/api/welcome`, {
+    const res = await fetch('/api/welcome', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData)
-    });
+    }).catch(() => null);
 
-    if (res.ok) {
-      const result = await res.json();
-      console.log('[Welcome API] Success response:', result);
-      
-      const updates = {};
-      if (result.emailSent) updates.welcomeEmailSent = true;
-      if (result.messageSent) updates.welcomeMessageSent = true;
+    if (res && res.ok) {
+      const result = await res.json().catch(() => null);
+      if (result) {
+        const updates = {};
+        if (result.emailSent) updates.welcomeEmailSent = true;
+        if (result.messageSent) updates.welcomeMessageSent = true;
 
-      if (Object.keys(updates).length > 0) {
-        await setDoc(userRef, updates, { merge: true });
-        console.log('[Welcome API] Updated Firestore document with dispatch results:', updates);
+        if (Object.keys(updates).length > 0) {
+          await setDoc(userRef, updates, { merge: true });
+          console.log('[Welcome API] Updated Firestore document with dispatch results:', updates);
+        }
       }
-    } else {
-      console.warn('[Welcome API] Service returned non-ok status:', res.status);
     }
   } catch (err) {
-    console.error('[Welcome API] Error sending welcome notifications:', err.message);
+    console.log('[Welcome API] Notification dispatch notice:', err.message);
   }
 };
 
@@ -431,8 +424,53 @@ export const authService = {
       });
       return match ? { uid: match.id, ...match.data() } : null;
     } catch (err) {
+      if (err.code === 'permission-denied' || err.message?.includes('permissions')) {
+        return null;
+      }
       console.warn('[_findUserByPhone] Firestore query error:', err.message);
       return null;
+    }
+  },
+
+  // ---------------------------------------------------------------
+  // Look up a user document by email address
+  // ---------------------------------------------------------------
+  _findUserByEmail: async (email) => {
+    const trimmed = String(email || '').trim().toLowerCase();
+    if (!trimmed) return null;
+    if (!isFirebaseConfigured || !db) {
+      const users = safeParseLS('sa_users');
+      return users.find(u => u.email && u.email.toLowerCase() === trimmed) || null;
+    }
+    try {
+      const snap = await getDocs(query(collection(db, 'users'), where('email', '==', trimmed)));
+      if (!snap.empty) return { uid: snap.docs[0].id, ...snap.docs[0].data() };
+      return null;
+    } catch (err) {
+      if (err.code === 'permission-denied' || err.message?.includes('permissions')) {
+        return null;
+      }
+      console.warn('[_findUserByEmail] Firestore query error:', err.message);
+      return null;
+    }
+  },
+
+  // ---------------------------------------------------------------
+  // Check if an email OR phone number is already registered (no duplicates allowed)
+  // ---------------------------------------------------------------
+  checkDuplicateAccount: async (email, phone) => {
+    if (email) {
+      const existingEmail = await authService._findUserByEmail(email);
+      if (existingEmail) {
+        throw new Error('An account with this email address already exists. Please sign in instead.');
+      }
+    }
+    if (phone) {
+      const normalized = authService._normalizePhone(phone);
+      const existingPhone = await authService._findUserByPhone(normalized);
+      if (existingPhone) {
+        throw new Error('An account with this mobile number already exists. Please sign in instead.');
+      }
     }
   },
 
@@ -501,35 +539,93 @@ export const authService = {
   // Returns { success, code (shown as fallback in dev), destination }
   // ---------------------------------------------------------------
   sendRegistrationOtp: async (destination, method = 'phone') => {
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
-    sessionStorage.setItem('sa_reg_otp', JSON.stringify({ destination, method, code, expiry }));
-    console.log(`[Registration OTP] Code for ${destination}: ${code}`);
+    // 0. Enforce duplicate account check before sending OTP
+    if (method === 'phone' || authService._isPhone(destination)) {
+      const normalized = authService._normalizePhone(destination);
+      const existing = await authService._findUserByPhone(normalized);
+      if (existing) {
+        throw new Error('An account with this mobile number already exists. Please sign in instead.');
+      }
+    } else {
+      const existing = await authService._findUserByEmail(destination);
+      if (existing) {
+        throw new Error('An account with this email address already exists. Please sign in instead.');
+      }
+    }
 
-    const apiBase = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
-      ? ''
-      : 'https://sri-anjaneya-youth-zarugumalli.vercel.app';
+    const twoFactorApiKey = import.meta.env.VITE_TWO_FACTOR_API_KEY || 'db1c2bc7-909b-11f1-908b-0200cd936042';
 
     if (method === 'phone') {
+      const cleanPhone = destination.replace(/\D/g, '').slice(-10);
+
+      // 1. Try serverless backend API endpoint first
       try {
-        const res = await fetch(`${apiBase}/api/send-twilio-otp`, {
+        const res = await fetch('/api/auth/send-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: destination, code })
-        });
-        const result = await res.json();
-        if (result.success) {
-          console.log('[Registration OTP] Twilio SMS dispatched successfully.');
-        } else {
-          console.warn('[Registration OTP] Twilio SMS failed:', result.error, '— code shown in console for dev/trial.');
+          body: JSON.stringify({ phone: cleanPhone })
+        }).catch(() => null);
+        if (res && res.ok) {
+          const result = await res.json().catch(() => null);
+          if (result && result.success) {
+            const expiry = Date.now() + 5 * 60 * 1000;
+            sessionStorage.setItem('sa_2factor_session', JSON.stringify({
+              phone: cleanPhone,
+              sessionId: result.sessionId,
+              devCode: result.devCode || null,
+              expiry
+            }));
+            console.log('[2Factor OTP] Dispatched via backend API. Session ID:', result.sessionId);
+            return { success: true, sessionId: result.sessionId, destination };
+          }
         }
-      } catch (smsErr) {
-        console.warn('[Registration OTP] SMS dispatch network error:', smsErr.message);
+      } catch (backendErr) {
+        console.warn('[2Factor Backend API] Route unreachable, attempting direct 2Factor dispatch:', backendErr.message);
+      }
+
+      // 2. Direct 2Factor API Fallback (GET Text SMS) for local dev & CORS resilience
+      try {
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+        const directUrl = `https://2factor.in/API/V1/${twoFactorApiKey}/SMS/${cleanPhone}/${code}/OTP1`;
+        let res = await fetch(directUrl, { method: 'GET' });
+        let data = await res.json();
+
+        if (!data || data.Status !== 'Success') {
+          const fallbackUrl = `https://2factor.in/API/V1/${twoFactorApiKey}/SMS/${cleanPhone}/AUTOGEN/OTP1`;
+          res = await fetch(fallbackUrl, { method: 'GET' });
+          data = await res.json();
+        }
+
+        if (data && data.Status === 'Success') {
+          const expiry = Date.now() + 5 * 60 * 1000;
+          sessionStorage.setItem('sa_2factor_session', JSON.stringify({
+            phone: cleanPhone,
+            sessionId: data.Details,
+            code,
+            expiry
+          }));
+          console.log('[2Factor OTP] Text SMS sent successfully! Session ID:', data.Details);
+          return { success: true, sessionId: data.Details, destination };
+        } else {
+          throw new Error(data.Details || 'Failed to send OTP SMS.');
+        }
+      } catch (directErr) {
+        console.error('[2Factor Direct Error]', directErr);
+        throw new Error(directErr.message || 'Failed to send OTP via Text SMS. Please check your mobile number.');
       }
     } else {
       // Email OTP via Resend
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      const expiry = Date.now() + 5 * 60 * 1000;
+      sessionStorage.setItem('sa_2factor_session', JSON.stringify({
+        destination,
+        method: 'email',
+        code,
+        expiry
+      }));
+
       try {
-        const res = await fetch(`${apiBase}/api/send-email`, {
+        const res = await fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -537,39 +633,83 @@ export const authService = {
             to: destination,
             data: { code }
           })
-        });
-        const result = await res.json();
-        if (result.success) {
-          console.log('[Registration OTP] Resend email dispatched successfully.');
-        } else {
-          console.warn('[Registration OTP] Email send failed:', result.error);
+        }).catch(() => null);
+        if (res && res.ok) {
+          console.log('[Registration OTP] Resend OTP email dispatched to:', destination);
         }
       } catch (emailErr) {
-        console.warn('[Registration OTP] Email dispatch network error:', emailErr.message);
+        console.warn('[Registration OTP] Email dispatch notice:', emailErr.message);
       }
-    }
 
-    return { success: true, code, destination };
+      return { success: true, code, destination };
+    }
   },
 
   // ---------------------------------------------------------------
-  // NEW: Verify registration OTP entered by the user
+  // NEW: Verify registration OTP entered by the user via 2Factor API
   // ---------------------------------------------------------------
-  verifyRegistrationOtp: (enteredCode) => {
-    const raw = sessionStorage.getItem('sa_reg_otp');
+  verifyRegistrationOtp: async (enteredCode) => {
+    const raw = sessionStorage.getItem('sa_2factor_session');
     if (!raw) throw new Error('No OTP session found. Please request a new OTP.');
+    
     let session;
     try { session = JSON.parse(raw); } catch { throw new Error('Invalid OTP session. Please request a new OTP.'); }
 
     if (Date.now() > session.expiry) {
-      sessionStorage.removeItem('sa_reg_otp');
+      sessionStorage.removeItem('sa_2factor_session');
       throw new Error('OTP has expired. Please request a new one.');
     }
-    if (String(enteredCode).trim() !== session.code) {
-      throw new Error('Incorrect OTP. Please check and try again.');
+
+    if (session.phone) {
+      const twoFactorApiKey = import.meta.env.VITE_TWO_FACTOR_API_KEY || 'db1c2bc7-909b-11f1-908b-0200cd936042';
+
+      // 1. Try serverless backend verify route first
+      try {
+        const res = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: session.phone,
+            otp: enteredCode,
+            sessionId: session.sessionId,
+            devCode: session.devCode
+          })
+        }).catch(() => null);
+        if (res && res.ok) {
+          const result = await res.json().catch(() => null);
+          if (result && result.success && result.verified) {
+            sessionStorage.removeItem('sa_2factor_session');
+            return true;
+          }
+        }
+      } catch (backendErr) {
+        if (backendErr.message?.includes('Incorrect') || backendErr.message?.includes('Invalid')) {
+          throw backendErr;
+        }
+      }
+
+      // 2. Direct 2Factor API GET VERIFY Fallback
+      try {
+        const directUrl = `https://2factor.in/API/V1/${twoFactorApiKey}/SMS/VERIFY/${session.sessionId}/${enteredCode.trim()}`;
+        const res = await fetch(directUrl, { method: 'GET' });
+        const data = await res.json();
+        if (data && data.Status === 'Success' && data.Details === 'OTP Matched') {
+          sessionStorage.removeItem('sa_2factor_session');
+          return true;
+        } else {
+          const isMismatch = data?.Details?.includes('Mismatch') || data?.Details?.includes('Invalid');
+          throw new Error(isMismatch ? 'Incorrect OTP. Please check and try again.' : (data?.Details || 'OTP verification failed.'));
+        }
+      } catch (directErr) {
+        throw new Error(directErr.message || 'OTP verification failed. Please try again.');
+      }
+    } else {
+      if (String(enteredCode).trim() !== session.code) {
+        throw new Error('Incorrect OTP. Please check and try again.');
+      }
+      sessionStorage.removeItem('sa_2factor_session');
+      return true;
     }
-    sessionStorage.removeItem('sa_reg_otp');
-    return true;
   },
 
   signIn: async (email, password) => {
@@ -583,24 +723,18 @@ export const authService = {
           if (userDoc.exists()) {
             return normalizeUser(cred.user.uid, userDoc.data());
           } else {
-            const defaultData = normalizeUser(cred.user.uid, {
-              email: cred.user.email || '',
-              name: cred.user.displayName || cred.user.email || 'Bhaktha',
-              phone: cred.user.phoneNumber || '',
-              village: 'Zarugumalli',
-              role: cred.user.email === 'admin@srianjaneya.org' ? 'admin' : 'user',
-              committeeStatus: 'none',
-              createdAt: new Date().toISOString()
-            });
-            try {
-              await setDoc(doc(db, 'users', cred.user.uid), defaultData);
-              console.log('[signIn] Created missing Firestore profile document for UID:', cred.user.uid);
-            } catch (writeErr) {
-              console.warn('[signIn] Failed to write missing profile document:', writeErr);
-            }
-            return defaultData;
+            // If user profile document is missing (deleted by Admin), prevent sign in
+            try { await firebaseSignOut(auth); } catch (e) {}
+            throw new Error('This account has been deleted by an administrator and no longer exists.');
           }
         } catch (firestoreErr) {
+          if (firestoreErr.message?.includes('deleted by an administrator')) {
+            throw firestoreErr;
+          }
+          if (firestoreErr.code === 'permission-denied' || firestoreErr.message?.includes('permissions')) {
+            console.warn('[signIn] Firestore permission restricted — returning basic authenticated user profile.');
+            return normalizeUser(cred.user.uid, { email: cred.user.email, role: cred.user.email === 'admin@srianjaneya.org' ? 'admin' : 'user' });
+          }
           console.warn('[Firestore] Failed to retrieve user role document:', firestoreErr);
         }
         return normalizeUser(cred.user.uid, { email: cred.user.email, role: cred.user.email === 'admin@srianjaneya.org' ? 'admin' : 'user' });
@@ -655,19 +789,37 @@ export const authService = {
   },
 
   signUp: async (name, email, phone, village, password) => {
+    // Check duplicate email & phone in database before account creation
+    await authService.checkDuplicateAccount(email, phone);
+
     if (isFirebaseConfigured && auth) {
       try {
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        
-        // Send email verification link
+        let userUid;
         try {
-          await sendEmailVerification(cred.user);
-          console.log('[signUp] Email verification link sent to:', email);
-        } catch (verifyErr) {
-          console.warn('[signUp] Failed to send email verification link:', verifyErr.message);
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          userUid = cred.user.uid;
+          try { await sendEmailVerification(cred.user); } catch (vErr) { console.warn('[signUp] Verification link warn:', vErr.message); }
+        } catch (authErr) {
+          if (authErr.code === 'auth/email-already-in-use') {
+            const existingDoc = await authService._findUserByEmail(email);
+            if (!existingDoc) {
+              // Document was deleted by admin — reclaim auth UID to complete new account registration
+              try {
+                const cred = await signInWithEmailAndPassword(auth, email, password);
+                userUid = cred.user.uid;
+              } catch (signInErr) {
+                userUid = auth.currentUser ? auth.currentUser.uid : null;
+                if (!userUid) throw new Error('An account with this email was previously deleted. Please sign in or reset password.');
+              }
+            } else {
+              throw new Error('An account with this email address already exists. Please sign in.');
+            }
+          } else {
+            throw authErr;
+          }
         }
 
-        const userData = normalizeUser(cred.user.uid, {
+        const userData = normalizeUser(userUid, {
           name, email, phone, village,
           role: 'user',
           photoUrl: '',
@@ -675,11 +827,10 @@ export const authService = {
           createdAt: new Date().toISOString()
         });
         try {
-          await setDoc(doc(db, 'users', cred.user.uid), userData);
+          await setDoc(doc(db, 'users', userUid), userData);
           triggerWelcomeNotifications(userData).catch(e => console.error('[Welcome API] Email Signup trigger failed:', e));
         } catch (fsErr) {
           if (!isOfflineError(fsErr)) throw fsErr;
-          console.warn('[signUp] Offline — Firestore profile will sync when reconnected.');
         }
         return userData;
       } catch (err) {
@@ -689,9 +840,6 @@ export const authService = {
     } else {
       // Mock Sign Up
       const users = safeParseLS('sa_users');
-      if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-        throw new Error('Email address already registered.');
-      }
       const hashedPassword = await hashPassword(password);
       const newUser = {
         id: 'u_' + Math.random().toString(36).substr(2, 9),
@@ -700,7 +848,7 @@ export const authService = {
         photoUrl: '',
         committeeStatus: 'none',
         password: hashedPassword,
-        emailVerified: true, // Auto-verified in mock mode
+        emailVerified: true,
         createdAt: new Date().toISOString()
       };
       users.push(newUser);
@@ -794,9 +942,32 @@ export const authService = {
   },
 
   resetPassword: async (email) => {
+    // 1. Dispatch Password Reset email via Resend
+    const resetCode = String(Math.floor(100000 + Math.random() * 900000));
+    try {
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'password_reset',
+          to: email,
+          data: { code: resetCode }
+        })
+      }).catch(() => null);
+
+      if (res && res.ok) {
+        console.log('[resetPassword] Password reset email queued for:', email);
+      }
+    } catch (e) {
+      console.warn('[resetPassword] Resend notice:', e.message);
+    }
+
+    // 2. Dispatch official Firebase Auth Password Reset Email Link
     if (isFirebaseConfigured && auth) {
       try {
         await sendPasswordResetEmail(auth, email);
+        console.log('[resetPassword] Official Firebase password reset email link dispatched to:', email);
+        return true;
       } catch (err) {
         if (err.code === 'auth/user-not-found') throw new Error('No account found with this email address.');
         if (isOfflineError(err)) throw new Error('No internet connection. Please try again when online.');
@@ -805,7 +976,7 @@ export const authService = {
     } else {
       const users = safeParseLS('sa_users');
       if (!users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-        throw new Error('No user found with this email in local mock database.');
+        throw new Error('No user found with this email address.');
       }
       return true;
     }
@@ -853,48 +1024,69 @@ export const authService = {
     }
   },
 
+  checkEmailVerification: async () => {
+    if (isFirebaseConfigured && auth && auth.currentUser) {
+      try {
+        await auth.currentUser.reload();
+        const isVerified = auth.currentUser.emailVerified;
+        if (isVerified && db) {
+          try {
+            await setDoc(doc(db, 'users', auth.currentUser.uid), { emailVerified: true }, { merge: true });
+          } catch (e) {}
+        }
+        let data = {};
+        try {
+          const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+          if (userDoc.exists()) data = userDoc.data();
+        } catch (e) {}
+
+        const normalized = normalizeUser(auth.currentUser.uid, { ...data, emailVerified: isVerified });
+        triggerAuthChange(normalized);
+        return { isVerified, user: normalized };
+      } catch (err) {
+        console.warn('[checkEmailVerification] Error reloading auth user:', err.message);
+      }
+    }
+    const current = safeParseLS('sa_current_user', null);
+    if (current) {
+      current.emailVerified = true;
+      localStorage.setItem('sa_current_user', JSON.stringify(current));
+      triggerAuthChange(current);
+      return { isVerified: true, user: current };
+    }
+    return { isVerified: false, user: null };
+  },
+
   onAuthStateChanged: (callback) => {
     if (isFirebaseConfigured && auth) {
       return firebaseOnAuthStateChanged(auth, async (user) => {
         if (user) {
           try {
+            // Force reload current user to get fresh emailVerified status from Firebase Auth
+            await user.reload().catch(() => {});
+
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             if (userDoc.exists()) {
-              callback(normalizeUser(user.uid, userDoc.data()));
-            } else {
-              const defaultData = normalizeUser(user.uid, {
-                email: user.email || '',
-                name: user.displayName || user.email || 'Bhaktha',
-                phone: user.phoneNumber || '',
-                village: 'Zarugumalli',
-                role: user.email === 'admin@srianjaneya.org' ? 'admin' : 'user',
-                committeeStatus: 'none',
-                createdAt: new Date().toISOString()
-              });
-              try {
-                await setDoc(doc(db, 'users', user.uid), defaultData);
-                console.log('[onAuthStateChanged] Created missing Firestore profile document for UID:', user.uid);
-                // Bug 1/2 fix: Only trigger welcome for accounts created within the last 2 minutes
-                // This prevents re-triggering on existing users whose Firestore doc was somehow missing
-                const ageMs = Date.now() - new Date(defaultData.createdAt).getTime();
-                if (ageMs < 120000) {
-                  triggerWelcomeNotifications(defaultData).catch(e => console.error('[Welcome API] Auth State trigger failed:', e));
-                } else {
-                  console.log('[Welcome API] Existing account detected (>2 min old). Skipping welcome dispatch from onAuthStateChanged.');
-                }
-              } catch (writeErr) {
-                console.warn('[onAuthStateChanged] Failed to write missing profile document:', writeErr);
+              const data = userDoc.data();
+              if (user.emailVerified && !data.emailVerified) {
+                try { await setDoc(doc(db, 'users', user.uid), { emailVerified: true }, { merge: true }); } catch (e) {}
+                data.emailVerified = true;
               }
-              callback(defaultData);
+              callback(normalizeUser(user.uid, data));
+            } else {
+              // User profile document missing (deleted by Admin) — log out immediately
+              console.warn('[onAuthStateChanged] Account profile deleted by admin. Logging out user:', user.uid);
+              try { await firebaseSignOut(auth); } catch (e) {}
+              callback(null);
             }
           } catch (err) {
-            if (isOfflineError(err)) {
-              console.warn('[Firestore] Offline — using basic auth profile from token cache.');
+            if (isOfflineError(err) || err.code === 'permission-denied' || err.message?.includes('permissions')) {
+              console.warn('[Firestore Auth State] Using basic auth profile (Permission/Offline notice).');
               callback(normalizeUser(user.uid, {
-                email: user.email,
-                name: user.displayName || user.email,
+                email: user.email || '',
+                name: user.displayName || user.email || 'Bhaktha',
                 role: user.email === 'admin@srianjaneya.org' ? 'admin' : 'user',
-                _offlineMode: true
+                _permissionFallback: true
               }));
             } else {
               console.error('[onAuthStateChanged] Firestore error:', err);
@@ -1309,11 +1501,23 @@ export const dbService = {
     },
     delete: async (id) => {
       if (isFirebaseConfigured && db) {
-        return firestoreOp(() => deleteDoc(doc(db, 'users', id)).then(() => id), null, 'users.delete');
+        return firestoreOp(async () => {
+          await deleteDoc(doc(db, 'users', id));
+          console.log('[dbService.users.delete] User document deleted:', id);
+          return id;
+        }, null, 'users.delete');
       }
       let users = safeParseLS('sa_users', []);
-      users = users.filter(u => u.id !== id);
+      users = users.filter(u => u.id !== id && u.uid !== id);
       localStorage.setItem('sa_users', JSON.stringify(users));
+
+      // Purge session if deleted user is currently active session
+      const current = safeParseLS('sa_current_user', null);
+      if (current && (current.id === id || current.uid === id)) {
+        localStorage.removeItem('sa_current_user');
+        currentUserMock = null;
+        triggerAuthChange(null);
+      }
       return id;
     }
   },

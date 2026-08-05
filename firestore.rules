@@ -8,10 +8,10 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Users collection
+    // Users collection — allow read for authentication & registration duplicate checks
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId;
+      allow read: if true;
+      allow create: if true;
       allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
     }
@@ -36,14 +36,14 @@ service cloud.firestore {
 
     // Donations collection
     match /donations/{donationId} {
-      allow create: if request.auth != null;
+      allow create: if true;
       allow read: if true;
       allow update, delete: if isAdmin();
     }
 
-    // Expenditures collection — all logged-in users can read, only admin can write
+    // Expenditures collection
     match /expenditures/{expenditureId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow create, update, delete: if isAdmin();
     }
   }

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { fadeUp, shake } from '../utils/animate';
+import { triggerConfetti } from '../utils/confetti';
 
 // ─── OTP digit box component ─────────────────────────────────────────────────
 const OtpInput = ({ value, onChange }) => {
@@ -40,7 +41,7 @@ const OtpInput = ({ value, onChange }) => {
           type="text"
           inputMode="numeric"
           maxLength={1}
-          value={digits[i] !== ' ' ? digits[i] : ''}
+          value={digits[i] || ''}
           onKeyDown={(e) => handleKey(i, e)}
           onChange={() => {}} // controlled via onKeyDown
           className="w-10 h-12 text-center text-lg font-extrabold rounded-xl border-2 border-cream-300 focus:border-saffron-500 focus:ring-2 focus:ring-saffron-500/20 bg-cream-50/50 dark:bg-slate-950 dark:border-slate-700 dark:text-white outline-none transition-all font-mono"
@@ -187,11 +188,12 @@ const SignUp = () => {
 
     setLoading(true);
     try {
-      // 1. Verify OTP
-      authService.verifyRegistrationOtp(otpValue);
+      // 1. Verify 2Factor OTP
+      await authService.verifyRegistrationOtp(otpValue);
 
-      // 2. Create the Firebase account
+      // 2. Create the user account
       const newUser = await authService.signUp(name.trim(), email.trim(), phone.trim(), village.trim(), password);
+      triggerConfetti();
       loginUser(newUser);
       navigate('/');
     } catch (err) {
@@ -224,6 +226,7 @@ const SignUp = () => {
     setError(''); setLoading(true);
     try {
       const loggedUser = await authService.signInWithGoogle();
+      triggerConfetti();
       loginUser(loggedUser);
       navigate('/');
     } catch (err) {
@@ -468,14 +471,7 @@ const SignUp = () => {
                   </div>
                 </div>
 
-                {/* Fallback code hint (dev / trial) */}
-                {otpFallbackCode && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
-                    <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wider mb-1">Dev / Trial Fallback Code</p>
-                    <p className="text-2xl font-extrabold tracking-[0.3em] text-amber-700 font-mono">{otpFallbackCode}</p>
-                    <p className="text-[10px] text-amber-500 mt-1">SMS delivery requires a Twilio paid account. Use this code to test.</p>
-                  </div>
-                )}
+
 
                 {/* 6-digit OTP boxes */}
                 <div>

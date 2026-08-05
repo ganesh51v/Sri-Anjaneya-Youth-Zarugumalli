@@ -24,11 +24,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Used by SignIn/SignUp to update the user after auth operations
   const loginUser = (userData) => setUser(userData);
 
+  const checkEmailVerification = async () => {
+    const res = await authService.checkEmailVerification();
+    if (res && res.user) {
+      setUser(res.user);
+    }
+    return res;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, loginUser, signOut }}>
+    <AuthContext.Provider value={{ user, loading, loginUser, signOut, checkEmailVerification }}>
       {children}
     </AuthContext.Provider>
   );

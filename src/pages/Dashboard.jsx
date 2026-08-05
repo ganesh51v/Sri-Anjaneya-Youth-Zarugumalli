@@ -103,26 +103,46 @@ const Dashboard = () => {
       {user && !user.emailVerified && !authService.isMock && (
         <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
           <div className="flex items-center gap-2.5 text-amber-700 dark:text-amber-300">
-            <Info className="w-5 h-5 shrink-0" />
+            <Info className="w-5 h-5 shrink-0 text-amber-500" />
             <div>
               <span className="font-black text-[13px]">Your email address is not verified.</span>
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">Please check your inbox for a verification link to secure your account.</p>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">Please click the link sent to your inbox, then click "I Have Verified" below.</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                await authService.sendVerificationEmail();
-                alert("Verification link has been sent to your email address!");
-              } catch (e) {
-                alert("Failed to send verification link: " + e.message);
-              }
-            }}
-            className="btn btn-primary btn-sm shrink-0 self-start sm:self-auto"
-          >
-            Resend Verification Link
-          </button>
+          <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap">
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await authService.checkEmailVerification();
+                  if (res && res.isVerified) {
+                    alert("🎉 Email verified successfully! Your account status has been updated.");
+                  } else {
+                    alert("Email is not verified yet. Please check your inbox/spam folder and click the verification link first.");
+                  }
+                } catch (e) {
+                  alert("Verification check error: " + e.message);
+                }
+              }}
+              className="btn btn-gold btn-sm"
+            >
+              I Have Verified
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await authService.sendVerificationEmail();
+                  alert("Verification link has been sent to your email address!");
+                } catch (e) {
+                  alert("Failed to send verification link: " + e.message);
+                }
+              }}
+              className="btn btn-ghost btn-sm"
+            >
+              Resend Link
+            </button>
+          </div>
         </div>
       )}
 

@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { dbService, authService } from '../firebase/config';
-import { User, Phone, MapPin, Mail, ShieldAlert, Check, Edit, LogOut, Loader2, AlertCircle, Lock, Camera } from 'lucide-react';
+import { User, Phone, MapPin, Mail, ShieldAlert, Check, Edit, LogOut, Loader2, AlertCircle, Lock, Camera, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
-import { fadeUp, rotateFadeIn, slideDown } from '../utils/animate';
+import { fadeUp, rotateFadeIn } from '../utils/animate';
 
 const Profile = () => {
   const { user, loginUser, signOut } = useAuth();
@@ -127,10 +127,7 @@ const Profile = () => {
     }
 
     try {
-      // Find user in database and update
       await dbService.users.updateDetails(user.id, { name, phone, village, photoUrl });
-      
-      // Update session details
       const sessionUser = { ...user, name, phone, village, photoUrl };
       localStorage.setItem('sa_current_user', JSON.stringify(sessionUser));
       loginUser(sessionUser);
@@ -162,24 +159,25 @@ const Profile = () => {
   };
 
   return (
-    <div className="flex-1 max-w-xl mx-auto px-4 py-12 w-full">
+    <div className="flex-1 max-w-lg mx-auto px-4 py-10 w-full text-[var(--text-primary)]">
       <SEO title="My Profile" description="Manage your Sri Anjaneya Youth Zarugumalli member profile — update your information, view your membership details and activity history." path="/profile" />
-      <div ref={cardRef} style={{ opacity: 0 }} className="bg-white rounded-3xl border border-cream-200 shadow-sm overflow-hidden relative glass-panel">
+      
+      <div ref={cardRef} style={{ opacity: 0 }} className="bg-[var(--bg-card)] rounded-[28px] border-2 border-gold-500/30 shadow-2xl overflow-hidden relative transition-colors duration-300">
         
         {/* Header Ribbon */}
-        <div className="h-2 bg-gradient-to-r from-saffron-500 via-gold-500 to-devored-600 w-full" />
+        <div className="h-1.5 bg-gradient-to-r from-saffron-500 via-gold-400 to-devored-600 w-full" />
 
         {/* Profile Card Header */}
-        <div className="p-8 text-center border-b border-cream-100 bg-cream-50/20 relative">
-          <div ref={avatarRef} style={{ opacity: 0 }} className="w-24 h-24 rounded-full bg-saffron-100 border-4 border-white shadow-md mx-auto flex items-center justify-center text-saffron-600 text-3xl font-black overflow-hidden relative group">
+        <div className="p-8 text-center border-b border-[var(--border)] bg-gradient-to-b from-saffron-500/10 via-[var(--bg-muted)]/50 to-transparent relative">
+          <div ref={avatarRef} style={{ opacity: 0 }} className="w-24 h-24 rounded-full bg-gradient-to-tr from-saffron-500/20 to-gold-500/20 border-4 border-gold-400 shadow-xl mx-auto flex items-center justify-center text-saffron-600 dark:text-saffron-400 text-3xl font-black overflow-hidden relative group">
             {photoUrl ? (
               <img src={photoUrl} alt={name || 'User'} className="w-full h-full object-cover" />
             ) : (
               name ? name[0].toUpperCase() : 'U'
             )}
             {isEditing && (
-              <label className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity animate-fade-in">
-                <Camera className="w-5 h-5 text-white" />
+              <label className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera className="w-6 h-6 text-white" />
                 <input
                   type="file"
                   accept="image/*"
@@ -189,38 +187,41 @@ const Profile = () => {
               </label>
             )}
           </div>
-          <h2 className="text-lg font-bold text-slate-800 mt-4 leading-none">{user?.name}</h2>
-          <span className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest text-gold-700 bg-gold-50 border border-gold-200/50 mt-2">
-            {user?.role} Role
-          </span>
+
+          <h2 className="text-xl font-black text-[var(--text-primary)] mt-4 tracking-tight">{user?.name || user?.email}</h2>
+          
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-widest text-gold-600 dark:text-gold-400 bg-gold-500/10 border border-gold-500/30 mt-2 shadow-sm">
+            <Sparkles className="w-3 h-3 text-gold-500" />
+            <span>{user?.role || 'Member'} Role</span>
+          </div>
         </div>
 
         {/* Details and Edit form */}
-        <div className="p-6 sm:p-8 space-y-6">
+        <div className="p-6 sm:p-8 space-y-5">
           {error && (
-            <div className="bg-devored-50 border border-devored-200 text-devored-700 p-3.5 rounded-xl text-xs flex items-start gap-2">
+            <div className="bg-devored-500/10 border border-devored-500/30 text-devored-600 dark:text-devored-400 p-3.5 rounded-xl text-xs flex items-start gap-2.5 font-semibold">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           {success && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-3.5 rounded-xl text-xs flex items-start gap-2 animate-fade-in">
-              <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
+            <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 p-3.5 rounded-xl text-xs flex items-start gap-2.5 font-semibold animate-fade-in">
+              <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-500" />
               <span>Details updated successfully!</span>
             </div>
           )}
 
           {passwordError && (
-            <div className="bg-devored-50 border border-devored-200 text-devored-700 p-3.5 rounded-xl text-xs flex items-start gap-2 animate-fade-in">
+            <div className="bg-devored-500/10 border border-devored-500/30 text-devored-600 dark:text-devored-400 p-3.5 rounded-xl text-xs flex items-start gap-2.5 font-semibold animate-fade-in">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{passwordError}</span>
             </div>
           )}
 
           {passwordSuccess && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-3.5 rounded-xl text-xs flex items-start gap-2 animate-fade-in">
-              <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
+            <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 p-3.5 rounded-xl text-xs flex items-start gap-2.5 font-semibold animate-fade-in">
+              <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-500" />
               <span>Password updated successfully!</span>
             </div>
           )}
@@ -228,44 +229,44 @@ const Profile = () => {
           {isChangingPassword ? (
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1 pl-1">{t('newPassword')}</label>
+                <label className="block text-[11px] font-black uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 pl-1">{t('newPassword')}</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500 font-semibold"
+                  className="input-field"
                   placeholder={t('enterNewPassword')}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1 pl-1">{t('confirmNewPassword')}</label>
+                <label className="block text-[11px] font-black uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 pl-1">{t('confirmNewPassword')}</label>
                 <input
                   type="password"
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500 font-semibold"
+                  className="input-field"
                   placeholder={t('confirmPasswordPlaceholder')}
                   required
                 />
               </div>
 
-              <div className="flex gap-2 pt-2 text-xs">
+              <div className="flex gap-2.5 pt-2 text-xs">
                 <button
                   type="button"
                   onClick={() => {
                     setIsChangingPassword(false);
                     setPasswordError('');
                   }}
-                  className="w-1/2 py-2 border border-cream-300 rounded-xl font-bold text-slate-700 hover:bg-cream-50 transition-colors cursor-pointer"
+                  className="w-1/2 btn btn-ghost py-2.5 font-bold cursor-pointer"
                 >
                   {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={passwordLoading}
-                  className="w-1/2 py-2 saffron-gradient-btn rounded-xl flex items-center justify-center cursor-pointer"
+                  className="w-1/2 btn btn-primary py-2.5 font-black cursor-pointer"
                 >
                   {passwordLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('updatePassword')}
                 </button>
@@ -274,9 +275,9 @@ const Profile = () => {
           ) : isEditing ? (
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1 pl-1">{t('memberPhoto')}</label>
-                <div className="flex items-center gap-4 bg-cream-50/50 border border-cream-300 rounded-xl p-3">
-                  <div className="w-12 h-12 rounded-full bg-saffron-100 border border-cream-300 flex items-center justify-center text-saffron-600 font-bold overflow-hidden shrink-0">
+                <label className="block text-[11px] font-black uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 pl-1">{t('memberPhoto')}</label>
+                <div className="flex items-center gap-4 bg-[var(--bg-muted)] border border-[var(--border)] rounded-2xl p-3.5">
+                  <div className="w-12 h-12 rounded-full bg-saffron-500/10 border border-gold-500/40 flex items-center justify-center text-saffron-600 font-bold overflow-hidden shrink-0">
                     {photoUrl ? (
                       <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
@@ -293,17 +294,17 @@ const Profile = () => {
                     />
                     <label
                       htmlFor="profile-photo-input"
-                      className="inline-block px-4 py-2 bg-white border border-cream-300 rounded-xl text-xs font-bold text-slate-700 hover:bg-cream-50 cursor-pointer transition-colors"
+                      className="inline-block px-4 py-2 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl text-xs font-bold text-[var(--text-primary)] hover:border-saffron-500 cursor-pointer transition-colors"
                     >
                       {t('chooseImage')}
                     </label>
-                    <p className="text-[9px] text-slate-400 mt-1">PNG or JPG, maximum 800KB</p>
+                    <p className="text-[10px] text-[var(--text-muted)] mt-1">PNG or JPG, maximum 800KB</p>
                   </div>
                   {photoUrl && (
                     <button
                       type="button"
                       onClick={() => setPhotoUrl('')}
-                      className="text-xs font-bold text-devored-600 hover:text-devored-700 px-2 py-1 cursor-pointer"
+                      className="text-xs font-bold text-devored-500 hover:text-devored-600 px-2 py-1 cursor-pointer"
                     >
                       {t('remove')}
                     </button>
@@ -312,50 +313,50 @@ const Profile = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1 pl-1">{t('fullName')}</label>
+                <label className="block text-[11px] font-black uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 pl-1">{t('fullName')}</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500 font-semibold"
+                  className="input-field"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1 pl-1">{t('phoneNumber')}</label>
+                <label className="block text-[11px] font-black uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 pl-1">{t('phoneNumber')}</label>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500 font-semibold"
+                  className="input-field"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1 pl-1">{t('villageArea')}</label>
+                <label className="block text-[11px] font-black uppercase tracking-wider text-[var(--text-secondary)] mb-1.5 pl-1">{t('villageArea')}</label>
                 <input
                   type="text"
                   value={village}
                   onChange={(e) => setVillage(e.target.value)}
-                  className="w-full bg-cream-50/50 border border-cream-300 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500 font-semibold"
+                  className="input-field"
                   required
                 />
               </div>
 
-              <div className="flex gap-2 pt-2 text-xs">
+              <div className="flex gap-2.5 pt-2 text-xs">
                 <button
                   type="button"
                   onClick={handleCancelEdit}
-                  className="w-1/2 py-2 border border-cream-300 rounded-xl font-bold text-slate-700 hover:bg-cream-50 transition-colors cursor-pointer"
+                  className="w-1/2 btn btn-ghost py-2.5 font-bold cursor-pointer"
                 >
                   {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-1/2 py-2 saffron-gradient-btn rounded-xl flex items-center justify-center cursor-pointer"
+                  className="w-1/2 btn btn-primary py-2.5 font-black cursor-pointer"
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('saveDetails')}
                 </button>
@@ -364,61 +365,71 @@ const Profile = () => {
           ) : (
             <div className="space-y-4">
               {/* Display Attributes */}
-              <div className="grid grid-cols-1 gap-3.5 text-xs">
-                <div className="flex items-center gap-3 bg-cream-50/50 border border-cream-200/50 p-3 rounded-2xl">
-                  <Mail className="w-4 h-4 text-slate-400" />
-                  <div>
-                    <span className="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">{t('emailAddress')}</span>
-                    <span className="font-semibold text-slate-800">{user?.email}</span>
+              <div className="grid grid-cols-1 gap-3 text-xs">
+                
+                {/* Email Item */}
+                <div className="flex items-center gap-3.5 bg-[var(--bg-muted)] border border-[var(--border)] p-4 rounded-2xl shadow-sm transition-all hover:border-gold-500/40">
+                  <div className="w-9 h-9 rounded-xl bg-saffron-500/10 border border-saffron-500/20 flex items-center justify-center shrink-0">
+                    <Mail className="w-4 h-4 text-saffron-500" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)] mb-0.5">{t('emailAddress')}</span>
+                    <span className="font-extrabold text-sm text-[var(--text-primary)] truncate block">{user?.email}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 bg-cream-50/50 border border-cream-200/50 p-3 rounded-2xl">
-                  <Phone className="w-4 h-4 text-slate-400" />
-                  <div>
-                    <span className="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">{t('contactNumber')}</span>
-                    <span className="font-semibold text-slate-800">{user?.phone || 'Not added'}</span>
+                {/* Contact Number Item */}
+                <div className="flex items-center gap-3.5 bg-[var(--bg-muted)] border border-[var(--border)] p-4 rounded-2xl shadow-sm transition-all hover:border-gold-500/40">
+                  <div className="w-9 h-9 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center shrink-0">
+                    <Phone className="w-4 h-4 text-gold-500" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)] mb-0.5">{t('contactNumber')}</span>
+                    <span className="font-extrabold text-sm text-[var(--text-primary)] block">{user?.phone || 'Not added'}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 bg-cream-50/50 border border-cream-200/50 p-3 rounded-2xl">
-                  <MapPin className="w-4 h-4 text-slate-400" />
-                  <div>
-                    <span className="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">{t('address')}</span>
-                    <span className="font-semibold text-slate-800">{user?.village || 'Zarugumalli'}</span>
+                {/* Address Item */}
+                <div className="flex items-center gap-3.5 bg-[var(--bg-muted)] border border-[var(--border)] p-4 rounded-2xl shadow-sm transition-all hover:border-gold-500/40">
+                  <div className="w-9 h-9 rounded-xl bg-saffron-500/10 border border-saffron-500/20 flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4 text-saffron-500" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)] mb-0.5">{t('address')}</span>
+                    <span className="font-extrabold text-sm text-[var(--text-primary)] block">{user?.village || 'Zarugumalli'}</span>
                   </div>
                 </div>
 
                 {user?.role === 'admin' && (
-                  <div className="flex items-center gap-3 bg-gold-50/30 border border-gold-200/40 p-3 rounded-2xl">
-                    <ShieldAlert className="w-4 h-4 text-gold-600" />
+                  <div className="flex items-center gap-3.5 bg-gold-500/10 border border-gold-500/30 p-4 rounded-2xl">
+                    <ShieldAlert className="w-5 h-5 text-gold-500 shrink-0" />
                     <div>
-                      <span className="block text-[9px] text-gold-600 font-bold uppercase tracking-wider">{t('adminAccess')}</span>
-                      <span className="font-semibold text-gold-800">{t('adminAccessDesc')}</span>
+                      <span className="block text-[10px] font-black uppercase tracking-wider text-gold-600 dark:text-gold-400">{t('adminAccess')}</span>
+                      <span className="font-bold text-xs text-[var(--text-primary)]">{t('adminAccessDesc')}</span>
                     </div>
                   </div>
                 )}
 
                 {/* Committee Membership Status block */}
-                <div className="flex flex-col gap-2 border border-cream-200/60 p-4 rounded-2xl bg-cream-50/20">
-                  <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2.5 border border-[var(--border)] p-4 rounded-2xl bg-[var(--bg-muted)]">
+                  <div className="flex items-center justify-between gap-3">
                     <div>
-                      <span className="block text-[9px] text-slate-400 font-bold uppercase tracking-wider">{t('committeeMembership')}</span>
-                      <span className="text-xs font-semibold text-slate-800">
+                      <span className="block text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)] mb-0.5">{t('committeeMembership')}</span>
+                      <span className="text-xs font-black text-[var(--text-primary)]">
                         {user?.committeeStatus === 'approved' && (
-                          <span className="text-emerald-600 font-bold flex items-center gap-1 mt-0.5">
+                          <span className="text-emerald-500 font-black flex items-center gap-1 mt-0.5">
                             <Check className="w-3.5 h-3.5" />
                             {t('committeeApprovedStatus')}
                           </span>
                         )}
                         {user?.committeeStatus === 'pending' && (
-                          <span className="text-amber-600 font-bold flex items-center gap-1 mt-0.5 animate-pulse">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                          <span className="text-saffron-500 font-black flex items-center gap-1.5 mt-0.5 animate-pulse">
+                            <span className="w-2 h-2 rounded-full bg-saffron-500"></span>
                             {t('committeePendingStatus')}
                           </span>
                         )}
                         {(!user?.committeeStatus || user?.committeeStatus === 'none') && (
-                          <span className="text-slate-500 font-medium mt-0.5 block">Not a Committee Member</span>
+                          <span className="text-[var(--text-secondary)] font-bold mt-0.5 block">Not a Committee Member</span>
                         )}
                       </span>
                     </div>
@@ -428,7 +439,7 @@ const Profile = () => {
                         type="button"
                         onClick={handleRequestCommittee}
                         disabled={loading}
-                        className="text-[10px] font-bold text-white bg-saffron-500 hover:bg-saffron-600 px-3 py-1.5 rounded-xl transition-colors shrink-0 shadow-sm cursor-pointer"
+                        className="btn btn-primary py-2 px-3 text-xs font-extrabold cursor-pointer shrink-0 shadow-md"
                       >
                         {t('requestCommitteeBtn')}
                       </button>
@@ -438,18 +449,19 @@ const Profile = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-2.5 pt-2">
-                <div className="flex gap-2 text-xs">
+              <div className="space-y-3 pt-3">
+                <div className="grid grid-cols-2 gap-3 text-xs">
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="w-1/2 py-2.5 border border-cream-300 rounded-xl font-bold text-slate-700 flex items-center justify-center gap-1.5 hover:bg-cream-50 transition-colors cursor-pointer"
+                    className="btn btn-ghost py-3 font-extrabold flex items-center justify-center gap-2 cursor-pointer hover:border-saffron-500"
                   >
                     <Edit className="w-4 h-4 text-saffron-500" />
                     {t('editProfile')}
                   </button>
+                  
                   <button
                     onClick={() => setIsChangingPassword(true)}
-                    className="w-1/2 py-2.5 border border-cream-300 rounded-xl font-bold text-slate-700 flex items-center justify-center gap-1.5 hover:bg-cream-50 transition-colors cursor-pointer"
+                    className="btn btn-ghost py-3 font-extrabold flex items-center justify-center gap-2 cursor-pointer hover:border-gold-500"
                   >
                     <Lock className="w-4 h-4 text-gold-500" />
                     {t('password')}
@@ -458,7 +470,7 @@ const Profile = () => {
                 
                 <button
                   onClick={handleLogout}
-                  className="w-full py-2.5 border border-devored-200 rounded-xl font-bold text-devored-700 flex items-center justify-center gap-1.5 hover:bg-devored-50 transition-colors text-xs cursor-pointer"
+                  className="w-full btn btn-ghost py-3 text-xs font-extrabold border-devored-500/30 text-devored-600 dark:text-devored-400 hover:bg-devored-500/10 hover:border-devored-500 flex items-center justify-center gap-2 cursor-pointer transition-all"
                 >
                   <LogOut className="w-4 h-4" />
                   {t('signOut')}
