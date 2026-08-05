@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Mail, Phone, MapPin, Heart } from 'lucide-react';
+import { Mail, Phone, MapPin, Heart, Home, Users, Calendar, Image, Bell, User, Banknote } from 'lucide-react';
 
 const Footer = () => {
   const { user } = useAuth();
@@ -10,93 +10,100 @@ const Footer = () => {
 
   if (!user) return null;
 
+  const navLinks = [
+    { to: '/', icon: Home, label: t('dashboard') },
+    { to: '/members', icon: Users, label: t('members') },
+    { to: '/events', icon: Calendar, label: t('events') },
+    { to: '/gallery', icon: Image, label: t('gallery') },
+    { to: '/announcements', icon: Bell, label: t('announcements') },
+    { to: '/profile', icon: User, label: t('myProfile') },
+    { to: '/expenditure', icon: Banknote, label: 'Expenditure' },
+  ];
+
   return (
-    <footer className="bg-slate-900 text-slate-300 mt-auto border-t-2 border-saffron-500">
-      <div className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+    <footer className="mt-auto border-t border-[var(--border)] bg-[var(--bg-card)]">
+      {/* Top gradient stripe */}
+      <div className="h-[3px] bg-gradient-to-r from-saffron-500 via-gold-500 to-devored-600" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Association Info */}
+
+          {/* Brand Column */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <svg 
-                className="w-6 h-6 text-saffron-500" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2"
-              >
-                <circle cx="12" cy="7" r="4" fill="currentColor" fillOpacity="0.2" />
-                <path d="M12 2v10" strokeWidth="2.5" />
-                <path d="M12 11L12 22" strokeWidth="3" />
-                <circle cx="12" cy="22" r="1.5" fill="currentColor" />
-              </svg>
-              <span className="font-extrabold text-lg text-saffron-400 tracking-tight">
-                {t('websiteName')}
-              </span>
+            <div className="flex items-center gap-2.5">
+              <img src="/icon.png" alt="Logo" className="w-8 h-8 rounded-full object-cover border border-saffron-300/50" />
+              <div>
+                <span className="block font-black text-sm text-saffron-600 leading-tight">{t('websiteName')}</span>
+                <span className="block text-[9px] font-bold text-gold-600 uppercase tracking-widest">{t('zarugumalli')}</span>
+              </div>
             </div>
-            <p className="text-sm text-slate-400 leading-relaxed">
+            <p className="text-xs leading-relaxed text-[var(--text-muted)] max-w-xs">
               {t('jaiHanumanDesc')}
             </p>
-            <p className="text-xs italic text-gold-500">
-              "{t('unitedQuote')}"
+            <p className="text-xs italic text-gold-600 font-semibold">
+              &ldquo;{t('unitedQuote')}&rdquo;
             </p>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="text-saffron-400 font-bold text-sm uppercase tracking-wider">{t('quickLinks')}</h3>
-            <ul className="grid grid-cols-2 gap-2 text-sm">
-              {user ? (
-                <>
-                  <li><Link to="/" className="hover:text-gold-400 transition-colors">{t('dashboard')}</Link></li>
-                  <li><Link to="/members" className="hover:text-gold-400 transition-colors">{t('members')}</Link></li>
-                  <li><Link to="/events" className="hover:text-gold-400 transition-colors">{t('events')}</Link></li>
-                  <li><Link to="/gallery" className="hover:text-gold-400 transition-colors">{t('gallery')}</Link></li>
-                  <li><Link to="/announcements" className="hover:text-gold-400 transition-colors">{t('announcements')}</Link></li>
-                  <li><Link to="/profile" className="hover:text-gold-400 transition-colors">{t('myProfile')}</Link></li>
-                </>
-              ) : (
-                <>
-                  <li><Link to="/signin" className="hover:text-gold-400 transition-colors">Sign In</Link></li>
-                  <li><Link to="/signup" className="hover:text-gold-400 transition-colors">Sign Up</Link></li>
-                </>
-              )}
+            <h3 className="text-xs font-black text-[var(--text-primary)] uppercase tracking-widest">
+              {t('quickLinks')}
+            </h3>
+            <ul className="grid grid-cols-2 gap-y-2 gap-x-4">
+              {navLinks.map(({ to, icon: Icon, label }) => (
+                <li key={to}>
+                  <Link
+                    to={to}
+                    className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-saffron-600 transition-colors font-medium group"
+                  >
+                    <Icon className="w-3 h-3 text-gold-500 group-hover:text-saffron-500 transition-colors" />
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Contact Details */}
+          {/* Contact */}
           <div className="space-y-4">
-            <h3 className="text-saffron-400 font-bold text-sm uppercase tracking-wider">{t('contactAssociation')}</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
+            <h3 className="text-xs font-black text-[var(--text-primary)] uppercase tracking-widest">
+              {t('contactAssociation')}
+            </h3>
+            <ul className="space-y-3">
               <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-gold-500 shrink-0 mt-0.5" />
-                <span>{t('footerAddressVal')}</span>
+                <MapPin className="w-3.5 h-3.5 text-gold-500 shrink-0 mt-0.5" />
+                <span className="text-xs text-[var(--text-muted)]">{t('footerAddressVal')}</span>
               </li>
               <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-gold-500 shrink-0" />
-                <span>+91 94949 94949</span>
+                <Phone className="w-3.5 h-3.5 text-gold-500 shrink-0" />
+                <a href="tel:+919494994949" className="text-xs text-[var(--text-muted)] hover:text-saffron-600 transition-colors">+91 94949 94949</a>
               </li>
               <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-gold-500 shrink-0" />
-                <span>info@srianjaneyayouth.org</span>
+                <Mail className="w-3.5 h-3.5 text-gold-500 shrink-0" />
+                <a href="mailto:info@srianjaneyayouth.org" className="text-xs text-[var(--text-muted)] hover:text-saffron-600 transition-colors">info@srianjaneyayouth.org</a>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Shloka Quote Divider */}
-        <div className="my-8 border-t border-slate-800 pt-6 flex justify-center">
-          <p className="text-xs text-slate-500 italic max-w-lg text-center leading-relaxed">
-            "{t('hanumanShlokaPart1')}"<br />
-            "{t('hanumanShlokaPart2')}"
+        {/* Shloka divider */}
+        <div className="my-8">
+          <div className="traditional-divider">
+            <div className="traditional-divider-dot" />
+          </div>
+          <p className="text-center text-[10px] text-[var(--text-subtle)] italic max-w-md mx-auto leading-relaxed mt-3">
+            &ldquo;{t('hanumanShlokaPart1')}&rdquo;<br />
+            &ldquo;{t('hanumanShlokaPart2')}&rdquo;
           </p>
         </div>
 
-        {/* Copyright Attribution */}
-        <div className="border-t border-slate-800 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+        {/* Copyright */}
+        <div className="border-t border-[var(--border)] pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-[var(--text-subtle)]">
           <p>&copy; {new Date().getFullYear()} Sri Anjaneya Youth Zarugumalli. {t('footerRights')}</p>
-          <p className="flex items-center gap-1 font-semibold text-slate-400">
-            <span>{t('footerCredits')}</span>
-            <Heart className="w-3.5 h-3.5 text-devored-500 fill-current animate-pulse" />
+          <p className="flex items-center gap-1 font-semibold">
+            {t('footerCredits')}
+            <Heart className="w-3 h-3 text-devored-500 fill-current animate-pulse" />
           </p>
         </div>
       </div>

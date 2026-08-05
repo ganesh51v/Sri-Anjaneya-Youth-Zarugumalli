@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { dbService, authService } from '../firebase/config';
-import { Users, Calendar, Bell, Heart, MapPin, Mail, Phone, Info, ChevronRight, MessageSquare, Award } from 'lucide-react';
+import { 
+  Users, Calendar, Bell, Heart, MapPin, Mail, Phone, Info, ChevronRight, 
+  MessageSquare, Award, Sparkles, Shield, ArrowRight 
+} from 'lucide-react';
 import SEO from '../components/SEO';
 import { heroEntrance, staggerScaleFade, staggerFadeUp, staggerSlideLeft, fadeUp, countUp } from '../utils/animate';
 
@@ -51,11 +54,8 @@ const Dashboard = () => {
           totalAmount: totalAmount
         });
 
-        // Take top 2 upcoming events
         setUpcomingEvents(upcoming.slice(0, 2));
-        // Take top 2 announcements
         setRecentAnnouncements(announcements.slice(0, 2));
-        // Take top 3 gallery images
         setGalleryPreview(gallery.slice(0, 3));
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -67,55 +67,46 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  // Fire animations after data loads
   useEffect(() => {
     if (loading) return;
-    // Hero entrance
     if (heroRef.current) heroEntrance(heroRef.current, { delay: 0 });
-    // Stat cards staggered
     if (statCardsRef.current) {
       staggerScaleFade(statCardsRef.current.querySelectorAll(':scope > div'), { stagger: 100, startDelay: 200 });
     }
-    // Count-up numbers
     if (membersCountRef.current) countUp(membersCountRef.current, stats.members, { delay: 350 });
     if (eventsCountRef.current) countUp(eventsCountRef.current, stats.events, { delay: 450 });
     if (announcementsCountRef.current) countUp(announcementsCountRef.current, stats.announcements, { delay: 550 });
-    // Events grid
     if (eventsGridRef.current) staggerFadeUp(eventsGridRef.current.querySelectorAll(':scope > div'), { stagger: 80, startDelay: 400 });
-    // Announcements list
     if (announcementsListRef.current) staggerSlideLeft(announcementsListRef.current.querySelectorAll(':scope > div'), { stagger: 80, startDelay: 500 });
-    // Gallery
     if (galleryGridRef.current) staggerScaleFade(galleryGridRef.current.querySelectorAll(':scope > div'), { stagger: 60, startDelay: 600 });
-    // Sidebar
     if (sidebarRef.current) fadeUp(sidebarRef.current, { delay: 300, distance: 20 });
-    // Seva section
     if (sevaRef.current) fadeUp(sevaRef.current, { delay: 700 });
   }, [loading, stats]);
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center py-20">
+      <div className="flex-1 flex flex-col items-center justify-center py-24">
         <div className="relative w-12 h-12">
-          <div className="absolute inset-0 border-4 border-saffron-100 rounded-full"></div>
+          <div className="absolute inset-0 border-4 border-saffron-200 dark:border-saffron-900 rounded-full"></div>
           <div className="absolute inset-0 border-4 border-t-saffron-500 rounded-full animate-spin"></div>
         </div>
-        <p className="mt-4 text-slate-500 font-medium">{t('loadingDashboard')}</p>
+        <p className="mt-4 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">{t('loadingDashboard')}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+    <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8 w-full">
       <SEO title="Dashboard" description="Your Sri Anjaneya Youth Zarugumalli member dashboard — view upcoming events, recent announcements, gallery highlights and community news." path="/" />
       
       {/* Email Verification Banner */}
       {user && !user.emailVerified && !authService.isMock && (
-        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
-          <div className="flex items-center gap-2.5 text-amber-800 dark:text-amber-300">
+        <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
+          <div className="flex items-center gap-2.5 text-amber-700 dark:text-amber-300">
             <Info className="w-5 h-5 shrink-0" />
             <div>
-              <span className="font-extrabold text-[13px]">Your email address is not verified.</span>
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">Please check your inbox (and spam folder) for a verification link to secure your account.</p>
+              <span className="font-black text-[13px]">Your email address is not verified.</span>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">Please check your inbox for a verification link to secure your account.</p>
             </div>
           </div>
           <button
@@ -128,7 +119,7 @@ const Dashboard = () => {
                 alert("Failed to send verification link: " + e.message);
               }
             }}
-            className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold transition-all shadow-sm shrink-0 self-start sm:self-auto cursor-pointer"
+            className="btn btn-primary btn-sm shrink-0 self-start sm:self-auto"
           >
             Resend Verification Link
           </button>
@@ -136,18 +127,18 @@ const Dashboard = () => {
       )}
 
       {/* Devotional Hero Greeting */}
-      <div ref={heroRef} style={{ opacity: 0 }} className="welcome-banner rounded-3xl p-6 sm:p-8 relative overflow-hidden backdrop-blur-md">
-        {/* Decorative background radial pattern */}
-        <div className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-saffron-500/5 blur-3xl pointer-events-none" />
-        
-        <div className="relative z-10 space-y-2.5">
-          <span className="badge inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-            {t('jaiHanuman')}
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-            {t('welcome')}, {user ? user.name : t('bhaktha')}!
+      <div ref={heroRef} style={{ opacity: 0 }} className="welcome-banner rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+        <div className="relative z-10 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="badge badge-saffron">
+              <Sparkles className="w-3 h-3 text-saffron-500" />
+              {t('jaiHanuman')}
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+            {t('welcome')}, <span className="gold-gradient-text">{user ? user.name : t('bhaktha')}</span>!
           </h1>
-          <p className="text-xs sm:text-sm font-semibold leading-relaxed max-w-2xl">
+          <p className="text-xs sm:text-sm font-medium leading-relaxed max-w-2xl text-[var(--text-secondary)]">
             {t('jaiHanumanDesc')}
           </p>
         </div>
@@ -155,49 +146,52 @@ const Dashboard = () => {
 
       {/* Stats Counter Row */}
       <div ref={statCardsRef} className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white border border-cream-200 p-5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-saffron transition-all duration-300 shadow-sm">
-          <div className="bg-saffron-100 p-3 rounded-xl text-saffron-600">
-            <Users className="w-6 h-6" />
+        <div className="stat-card hover-glow-saffron" style={{ '--stat-accent': 'var(--saffron)' }}>
+          <div className="stat-icon bg-saffron-500/10 text-saffron-600 dark:text-saffron-400">
+            <Users className="w-5 h-5" />
           </div>
           <div>
-            <span ref={membersCountRef} className="block text-2xl font-black text-slate-800">{stats.members}</span>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('youthMembers')}</span>
+            <span ref={membersCountRef} className="stat-number">{stats.members}</span>
+            <span className="stat-label">{t('youthMembers')}</span>
           </div>
         </div>
 
-        <div className="bg-white border border-cream-200 p-5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-gold transition-all duration-300 shadow-sm">
-          <div className="bg-gold-100 p-3 rounded-xl text-gold-700">
-            <Calendar className="w-6 h-6" />
+        <div className="stat-card hover-glow-gold" style={{ '--stat-accent': 'var(--gold)' }}>
+          <div className="stat-icon bg-gold-500/10 text-gold-600 dark:text-gold-400">
+            <Calendar className="w-5 h-5" />
           </div>
           <div>
-            <span ref={eventsCountRef} className="block text-2xl font-black text-slate-800">{stats.events}</span>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('upcomingEvents')}</span>
+            <span ref={eventsCountRef} className="stat-number">{stats.events}</span>
+            <span className="stat-label">{t('upcomingEvents')}</span>
           </div>
         </div>
 
-        <div className="bg-white border border-cream-200 p-5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-saffron transition-all duration-300 shadow-sm">
-          <div className="bg-devored-100 p-3 rounded-xl text-devored-700">
-            <Bell className="w-6 h-6" />
+        <div className="stat-card hover-glow-saffron" style={{ '--stat-accent': 'var(--devored)' }}>
+          <div className="stat-icon bg-devored-500/10 text-devored-600 dark:text-devored-400">
+            <Bell className="w-5 h-5" />
           </div>
           <div>
-            <span ref={announcementsCountRef} className="block text-2xl font-black text-slate-800">{stats.announcements}</span>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('announcements')}</span>
+            <span ref={announcementsCountRef} className="stat-number">{stats.announcements}</span>
+            <span className="stat-label">{t('announcements')}</span>
           </div>
         </div>
       </div>
 
       {/* Main Grid Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left & Middle Column (Events, Announcements, Seva, Gallery) */}
+        
+        {/* Left 2 Columns */}
         <div className="lg:col-span-2 space-y-8">
           
-          {/* Upcoming Events Widget */}
+          {/* Upcoming Events Section */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-saffron-500" />
-                {t('upcomingEvents')}
-              </h2>
+              <div className="section-header mb-0">
+                <div className="section-icon">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <h2>{t('upcomingEvents')}</h2>
+              </div>
               <Link to="/events" className="text-xs font-bold text-saffron-600 hover:underline flex items-center gap-0.5">
                 {t('viewAll')} <ChevronRight className="w-4 h-4" />
               </Link>
@@ -206,13 +200,15 @@ const Dashboard = () => {
             {upcomingEvents.length > 0 ? (
               <div ref={eventsGridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {upcomingEvents.map(event => (
-                  <div key={event.id} className="bg-white border border-cream-200 rounded-2xl p-5 hover-lift hover-glow-saffron transition-all duration-300 flex flex-col shadow-sm">
-                    <span className="text-[10px] bg-saffron-50 text-saffron-700 border border-saffron-100 px-2 py-0.5 rounded-full font-bold uppercase w-max mb-3">
-                      {event.date}
-                    </span>
-                    <h3 className="text-sm font-bold text-slate-800 mb-2 truncate">{event.title}</h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4">{event.description}</p>
-                    <div className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-auto">
+                  <div key={event.id} className="card-premium p-5 flex flex-col group">
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className="badge badge-saffron">
+                        {event.date}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-[var(--text-primary)] mb-2 truncate group-hover:text-saffron-600 transition-colors">{event.title}</h3>
+                    <p className="text-xs text-[var(--text-muted)] line-clamp-2 leading-relaxed mb-4">{event.description}</p>
+                    <div className="text-[11px] text-[var(--text-subtle)] font-medium flex items-center gap-1 mt-auto">
                       <MapPin className="w-3.5 h-3.5 text-gold-500 shrink-0" />
                       <span className="truncate">{event.location}</span>
                     </div>
@@ -220,19 +216,21 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-cream-50 border border-dashed border-cream-300 rounded-2xl p-8 text-center text-slate-400 text-xs">
+              <div className="card p-8 text-center text-[var(--text-muted)] text-xs border-dashed">
                 No upcoming events scheduled right now. Check back soon!
               </div>
             )}
           </div>
 
-          {/* Announcements Widget */}
+          {/* Announcements Section */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
-                <Bell className="w-5 h-5 text-saffron-500" />
-                {t('latestAnnouncements')}
-              </h2>
+              <div className="section-header mb-0">
+                <div className="section-icon">
+                  <Bell className="w-4 h-4" />
+                </div>
+                <h2>{t('latestAnnouncements')}</h2>
+              </div>
               <Link to="/announcements" className="text-xs font-bold text-saffron-600 hover:underline flex items-center gap-0.5">
                 {t('viewAll')} <ChevronRight className="w-4 h-4" />
               </Link>
@@ -241,14 +239,14 @@ const Dashboard = () => {
             {recentAnnouncements.length > 0 ? (
               <div ref={announcementsListRef} className="space-y-3">
                 {recentAnnouncements.map(ann => (
-                  <div key={ann.id} className="bg-white border border-cream-200 rounded-2xl p-4 hover-lift hover-glow-gold transition-all duration-300 flex gap-3 shadow-sm">
-                    <div className="bg-saffron-50 text-saffron-600 rounded-xl p-2.5 h-10 w-10 flex items-center justify-center shrink-0">
+                  <div key={ann.id} className="card p-4 flex gap-3 hover-lift">
+                    <div className="bg-saffron-500/10 text-saffron-600 rounded-xl p-2.5 h-10 w-10 flex items-center justify-center shrink-0">
                       <MessageSquare className="w-5 h-5" />
                     </div>
-                    <div>
-                      <h3 className="text-xs font-bold text-slate-800 mb-1">{ann.title}</h3>
-                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">{ann.message}</p>
-                      <span className="text-[10px] text-slate-400 font-medium mt-1 block">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-xs font-bold text-[var(--text-primary)] mb-1 truncate">{ann.title}</h3>
+                      <p className="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-2">{ann.message}</p>
+                      <span className="text-[10px] text-[var(--text-subtle)] font-medium mt-1 block">
                         Posted on {new Date(ann.createdAt).toLocaleDateString(language === 'en' ? 'en-IN' : 'te-IN')}
                       </span>
                     </div>
@@ -256,27 +254,27 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-cream-50 border border-dashed border-cream-300 rounded-2xl p-8 text-center text-slate-400 text-xs">
+              <div className="card p-8 text-center text-[var(--text-muted)] text-xs border-dashed">
                 No recent announcements.
               </div>
             )}
           </div>
 
-          {/* Donation Stats Section */}
-          <div ref={sevaRef} style={{ opacity: 0 }} className="seva-section rounded-3xl p-6 sm:p-8 space-y-5 relative shadow-inner">
+          {/* Seva / Donation Section */}
+          <div ref={sevaRef} style={{ opacity: 0 }} className="seva-section rounded-3xl p-6 sm:p-8 space-y-5">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-3">
                 <div className="bg-saffron-500 text-white p-2.5 rounded-xl">
-                  <Heart className="w-6 h-6 fill-current animate-pulse" />
+                  <Heart className="w-5 h-5 fill-current animate-pulse" />
                 </div>
                 <div>
-                  <h2 className="text-base font-extrabold text-slate-800">{t('donations')}</h2>
-                  <p className="text-xs text-slate-500">{t('donationsDashboardDesc')}</p>
+                  <h2 className="text-base font-extrabold text-[var(--text-primary)]">{t('donations')}</h2>
+                  <p className="text-xs text-[var(--text-muted)]">{t('donationsDashboardDesc')}</p>
                 </div>
               </div>
               <Link 
                 to="/donate" 
-                className="text-xs px-4.5 py-2.5 saffron-gradient-btn rounded-xl font-bold flex items-center gap-1.5 shadow-md shadow-saffron-500/10 hover:scale-105 transition-all shrink-0"
+                className="btn btn-primary btn-sm shrink-0"
               >
                 <Heart className="w-3.5 h-3.5 fill-current" />
                 {t('donate')}
@@ -284,39 +282,39 @@ const Dashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Number of Donations */}
-              <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 p-4.5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-gold transition-all duration-300 shadow-sm">
-                <div className="bg-saffron-100 dark:bg-saffron-950/40 p-3 rounded-xl text-saffron-600">
-                  <Users className="w-5.5 h-5.5" />
+              <div className="card p-4.5 flex items-center gap-4 hover-lift">
+                <div className="bg-saffron-500/10 p-3 rounded-xl text-saffron-600">
+                  <Users className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="block text-xl font-black text-slate-800 dark:text-white">{stats.donationCount}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('numberDonations')}</span>
+                  <span className="block text-xl font-black text-[var(--text-primary)]">{stats.donationCount}</span>
+                  <span className="text-[10px] font-bold text-[var(--text-subtle)] uppercase tracking-wider">{t('numberDonations')}</span>
                 </div>
               </div>
 
-              {/* Total Amount Donated */}
-              <div className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 p-4.5 rounded-2xl flex items-center gap-4 hover-lift hover-glow-saffron transition-all duration-300 shadow-sm">
-                <div className="bg-gold-100 dark:bg-gold-950/40 p-3 rounded-xl text-gold-600">
-                  <Heart className="w-5.5 h-5.5 fill-current" />
+              <div className="card p-4.5 flex items-center gap-4 hover-lift">
+                <div className="bg-gold-500/10 p-3 rounded-xl text-gold-600">
+                  <Heart className="w-5 h-5 fill-current" />
                 </div>
                 <div>
-                  <span className="block text-xl font-black text-slate-800 dark:text-white">
+                  <span className="block text-xl font-black text-[var(--text-primary)]">
                     ₹{stats.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('totalAmountDonated')}</span>
+                  <span className="text-[10px] font-bold text-[var(--text-subtle)] uppercase tracking-wider">{t('totalAmountDonated')}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Gallery Preview */}
+          {/* Gallery Highlights */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
-                <Award className="w-5 h-5 text-saffron-500" />
-                {t('galleryHighlights')}
-              </h2>
+              <div className="section-header mb-0">
+                <div className="section-icon">
+                  <Award className="w-4 h-4" />
+                </div>
+                <h2>{t('galleryHighlights')}</h2>
+              </div>
               <Link to="/gallery" className="text-xs font-bold text-saffron-600 hover:underline flex items-center gap-0.5">
                 {t('gallery')} <ChevronRight className="w-4 h-4" />
               </Link>
@@ -325,20 +323,20 @@ const Dashboard = () => {
             {galleryPreview.length > 0 ? (
               <div ref={galleryGridRef} className="grid grid-cols-3 gap-3">
                 {galleryPreview.map(item => (
-                  <div key={item.id} className="relative rounded-xl overflow-hidden aspect-video group shadow-sm hover-lift transition-all duration-300">
+                  <div key={item.id} className="relative rounded-2xl overflow-hidden aspect-video group shadow-sm hover-lift">
                     <img 
                       src={item.imageUrl} 
                       alt={item.caption} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-2 flex items-end">
-                      <p className="text-[9px] text-white font-medium truncate">{item.caption}</p>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-2.5 flex items-end">
+                      <p className="text-[10px] text-white font-medium truncate">{item.caption}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="bg-cream-50 border border-dashed border-cream-300 rounded-2xl p-8 text-center text-slate-400 text-xs">
+              <div className="card p-8 text-center text-[var(--text-muted)] text-xs border-dashed">
                 No images uploaded yet.
               </div>
             )}
@@ -346,16 +344,16 @@ const Dashboard = () => {
 
         </div>
 
-        {/* Right Sidebar Column (About, Contact Details) */}
+        {/* Right Sidebar Column */}
         <div ref={sidebarRef} style={{ opacity: 0 }} className="space-y-8">
           
           {/* About Section */}
-          <div className="bg-white border border-cream-200 rounded-3xl p-6 space-y-4 shadow-sm">
-            <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2 border-b border-cream-100 pb-3">
+          <div className="card p-6 space-y-4">
+            <h2 className="text-base font-extrabold text-[var(--text-primary)] flex items-center gap-2 border-b border-[var(--border)] pb-3">
               <Info className="w-5 h-5 text-saffron-500" />
               {t('aboutUsTitle')}
             </h2>
-            <div className="space-y-3 text-xs text-slate-600 leading-relaxed font-semibold">
+            <div className="space-y-3 text-xs text-[var(--text-secondary)] leading-relaxed font-medium">
               <p>{t('aboutPara1')}</p>
               <p>{t('aboutPara2')}</p>
               <p>{t('aboutPara3')}</p>
@@ -363,33 +361,33 @@ const Dashboard = () => {
           </div>
 
           {/* Contact Section */}
-          <div className="bg-white border border-cream-200 rounded-3xl p-6 space-y-4 shadow-sm">
-            <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2 border-b border-cream-100 pb-3">
+          <div className="card p-6 space-y-4">
+            <h2 className="text-base font-extrabold text-[var(--text-primary)] flex items-center gap-2 border-b border-[var(--border)] pb-3">
               <MapPin className="w-5 h-5 text-saffron-500" />
               {t('reachUsTitle')}
             </h2>
-            <div className="space-y-3.5 text-xs text-slate-600 font-semibold">
+            <div className="space-y-3.5 text-xs text-[var(--text-secondary)]">
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-gold-500 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold block text-slate-800 mb-0.5">{t('officeAddressLabel')}</span>
-                  <span className="font-medium">{t('officeAddressVal')}</span>
+                  <span className="font-bold block text-[var(--text-primary)] mb-0.5">{t('officeAddressLabel')}</span>
+                  <span className="font-medium text-[var(--text-muted)]">{t('officeAddressVal')}</span>
                 </div>
               </div>
 
               <div className="flex items-start gap-2.5">
                 <Phone className="w-4 h-4 text-gold-500 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold block text-slate-800 mb-0.5">{t('callCoordinatorLabel')}</span>
-                  <a href="tel:+919494994949" className="hover:text-saffron-500 font-semibold transition-colors">+91 94949 94949</a>
+                  <span className="font-bold block text-[var(--text-primary)] mb-0.5">{t('callCoordinatorLabel')}</span>
+                  <a href="tel:+919494994949" className="hover:text-saffron-600 font-semibold transition-colors">+91 94949 94949</a>
                 </div>
               </div>
 
               <div className="flex items-start gap-2.5">
                 <Mail className="w-4 h-4 text-gold-500 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold block text-slate-800 mb-0.5">{t('emailSupportLabel')}</span>
-                  <a href="mailto:info@srianjaneyayouth.org" className="hover:text-saffron-500 font-semibold transition-colors font-medium">info@srianjaneyayouth.org</a>
+                  <span className="font-bold block text-[var(--text-primary)] mb-0.5">{t('emailSupportLabel')}</span>
+                  <a href="mailto:info@srianjaneyayouth.org" className="hover:text-saffron-600 font-semibold transition-colors font-medium">info@srianjaneyayouth.org</a>
                 </div>
               </div>
             </div>
