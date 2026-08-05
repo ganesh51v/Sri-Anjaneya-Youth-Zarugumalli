@@ -131,3 +131,33 @@ export const emailService = {
     });
   }
 };
+
+export const smsService = {
+  /**
+   * Send SMS OTP via Twilio API endpoint
+   */
+  async sendTwilioOtp(phone, code = '123456') {
+    try {
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/send-twilio-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code })
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        console.log('[smsService] Twilio OTP dispatch result:', result);
+        return result;
+      } else {
+        const errText = await res.text();
+        console.warn('[smsService] Twilio API error:', errText);
+        return { success: false, error: errText };
+      }
+    } catch (err) {
+      console.error('[smsService] Twilio network error:', err);
+      return { success: false, error: err.message };
+    }
+  }
+};
+

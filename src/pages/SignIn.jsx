@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { authService, dbService } from '../firebase/config';
-import { emailService } from '../services/emailService';
+import { emailService, smsService } from '../services/emailService';
 import { Mail, Lock, LogIn, Download, AlertCircle, Info, Globe, Phone, User } from 'lucide-react';
 import SEO from '../components/SEO';
 import { fadeUp, shake } from '../utils/animate';
@@ -124,6 +124,9 @@ const SignIn = () => {
       setConfirmationResult(result);
       setOtpSent(true);
       setInfo(`First-time login: Verification code (OTP) sent to ${fullPhone}. (Enter code: 123456 to verify & sign in)`);
+
+      // Dispatch Twilio SMS OTP
+      smsService.sendTwilioOtp(fullPhone, '123456').catch(err => console.warn('Twilio SMS trigger error:', err));
 
       // Try sending email copy of OTP if registered user exists
       if (existingUser && existingUser.email) {
