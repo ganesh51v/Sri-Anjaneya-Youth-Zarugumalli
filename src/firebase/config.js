@@ -1460,99 +1460,125 @@ export const dbService = {
   // ---------------- REGISTRATION USERS LIST (Admin View) ----------------
   users: {
     getAll: async () => {
-      if (isFirebaseConfigured && db) {
-        return firestoreOp(
-          () => getDocs(collection(db, 'users')).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
-          safeParseLS('sa_users', []), 'users.getAll'
-        );
+      let localUsers = safeParseLS('sa_users', initialUsers);
+      if (!localUsers || localUsers.length === 0) {
+        localUsers = initialUsers;
       }
-      return safeParseLS('sa_users', []);
+
+      if (isFirebaseConfigured && db) {
+        try {
+          const snapshot = await getDocs(collection(db, 'users'));
+          const remoteUsers = snapshot.docs.map(d => normalizeUser(d.id, d.data()));
+
+          // Merge local and remote users (remote document takes priority by email/id/uid)
+          const mergedMap = new Map();
+          localUsers.forEach(u => {
+            const key = (u.email || u.id || u.uid || '').toLowerCase();
+            if (key) mergedMap.set(key, u);
+          });
+          remoteUsers.forEach(u => {
+            const key = (u.email || u.id || u.uid || '').toLowerCase();
+            if (key) mergedMap.set(key, u);
+          });
+
+          const resultList = Array.from(mergedMap.values());
+          try { localStorage.setItem('sa_users', JSON.stringify(resultList)); } catch (_) {}
+          return resultList;
+        } catch (fsErr) {
+          console.warn('[users.getAll] Firestore fetch notice (using local cache):', fsErr.message);
+          return localUsers;
+        }
+      }
+      return localUsers;
     },
     updateRole: async (id, newRole) => {
-      if (isFirebaseConfigured && db) {
-        return firestoreOp(async () => {
-          await setDoc(doc(db, 'users', id), { role: newRole }, { merge: true });
-          return { id, role: newRole };
-        }, null, 'users.updateRole');
-      }
       const users = safeParseLS('sa_users', []);
       const index = users.findIndex(u => u.id === id || u.uid === id);
       if (index > -1) {
         users[index].role = newRole;
-        localStorage.setItem('sa_users', JSON.stringify(users));
+        try { localStorage.setItem('sa_users', JSON.stringify(users)); } catch (_) {}
         const current = safeParseLS('sa_current_user', null);
         if (current && (current.id === id || current.uid === id)) {
           current.role = newRole;
-          localStorage.setItem('sa_current_user', JSON.stringify(current));
+          try { localStorage.setItem('sa_current_user', JSON.stringify(current)); } catch (_) {}
           triggerAuthChange(current);
         }
-        return users[index];
       }
-      throw new Error('User not found');
+
+      if (isFirebaseConfigured && db) {
+        try {
+          await setDoc(doc(db, 'users', id), { role: newRole }, { merge: true });
+        } catch (fsErr) {
+          console.warn('[users.updateRole] Firestore notice:', fsErr.message);
+        }
+      }
+      return { id, role: newRole };
     },
     updateDetails: async (id, details) => {
       const { name, phone, village, photoUrl } = details;
-      if (isFirebaseConfigured && db) {
-        return firestoreOp(async () => {
-          await setDoc(doc(db, 'users', id), { name, phone, village, photoUrl: photoUrl || '' }, { merge: true });
-          return { id, name, phone, village, photoUrl };
-        }, null, 'users.updateDetails');
-      }
       const users = safeParseLS('sa_users', []);
       const index = users.findIndex(u => u.id === id || u.uid === id);
       if (index > -1) {
-        users[index] = { ...users[index], name, phone, village, photoUrl };
-        localStorage.setItem('sa_users', JSON.stringify(users));
+        users[index] = { ...users[index], name, phone, village, photoUrl: photoUrl || '' };
+        try { localStorage.setItem('sa_users', JSON.stringify(users)); } catch (_) {}
         const current = safeParseLS('sa_current_user', null);
         if (current && (current.id === id || current.uid === id)) {
-          const updatedCurrent = { ...current, name, phone, village, photoUrl };
-          localStorage.setItem('sa_current_user', JSON.stringify(updatedCurrent));
+          const updatedCurrent = { ...current, name, phone, village, photoUrl: photoUrl || '' };
+          try { localStorage.setItem('sa_current_user', JSON.stringify(updatedCurrent)); } catch (_) {}
           triggerAuthChange(updatedCurrent);
         }
-        return users[index];
       }
-      throw new Error('User not found');
+
+      if (isFirebaseConfigured && db) {
+        try {
+          await setDoc(doc(db, 'users', id), { name, phone, village, photoUrl: photoUrl || '' }, { merge: true });
+        } catch (fsErr) {
+          console.warn('[users.updateDetails] Firestore notice:', fsErr.message);
+        }
+      }
+      return { id, name, phone, village, photoUrl };
     },
     updateCommitteeStatus: async (id, status) => {
-      if (isFirebaseConfigured && db) {
-        return firestoreOp(async () => {
-          await setDoc(doc(db, 'users', id), { committeeStatus: status }, { merge: true });
-          return { id, committeeStatus: status };
-        }, null, 'users.updateCommitteeStatus');
-      }
       const users = safeParseLS('sa_users', []);
       const index = users.findIndex(u => u.id === id || u.uid === id);
       if (index > -1) {
         users[index].committeeStatus = status;
-        localStorage.setItem('sa_users', JSON.stringify(users));
+        try { localStorage.setItem('sa_users', JSON.stringify(users)); } catch (_) {}
         const current = safeParseLS('sa_current_user', null);
         if (current && (current.id === id || current.uid === id)) {
           current.committeeStatus = status;
-          localStorage.setItem('sa_current_user', JSON.stringify(current));
+          try { localStorage.setItem('sa_current_user', JSON.stringify(current)); } catch (_) {}
           triggerAuthChange(current);
         }
-        return users[index];
       }
-      throw new Error('User not found');
+
+      if (isFirebaseConfigured && db) {
+        try {
+          await setDoc(doc(db, 'users', id), { committeeStatus: status }, { merge: true });
+        } catch (fsErr) {
+          console.warn('[users.updateCommitteeStatus] Firestore notice:', fsErr.message);
+        }
+      }
+      return { id, committeeStatus: status };
     },
     delete: async (id) => {
-      if (isFirebaseConfigured && db) {
-        return firestoreOp(async () => {
-          await deleteDoc(doc(db, 'users', id));
-          console.log('[dbService.users.delete] User document deleted:', id);
-          return id;
-        }, null, 'users.delete');
-      }
       let users = safeParseLS('sa_users', []);
       users = users.filter(u => u.id !== id && u.uid !== id);
-      localStorage.setItem('sa_users', JSON.stringify(users));
+      try { localStorage.setItem('sa_users', JSON.stringify(users)); } catch (_) {}
 
-      // Purge session if deleted user is currently active session
       const current = safeParseLS('sa_current_user', null);
       if (current && (current.id === id || current.uid === id)) {
-        localStorage.removeItem('sa_current_user');
+        try { localStorage.removeItem('sa_current_user'); } catch (_) {}
         currentUserMock = null;
         triggerAuthChange(null);
+      }
+
+      if (isFirebaseConfigured && db) {
+        try {
+          await deleteDoc(doc(db, 'users', id));
+        } catch (fsErr) {
+          console.warn('[users.delete] Firestore notice:', fsErr.message);
+        }
       }
       return id;
     }

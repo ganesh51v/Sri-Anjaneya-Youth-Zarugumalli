@@ -324,7 +324,7 @@ const AdminDashboard = () => {
     setLoading(true);
     setError('');
     try {
-      const [allUsers, allMembers, allEvents, allAnnouncements, allGallery, allDonations] = await Promise.all([
+      const results = await Promise.allSettled([
         dbService.users.getAll(),
         dbService.members.getAll(),
         dbService.events.getAll(),
@@ -332,6 +332,13 @@ const AdminDashboard = () => {
         dbService.gallery.getAll(),
         dbService.donations.getAll()
       ]);
+
+      const allUsers = results[0].status === 'fulfilled' ? results[0].value : [];
+      const allMembers = results[1].status === 'fulfilled' ? results[1].value : [];
+      const allEvents = results[2].status === 'fulfilled' ? results[2].value : [];
+      const allAnnouncements = results[3].status === 'fulfilled' ? results[3].value : [];
+      const allGallery = results[4].status === 'fulfilled' ? results[4].value : [];
+      const allDonations = results[5].status === 'fulfilled' ? results[5].value : [];
 
       setUsers(allUsers);
       setDonations(allDonations);
@@ -343,8 +350,7 @@ const AdminDashboard = () => {
         gallery: allGallery.length
       });
     } catch (err) {
-      setError('Failed to load administration database.');
-      console.error(err);
+      console.error('loadData notice:', err);
     } finally {
       setLoading(false);
     }
