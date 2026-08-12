@@ -14,7 +14,15 @@ import { triggerConfetti } from '../utils/confetti';
 
 // ─── OTP digit box component ─────────────────────────────────────────────────
 const OtpInput = ({ value, onChange }) => {
-  const refs = Array.from({ length: 6 }, () => useRef(null));
+  // Rules of Hooks: each ref declared individually at component top-level
+  const ref0 = useRef(null);
+  const ref1 = useRef(null);
+  const ref2 = useRef(null);
+  const ref3 = useRef(null);
+  const ref4 = useRef(null);
+  const ref5 = useRef(null);
+  const refs = [ref0, ref1, ref2, ref3, ref4, ref5];
+
   const digits = value.padEnd(6, '').split('');
 
   const handleKey = (i, e) => {
@@ -38,19 +46,21 @@ const OtpInput = ({ value, onChange }) => {
     if (pasted) onChange(pasted);
   };
 
+  const inputClass = "w-10 h-12 text-center text-lg font-extrabold rounded-xl border-2 border-cream-300 focus:border-saffron-500 focus:ring-2 focus:ring-saffron-500/20 bg-cream-50/50 dark:bg-slate-950 dark:border-slate-700 dark:text-white outline-none transition-all font-mono";
+
   return (
     <div className="flex gap-2 justify-center" onPaste={handlePaste}>
-      {refs.map((ref, i) => (
+      {[0, 1, 2, 3, 4, 5].map((i) => (
         <input
           key={i}
-          ref={ref}
+          ref={refs[i]}
           type="text"
           inputMode="numeric"
           maxLength={1}
           value={digits[i] || ''}
           onKeyDown={(e) => handleKey(i, e)}
           onChange={() => {}} // controlled via onKeyDown
-          className="w-10 h-12 text-center text-lg font-extrabold rounded-xl border-2 border-cream-300 focus:border-saffron-500 focus:ring-2 focus:ring-saffron-500/20 bg-cream-50/50 dark:bg-slate-950 dark:border-slate-700 dark:text-white outline-none transition-all font-mono"
+          className={inputClass}
           aria-label={`OTP digit ${i + 1}`}
         />
       ))}

@@ -67,98 +67,98 @@ function App() {
               </div>
               <OfflineBanner />
               <Navbar />
-          
-          <main className="flex-grow flex flex-col">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/signin" element={<SignIn />} />
-              <Route path="/signup" element={<SignUp />} />
 
-              {/* Protected Routes */}
-              <Route 
-                path="/" 
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/members" 
-                element={
-                  <ProtectedRoute>
-                    <Members />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/events" 
-                element={
-                  <ProtectedRoute>
-                    <Events />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/gallery" 
-                element={
-                  <ProtectedRoute>
-                    <Gallery />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/announcements" 
-                element={
-                  <ProtectedRoute>
-                    <Announcements />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/donate" 
-                element={
-                  <ProtectedRoute>
-                    <Donate />
-                  </ProtectedRoute>
-                } 
-              />
-              
-              {/* Admin Dashboard Protected Route */}
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedRoute adminOnly={true}>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                } 
-              />
+              <main className="flex-grow flex flex-col">
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/signin" element={<SignIn />} />
+                  <Route path="/signup" element={<SignUp />} />
 
-              {/* Expenditure Management — all logged-in users can view */}
-              <Route 
-                path="/expenditure" 
-                element={
-                  <ProtectedRoute>
-                    <Expenditure />
-                  </ProtectedRoute>
-                } 
-              />
+                  {/* Protected Routes */}
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/members"
+                    element={
+                      <ProtectedRoute>
+                        <Members />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/events"
+                    element={
+                      <ProtectedRoute>
+                        <Events />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/gallery"
+                    element={
+                      <ProtectedRoute>
+                        <Gallery />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/announcements"
+                    element={
+                      <ProtectedRoute>
+                        <Announcements />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/donate"
+                    element={
+                      <ProtectedRoute>
+                        <Donate />
+                      </ProtectedRoute>
+                    }
+                  />
 
-              {/* Fallback route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
+                  {/* Admin Dashboard Protected Route */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute adminOnly={true}>
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
 
-          <Footer />
-        </div>
+                  {/* Expenditure Management — all logged-in users can view */}
+                  <Route
+                    path="/expenditure"
+                    element={
+                      <ProtectedRoute>
+                        <Expenditure />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Fallback route */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </main>
+
+              <Footer />
+            </div>
           </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>
@@ -167,3 +167,4 @@ function App() {
 }
 
 export default App;
+

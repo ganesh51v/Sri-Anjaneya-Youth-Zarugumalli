@@ -29,3 +29,7 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Temp security scan runs
+strix_runs
+
+

@@ -1,9 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { authService } from '../firebase/config';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  // Initialise from localStorage so the UI doesn't flash "not logged in" before
+  // the async onAuthStateChanged fires on page load.
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('sa_current_user');
@@ -12,12 +14,28 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   });
-  const [loading, setLoading] = useState(true);
+
+  // Start loading=false only if we already have a cached user — prevents
+  // protected routes from flashing the sign-in redirect before auth resolves.
+  const [loading, setLoading] = useState(() => {
+    try {
+      return !localStorage.getItem('sa_current_user');
+    } catch {
+      return true;
+    }
+  });
+
+  // Guard so we only set loading=false once on the first auth event
+  const firstAuthEvent = useRef(true);
 
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged((usr) => {
       setUser(usr);
-      setLoading(false);
+      // Always stop loading after the first resolution (even if usr is null)
+      if (firstAuthEvent.current) {
+        firstAuthEvent.current = false;
+        setLoading(false);
+      }
     });
     return unsubscribe;
   }, []);

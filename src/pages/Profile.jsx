@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { dbService, authService } from '../firebase/config';
-import { User, Phone, MapPin, Mail, ShieldAlert, Check, Edit, LogOut, Loader2, AlertCircle, Lock, Camera, Sparkles } from 'lucide-react';
+import { Phone, MapPin, Mail, ShieldAlert, Check, Edit, LogOut, Loader2, AlertCircle, Lock, Camera, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { fadeUp, rotateFadeIn } from '../utils/animate';
@@ -17,6 +17,8 @@ const Profile = () => {
   const [phone, setPhone] = useState(user?.phone || '');
   const [village, setVillage] = useState(user?.village || '');
   const [photoUrl, setPhotoUrl] = useState(user?.photoUrl || '');
+  const [photoFile, setPhotoFile] = useState(null);  // holds the File object for Cloudinary upload
+  const [photoPreview, setPhotoPreview] = useState(user?.photoUrl || ''); // local preview only
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -36,6 +38,7 @@ const Profile = () => {
       setPhone(user.phone || '');
       setVillage(user.village || '');
       setPhotoUrl(user.photoUrl || '');
+      setPhotoPreview(user.photoUrl || '');
     }
   }, [user]);
 
@@ -43,17 +46,48 @@ const Profile = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 800 * 1024) {
-      setError('Image file size must be less than 800KB.');
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image file size must be less than 5MB.');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file.');
       return;
     }
 
     setError('');
+    setPhotoFile(file);
+    // Show a local preview immediately while we wait for the upload
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoUrl(reader.result);
-    };
+    reader.onloadend = () => setPhotoPreview(reader.result);
     reader.readAsDataURL(file);
+  };
+
+  // Upload photo to Cloudinary via the /api/upload serverless function
+  const uploadPhotoToCloudinary = async (file) => {
+    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+      reader.onloadend = async () => {
+        try {
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file: reader.result }) // send base64 to server
+          });
+          const data = await res.json();
+          if (!res.ok || !data.secure_url) {
+            reject(new Error(data.error || 'Image upload failed.'));
+          } else {
+            resolve(data.secure_url);
+          }
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read image file.'));
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleCancelEdit = () => {
@@ -129,15 +163,31 @@ const Profile = () => {
     }
 
     try {
-      await dbService.users.updateDetails(userId, { name, phone, village, photoUrl });
-      const sessionUser = { ...user, name, phone, village, photoUrl };
+      let finalPhotoUrl = photoUrl;
+
+      // If the user selected a new photo, upload it to Cloudinary first
+      if (photoFile) {
+        try {
+          finalPhotoUrl = await uploadPhotoToCloudinary(photoFile);
+          setPhotoUrl(finalPhotoUrl);
+          setPhotoFile(null);
+        } catch (uploadErr) {
+          // Upload failed — keep the existing photoUrl rather than crashing
+          console.warn('[Profile] Cloudinary upload notice:', uploadErr.message);
+          setError('Photo upload failed — profile saved without new photo. Please try again.');
+          finalPhotoUrl = user?.photoUrl || '';
+        }
+      }
+
+      await dbService.users.updateDetails(userId, { name, phone, village, photoUrl: finalPhotoUrl });
+      const sessionUser = { ...user, name, phone, village, photoUrl: finalPhotoUrl };
       localStorage.setItem('sa_current_user', JSON.stringify(sessionUser));
       loginUser(sessionUser);
 
       setSuccess(true);
       setIsEditing(false);
     } catch (err) {
-      setError('Failed to update details.');
+      setError('Failed to update details. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -153,7 +203,7 @@ const Profile = () => {
       localStorage.setItem('sa_current_user', JSON.stringify(updatedUser));
       loginUser(updatedUser);
       setSuccess(true);
-    } catch (err) {
+    } catch (_err) {
       setError(language === 'en' ? 'Failed to request committee membership.' : 'కమిటీ సభ్యత్వం అభ్యర్థించడంలో విఫలమైంది.');
     } finally {
       setLoading(false);
@@ -172,8 +222,8 @@ const Profile = () => {
         {/* Profile Card Header */}
         <div className="p-8 text-center border-b border-[var(--border)] bg-gradient-to-b from-saffron-500/10 via-[var(--bg-muted)]/50 to-transparent relative">
           <div ref={avatarRef} style={{ opacity: 0 }} className="w-24 h-24 rounded-full bg-gradient-to-tr from-saffron-500/20 to-gold-500/20 border-4 border-gold-400 shadow-xl mx-auto flex items-center justify-center text-saffron-600 dark:text-saffron-400 text-3xl font-black overflow-hidden relative group">
-            {photoUrl ? (
-              <img src={photoUrl} alt={name || 'User'} className="w-full h-full object-cover" />
+            {(isEditing ? photoPreview : photoUrl) ? (
+              <img src={isEditing ? photoPreview : photoUrl} alt={name || 'User'} className="w-full h-full object-cover" />
             ) : (
               name ? name[0].toUpperCase() : 'U'
             )}

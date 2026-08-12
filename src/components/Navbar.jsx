@@ -74,9 +74,11 @@ const Navbar = () => {
     if (navbarRef.current) navbarEntrance(navbarRef.current, { delay: 50 });
   }, [user]);
 
-  // Fetch notifications
+  // Fetch notifications — polls every 90 seconds but pauses when tab is hidden
   useEffect(() => {
     const fetchNotifications = async () => {
+      // Skip fetching if tab is not visible to save Firebase reads
+      if (document.hidden) return;
       try {
         const data = await dbService.announcements.getAll();
         setNotifications(data);
@@ -84,15 +86,28 @@ const Navbar = () => {
         const unread = data.filter(ann => !readIds.includes(ann.id)).length;
         setUnreadCount(unread);
       } catch (err) {
-        console.error(err);
+        // Silence expected offline/permission errors
       }
     };
 
-    if (user) {
-      fetchNotifications();
-      const interval = setInterval(fetchNotifications, 20000);
-      return () => clearInterval(interval);
-    }
+    if (!user) return;
+
+    // Fetch immediately on mount
+    fetchNotifications();
+
+    // Poll every 90 seconds (was 20s — reduced to save Firebase quota)
+    const interval = setInterval(fetchNotifications, 90000);
+
+    // Pause polling when tab is hidden; resume and immediately refetch when visible
+    const handleVisibility = () => {
+      if (!document.hidden) fetchNotifications();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [user]);
 
   const markAllAsRead = () => {
@@ -202,6 +217,7 @@ const Navbar = () => {
               <div className="relative" ref={notificationRef}>
                 <button 
                   onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                  aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
                   className="relative p-2 rounded-xl text-[var(--text-secondary)] hover:text-saffron-600 hover:bg-[var(--bg-muted)] transition-all h-9 w-9 flex items-center justify-center cursor-pointer"
                 >
                   <Bell className="w-4 h-4" />
@@ -330,6 +346,8 @@ const Navbar = () => {
               {/* Mobile Menu Button */}
               <button 
                 onClick={() => setIsOpen(!isOpen)}
+                aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                aria-expanded={isOpen}
                 className="lg:hidden p-2 rounded-xl text-[var(--text-secondary)] hover:text-saffron-600 hover:bg-[var(--bg-muted)] transition-all cursor-pointer"
               >
                 {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

@@ -98,8 +98,10 @@ const initialAnnouncements = [
 const initialGallery = [];
 
 const initialUsers = [
-  { id: 'u1', name: 'Ganesh Nalamalapu', email: 'admin@srianjaneya.org', phone: '+91 94949 94949', role: 'admin', village: 'Zarugumalli', password: 'admin123', createdAt: '2026-01-01T00:00:00.000Z' },
-  { id: 'u2', name: 'Youth Member', email: 'member@srianjaneya.org', phone: '+91 88888 88888', role: 'user', village: 'Zarugumalli', password: 'member123', createdAt: '2026-01-05T00:00:00.000Z' }
+  // Passwords are SHA-256 hashed. admin123 → hash, member123 → hash
+  // These hashes are pre-computed so plaintext never touches localStorage
+  { id: 'u1', name: 'Ganesh Nalamalapu', email: 'admin@srianjaneya.org', phone: '+91 94949 94949', role: 'admin', village: 'Zarugumalli', password: '240be518fabd2724ddb6f04eeb1da5967448d7e831d729c8570a04ec5e04cd42', createdAt: '2026-01-01T00:00:00.000Z' },
+  { id: 'u2', name: 'Youth Member', email: 'member@srianjaneya.org', phone: '+91 88888 88888', role: 'user', village: 'Zarugumalli', password: '4f2da6b0572e1bd3dab41f0d72a44d5c6cfc70a647f8cfbdddb11965e3a7524a', createdAt: '2026-01-05T00:00:00.000Z' }
 ];
 
 const initialDonations = [];
@@ -548,7 +550,7 @@ export const authService = {
       }
     }
 
-    const twoFactorApiKey = import.meta.env.VITE_TWO_FACTOR_API_KEY || 'db1c2bc7-909b-11f1-908b-0200cd936042';
+    const twoFactorApiKey = import.meta.env.VITE_TWO_FACTOR_API_KEY;
 
     if (method === 'phone') {
       const cleanPhone = destination.replace(/\D/g, '').slice(-10);
@@ -656,7 +658,7 @@ export const authService = {
     }
 
     if (session.phone) {
-      const twoFactorApiKey = import.meta.env.VITE_TWO_FACTOR_API_KEY || 'db1c2bc7-909b-11f1-908b-0200cd936042';
+      const twoFactorApiKey = import.meta.env.VITE_TWO_FACTOR_API_KEY;
 
       // 1. Try serverless backend verify route first
       try {
@@ -849,7 +851,8 @@ export const authService = {
       triggerAuthChange(userData);
 
       try {
-        await setDoc(doc(db, 'users', userUid), userData);
+        const { id: _dropId, ...firestoreData } = userData;
+        await setDoc(doc(db, 'users', userUid), firestoreData);
         triggerWelcomeNotifications(userData).catch(() => null);
       } catch (fsErr) {
         console.warn('[signUp] Firestore write notice:', fsErr.message);
@@ -947,15 +950,19 @@ export const authService = {
   },
 
   signOut: async () => {
+    // Always clear local session state regardless of auth mode
+    localStorage.removeItem('sa_current_user');
+    currentUserMock = null;
+    // Notify all auth listeners that the user is signed out
+    authListeners.forEach(listener => listener(null));
+
     if (isFirebaseConfigured && auth) {
       try {
         await firebaseSignOut(auth);
       } catch (err) {
-        console.error('[signOut] Failed:', err.message);
-        throw err;
+        // Log but don't rethrow — local session is already cleared
+        console.warn('[signOut] Firebase remote sign-out warning:', err.message);
       }
-    } else {
-      triggerAuthChange(null);
     }
   },
 

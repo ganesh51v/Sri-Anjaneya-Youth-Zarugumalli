@@ -2,8 +2,12 @@ import nodemailer from 'nodemailer';
 
 // Helper to send a welcome email using Nodemailer & Gmail
 const sendWelcomeEmail = async (user) => {
-  const gmailUser = process.env.GMAIL_USER || 'srianjaneyayouth9@gmail.com';
-  const gmailPass = process.env.GMAIL_APP_PASSWORD || 'fmvvbtvfmrvbauce';
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  if (!gmailUser || !gmailPass) {
+    console.error('[welcome.js] GMAIL_USER or GMAIL_APP_PASSWORD not set.');
+    return { success: true, mocked: true, notice: 'Email env vars not configured.' };
+  }
 
   try {
     const transporter = nodemailer.createTransport({

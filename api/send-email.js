@@ -1,33 +1,62 @@
 import nodemailer from 'nodemailer';
 
+const ALLOWED_ORIGINS = [
+  'https://sri-anjaneya-youth-zarugumalli.web.app',
+  'https://sri-anjaneya-youth-zarugumalli.firebaseapp.com',
+  'https://sri-anjaneya-youth-zarugumalli.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:4173',
+];
+
 export default async function handler(req, res) {
-  // CORS configuration for cross-origin requests
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
+  // CORS — only allow requests from known origins
+  const origin = req.headers.origin || '';
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    // For same-origin Vercel function calls (no Origin header) allow through;
+    // block anything else by not setting the header
+    if (origin) {
+      return res.status(403).json({ success: false, error: 'Origin not allowed.' });
+    }
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    return res.status(200).json({ success: false, error: 'Method not allowed. Use POST.' });
+    return res.status(405).json({ success: false, error: 'Method not allowed. Use POST.' });
+  }
+
+  // Guard: ensure email credentials are configured server-side
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  if (!gmailUser || !gmailPass) {
+    console.error('[send-email] GMAIL_USER or GMAIL_APP_PASSWORD env vars are not set.');
+    return res.status(500).json({ success: false, error: 'Server email configuration missing.' });
   }
 
   try {
     let body = req.body || {};
     if (typeof body === 'string') {
-      try { body = JSON.parse(body); } catch (e) {}
+      try { body = JSON.parse(body); } catch (e) { /* ignore */ }
     }
 
     const { type, to, subject, data: payload } = body;
 
     if (!to) {
-      return res.status(200).json({ success: false, error: 'Recipient email address (to) is required.' });
+      return res.status(400).json({ success: false, error: 'Recipient email address (to) is required.' });
     }
 
-    const gmailUser = process.env.GMAIL_USER || 'srianjaneyayouth9@gmail.com';
-    const gmailPass = process.env.GMAIL_APP_PASSWORD || 'fmvvbtvfmrvbauce';
+    // Sanitise recipient — prevent header injection
+    const toAddress = Array.isArray(to) ? to.join(', ') : String(to);
+    if (/[\r\n]/.test(toAddress)) {
+      return res.status(400).json({ success: false, error: 'Invalid recipient address.' });
+    }
 
     let emailSubject = subject;
     let htmlContent = '';
@@ -54,7 +83,7 @@ export default async function handler(req, res) {
             <div style="background-color: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #f7f2e4; margin: 24px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
               <h3 style="color: #b71c1c; margin-top: 0; font-size: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">Explore Member Features</h3>
               <ul style="padding-left: 20px; color: #475569; font-size: 13px; line-height: 1.8;">
-                <li><strong>Events & Seva:</strong> Participate in local temple festivals & community programs.</li>
+                <li><strong>Events &amp; Seva:</strong> Participate in local temple festivals &amp; community programs.</li>
                 <li><strong>Announcements:</strong> Stay informed with real-time updates and notices.</li>
                 <li><strong>Gallery:</strong> View photos from past celebrations and programs.</li>
                 <li><strong>Donations:</strong> Contribute securely to local temple seva and welfare initiatives.</li>
@@ -133,7 +162,7 @@ export default async function handler(req, res) {
       }
 
       case 'password_reset': {
-        const code = payload?.code || '123456';
+        const code = payload?.code || '------';
         emailSubject = emailSubject || '🔑 Password Reset Code - Sri Anjaneya Youth';
         htmlContent = `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #fdfcf9;">
@@ -149,7 +178,7 @@ export default async function handler(req, res) {
             </div>
 
             <p style="font-size: 12px; color: #64748b; text-align: center;">
-              If you did not request a password reset, please ignore this email.
+              This code expires in 10 minutes. If you did not request a password reset, please ignore this email.
             </p>
 
             <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
@@ -161,7 +190,7 @@ export default async function handler(req, res) {
       }
 
       case 'otp': {
-        const code = payload?.code || '123456';
+        const code = payload?.code || '------';
         emailSubject = emailSubject || '🔢 Verification Code - Sri Anjaneya Youth';
         htmlContent = `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #fdfcf9;">
@@ -196,27 +225,25 @@ export default async function handler(req, res) {
     try {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
-        auth: {
-          user: gmailUser,
-          pass: gmailPass
-        }
+        auth: { user: gmailUser, pass: gmailPass }
       });
 
       const info = await transporter.sendMail({
         from: `"Sri Anjaneya Youth Zarugumalli" <${gmailUser}>`,
-        to: Array.isArray(to) ? to.join(', ') : to,
+        to: toAddress,
         subject: emailSubject,
         html: htmlContent
       });
 
-      console.log('[Gmail Success] Email delivered to:', to, '| MessageID:', info.messageId);
+      console.log('[Gmail Success] Email delivered to:', toAddress, '| MessageID:', info.messageId);
       return res.status(200).json({ success: true, delivered: true, messageId: info.messageId });
     } catch (sendErr) {
       console.warn('[Gmail Send Exception]', sendErr.message);
+      // Return 200 with delivered:false so the client can handle gracefully
       return res.status(200).json({
         success: true,
         delivered: false,
-        notice: sendErr.message,
+        notice: 'Email could not be delivered at this time.',
         data: { id: `fallback_${Date.now()}` }
       });
     }
@@ -225,7 +252,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       delivered: false,
-      notice: globalErr.message || 'Serverless email handler exception',
+      notice: 'Email handler encountered an error.',
       data: { id: `fallback_${Date.now()}` }
     });
   }
