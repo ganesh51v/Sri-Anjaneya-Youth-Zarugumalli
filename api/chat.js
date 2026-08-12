@@ -115,23 +115,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // 4. RAG Retrieval (Static Knowledge & Dynamic Information)
+    // 4. RAG Retrieval (Static Knowledge & Dynamic Information matching live website)
     const staticDocs = searchKnowledgeBase(cleanMessage);
-    let contextText = staticDocs.map(doc => doc.content).join('\n\n');
-
-    // Dynamic data heuristics
-    const lower = cleanMessage.toLowerCase();
-    if (lower.includes('event') || lower.includes('program') || lower.includes('jayanthi') || lower.includes('when')) {
-      contextText += `\n\nLive Events Information:\n- Upcoming Event: Hanuman Jayanthi Grand Celebrations & Annadanam\n- Date: April 23, 2026\n- Location: Sri Anjaneya Temple Premises, Zarugumalli\n- Details: Special Abhishekam, Bhajana, Grand Procession, and Free Annadanam to all villagers.\n- View all events at [/events](/events).`;
-    }
-
-    if (lower.includes('announcement') || lower.includes('update') || lower.includes('news') || lower.includes('notice')) {
-      contextText += `\n\nLive Announcements Information:\n- Latest Notice: Volunteer Registrations Open for Hanuman Jayanthi Seva\n- Notice Date: Recent\n- Details: Youth members interested in Annadanam volunteering please contact committee organizers.\n- View all announcements at [/announcements](/announcements).`;
-    }
-
-    if (!contextText.trim()) {
-      contextText = "General information about Sri Anjaneya Youth Association Zarugumalli: A youth organization dedicated to temple seva, cultural events, free food distribution (Annadanam), and community welfare in Zarugumalli, Prakasam District, Andhra Pradesh.";
-    }
+    const contextText = staticDocs.map(doc => doc.content).join('\n\n---\n\n');
 
     // 5. Call AI Provider (Google Gemini API)
     const apiKey = process.env.GEMINI_API_KEY;
