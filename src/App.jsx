@@ -41,6 +41,9 @@ function OfflineBanner() {
   );
 }
 
+// Components
+import ChatbotWidget from './components/chatbot/ChatbotWidget';
+
 // Pages
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
@@ -157,6 +160,7 @@ function App() {
                 </Routes>
               </main>
 
+              <ChatbotWidget />
               <Footer />
             </div>
           </AuthProvider>
