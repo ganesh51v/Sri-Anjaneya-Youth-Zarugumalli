@@ -87,10 +87,5 @@ function localApiPlugin() {
 }
 
 export default defineConfig({
-  plugins: [react(), localApiPlugin()],
-  server: {
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
-    }
-  }
+  plugins: [react(), localApiPlugin()]
 });

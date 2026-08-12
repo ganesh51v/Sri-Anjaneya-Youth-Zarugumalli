@@ -44,12 +44,24 @@ const SignIn = () => {
     if (user) navigate('/');
   }, [user, navigate]);
 
-  // PWA install prompt
+  // PWA install prompt listener
   useEffect(() => {
-    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); };
+    const handler = (e) => {
+      // Store event for custom install trigger
+      setDeferredPrompt(e);
+    };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
+
+  const handleInstallPWA = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
