@@ -1,14 +1,19 @@
+/* global process */
+
 import nodemailer from 'nodemailer';
+import { applyCors, checkRateLimit, cleanText, escapeHtml, isValidEmail } from './_security.js';
 
 const ALLOWED_ORIGINS = [
   'https://sri-anjaneya-youth-zarugumalli.web.app',
   'https://sri-anjaneya-youth-zarugumalli.firebaseapp.com',
   'https://sri-anjaneya-youth-zarugumalli.vercel.app',
   'http://localhost:5173',
+  'http://localhost:5174',
   'http://localhost:4173',
 ];
 
 export default async function handler(req, res) {
+  if (!applyCors(req, res)) return res.status(403).json({ success: false, error: 'Origin not allowed.' });
   // CORS — only allow requests from known origins
   const origin = req.headers.origin || '';
   if (ALLOWED_ORIGINS.includes(origin)) {
@@ -43,22 +48,40 @@ export default async function handler(req, res) {
   try {
     let body = req.body || {};
     if (typeof body === 'string') {
-      try { body = JSON.parse(body); } catch (e) { /* ignore */ }
+      try { body = JSON.parse(body); } catch { /* ignore */ }
     }
 
-    const { type, to, subject, data: payload } = body;
+    const { type, to, subject, data: rawPayload } = body;
 
     if (!to) {
       return res.status(400).json({ success: false, error: 'Recipient email address (to) is required.' });
     }
 
+    const recipients = Array.isArray(to) ? to.slice(0, 20) : [to];
+    if (recipients.length === 0 || recipients.some((recipient) => !isValidEmail(recipient))) {
+      return res.status(400).json({ success: false, error: 'Invalid recipient address.' });
+    }
+    const rate = checkRateLimit(req, recipients.join(','), { limit: 5, windowMs: 10 * 60_000 });
+    if (!rate.allowed) {
+      res.setHeader('Retry-After', rate.retryAfter);
+      return res.status(429).json({ success: false, error: 'Email request limit reached. Please try again later.' });
+    }
+
+    const allowedTypes = new Set(['welcome', 'donation', 'announcement', 'event', 'password_reset', 'otp']);
+    if (!allowedTypes.has(type)) return res.status(400).json({ success: false, error: 'Unsupported email type.' });
+
+    const payload = Object.fromEntries(Object.entries(rawPayload || {}).map(([key, value]) => [
+      key,
+      escapeHtml(cleanText(value, 2000))
+    ]));
+
     // Sanitise recipient — prevent header injection
-    const toAddress = Array.isArray(to) ? to.join(', ') : String(to);
+    const toAddress = recipients.join(', ');
     if (/[\r\n]/.test(toAddress)) {
       return res.status(400).json({ success: false, error: 'Invalid recipient address.' });
     }
 
-    let emailSubject = subject;
+    let emailSubject = cleanText(subject, 180).replace(/[\r\n]/g, ' ');
     let htmlContent = '';
 
     switch (type) {

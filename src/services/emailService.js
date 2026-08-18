@@ -136,7 +136,7 @@ export const smsService = {
   /**
    * Send SMS OTP via Twilio API endpoint
    */
-  async sendTwilioOtp(phone, code = '123456') {
+  async sendTwilioOtp(phone, code) {
     try {
       const apiBase = getApiBase();
       const res = await fetch(`${apiBase}/api/send-twilio-otp`, {
@@ -160,4 +160,3 @@ export const smsService = {
     }
   }
 };
-

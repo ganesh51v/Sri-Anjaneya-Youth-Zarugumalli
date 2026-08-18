@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -20,8 +20,6 @@ import {
   ShieldCheck, 
   Globe, 
   Loader2,
-  Copy,
-  Check
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { fadeUp, staggerScaleFade, heartbeat } from '../utils/animate';
@@ -160,11 +158,12 @@ const Donate = () => {
         return;
       }
 
-      // Configure Razorpay Options
+      // Razorpay order creation and signature verification happen on the server.
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_T0LiAO755ol6LH',
-        amount: Math.round(parseFloat(amount) * 100), // paise
-        currency: 'INR',
+        key: orderData.keyId,
+        order_id: orderData.orderId,
+        amount: orderData.amount,
+        currency: orderData.currency || 'INR',
         name: 'Sri Anjaneya Youth Association',
         description: `${purpose} Donation`,
         image: '/icon.png',
@@ -180,10 +179,11 @@ const Donate = () => {
           setLoading(true);
           try {
             const savedDonation = await paymentService.processPaymentResponse(
-              { donorName, phone, email, amount, paymentMethod, purpose },
+              { userId: user?.uid || user?.id, donorName, phone, email, amount, paymentMethod, purpose },
               {
                 orderId: orderData.orderId,
                 paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
                 status: 'Success'
               }
             );

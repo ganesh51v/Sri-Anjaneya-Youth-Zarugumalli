@@ -30,8 +30,10 @@ const SEO = ({ title, description, path = '/', image }) => {
       if (!el) {
         el = document.createElement('meta');
         // split selector like 'meta[property="og:title"]'
-        const [, attrName, , attrVal] = selector.match(/\[(\w+)="([^"]+)"\]/) || [];
-        if (attrName) el.setAttribute(attrName, attrVal);
+        const match = selector.match(/\[(\w+)="([^"]+)"\]/);
+        const attrName = match?.[1];
+        const attrVal = match?.[2];
+        if (attrName && attrVal) el.setAttribute(attrName, attrVal);
         document.head.appendChild(el);
       }
       el.setAttribute(attr, content);

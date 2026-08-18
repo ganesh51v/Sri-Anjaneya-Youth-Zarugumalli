@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { dbService } from '../firebase/config';
 import { 
-  Menu, X, Home, Users, Calendar, Image, Bell, User, Settings, LogOut, 
-  ChevronDown, ShieldAlert, Globe, Sun, Moon, Heart, Banknote, Sparkles 
+  Menu, X, Home, Users, Calendar, Image, Bell, User, LogOut,
+  ShieldAlert, Sun, Moon, Heart, Banknote
 } from 'lucide-react';
 import { navbarEntrance } from '../utils/animate';
 
@@ -85,7 +85,7 @@ const Navbar = () => {
         const readIds = safeParseReadIds();
         const unread = data.filter(ann => !readIds.includes(ann.id)).length;
         setUnreadCount(unread);
-      } catch (err) {
+      } catch {
         // Silence expected offline/permission errors
       }
     };
@@ -175,6 +175,7 @@ const Navbar = () => {
                   <Link 
                     key={item.name} 
                     to={item.path} 
+                    aria-current={isActive ? 'page' : undefined}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide flex items-center gap-1.5 transition-all duration-200 ${
                       isActive 
                         ? 'bg-saffron-500 text-white shadow-md shadow-saffron-500/20' 
@@ -194,6 +195,8 @@ const Navbar = () => {
               {/* Theme Switcher */}
               <button 
                 onClick={toggleTheme}
+                aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+                aria-pressed={theme === 'dark'}
                 className="flex items-center justify-center p-2 rounded-xl text-[var(--text-secondary)] hover:text-saffron-600 hover:bg-[var(--bg-muted)] transition-all h-9 w-9 cursor-pointer"
                 title={theme === 'light' ? 'Switch to Midnight Dark Mode' : 'Switch to Sophisticated Light Mode'}
               >
@@ -207,6 +210,7 @@ const Navbar = () => {
               {/* Language Switcher */}
               <button 
                 onClick={toggleLanguage}
+                aria-label={language === 'en' ? 'Switch to Telugu' : 'Switch to English'}
                 className="flex items-center justify-center p-2 rounded-xl text-[var(--text-secondary)] hover:text-saffron-600 hover:bg-[var(--bg-muted)] transition-all text-xs font-black h-9 w-9 cursor-pointer"
                 title={language === 'en' ? 'Switch to Telugu' : 'Switch to English'}
               >
@@ -218,6 +222,8 @@ const Navbar = () => {
                 <button 
                   onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                   aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+                  aria-expanded={isNotificationsOpen}
+                  aria-haspopup="dialog"
                   className="relative p-2 rounded-xl text-[var(--text-secondary)] hover:text-saffron-600 hover:bg-[var(--bg-muted)] transition-all h-9 w-9 flex items-center justify-center cursor-pointer"
                 >
                   <Bell className="w-4 h-4" />
@@ -290,6 +296,9 @@ const Navbar = () => {
               <div className="relative" ref={dropdownRef}>
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  aria-label="Open account menu"
+                  aria-expanded={isDropdownOpen}
+                  aria-haspopup="menu"
                   className="flex items-center justify-center rounded-full hover:ring-2 hover:ring-saffron-500/30 transition-all duration-200 cursor-pointer focus:outline-none p-0.5"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-saffron-500 to-gold-500 flex items-center justify-center text-white text-xs font-extrabold border border-saffron-200/50 shadow-sm overflow-hidden shrink-0">
@@ -348,6 +357,7 @@ const Navbar = () => {
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
                 aria-expanded={isOpen}
+                aria-controls="mobile-navigation"
                 className="lg:hidden p-2 rounded-xl text-[var(--text-secondary)] hover:text-saffron-600 hover:bg-[var(--bg-muted)] transition-all cursor-pointer"
               >
                 {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -358,7 +368,7 @@ const Navbar = () => {
 
         {/* Mobile Navigation Drawer */}
         {isOpen && (
-          <div className="lg:hidden mobile-menu-drawer rounded-b-2xl border-t border-[var(--border)] p-4 shadow-xl space-y-2 animate-slide-up">
+          <div id="mobile-navigation" role="dialog" aria-label="Mobile navigation" className="lg:hidden mobile-menu-drawer rounded-b-2xl border-t border-[var(--border)] p-4 shadow-xl space-y-2 animate-slide-up">
             {navItems.filter(item => item.show).map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -366,6 +376,7 @@ const Navbar = () => {
                   key={item.name} 
                   to={item.path} 
                   onClick={() => setIsOpen(false)}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`px-4 py-2.5 rounded-xl text-xs font-bold tracking-wide flex items-center gap-3 transition-all ${
                     isActive 
                       ? 'bg-saffron-500 text-white shadow-md' 

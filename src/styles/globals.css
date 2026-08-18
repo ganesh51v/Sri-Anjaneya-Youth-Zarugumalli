@@ -18,6 +18,11 @@
   --gold-dark: #b45309;
   --devored: #dc2626;
   --devored-light: #ef4444;
+  --success: #0f9f6e;
+  --warning: #c77700;
+  --info: #2563eb;
+  --focus-ring: rgba(234, 88, 12, 0.28);
+  --surface-glass: rgba(255, 255, 255, 0.78);
 
   /* Light Theme Surfaces (Warm Alabaster Stone) */
   --bg-page: #fafaf9;            /* Stone-50 clean canvas */
@@ -77,6 +82,11 @@
   --shadow-lg: 0 14px 44px rgba(0,0,0,0.9), 0 0 32px rgba(245, 158, 11, 0.2);
   --shadow-saffron: 0 8px 32px rgba(249, 115, 22, 0.32);
   --shadow-gold: 0 8px 32px rgba(245, 158, 11, 0.3);
+  --success: #34d399;
+  --warning: #fbbf24;
+  --info: #60a5fa;
+  --focus-ring: rgba(251, 146, 60, 0.42);
+  --surface-glass: rgba(15, 23, 42, 0.78);
 }
 
 /* Gradient Text Utilities */
@@ -166,10 +176,12 @@ body {
   color: var(--text-primary);
   font-family: 'DM Sans', 'Outfit', system-ui, sans-serif;
   min-height: 100vh;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
   transition: background-color 0.3s ease, color 0.3s ease;
 
   background-image:
@@ -624,6 +636,7 @@ p {
    DARK MODE OVERRIDES
    ============================================================ */
 .dark body {
+  color-scheme: dark;
   background-color: var(--bg-page);
   color: var(--text-primary);
 }
@@ -648,11 +661,51 @@ p {
   border-color: rgba(255,255,255,0.12) !important;
 }
 
-/* Smooth layout element transitions */
-*, *::before, *::after {
-  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 180ms;
+/* Accessible interaction defaults */
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+:where(button, input, select, textarea) {
+  min-height: 44px;
+}
+
+:where(button) {
+  min-width: 44px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+.page-container {
+  width: min(100% - 2rem, 80rem);
+  margin-inline: auto;
+  padding-block: clamp(1.5rem, 3vw, 3rem);
+}
+
+.glass-panel {
+  background: var(--surface-glass);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(18px);
+}
+
+.semantic-success { color: var(--success); }
+.semantic-warning { color: var(--warning); }
+.semantic-info { color: var(--info); }
+
+@media (max-width: 639px) {
+  .page-container {
+    width: min(100% - 1.25rem, 80rem);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

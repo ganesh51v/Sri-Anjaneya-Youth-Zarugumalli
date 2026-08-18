@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { authService } from '../firebase/config';
 
 const AuthContext = createContext(null);
@@ -10,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const stored = localStorage.getItem('sa_current_user');
       return stored ? JSON.parse(stored) : null;
-    } catch (e) {
+    } catch {
       return null;
     }
   });
@@ -44,7 +46,10 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.signOut();
     } finally {
-      // Always clear local user even if remote signout throws
+      // Remove session-scoped client state even if remote sign-out fails.
+      ['sa_current_user', 'sa_chat_history', 'sa_read_announcements', 'sa_login_attempts'].forEach((key) => {
+        localStorage.removeItem(key);
+      });
       setUser(null);
     }
   };

@@ -1,18 +1,51 @@
-import React from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bot, User, Copy, Check } from 'lucide-react';
 
+const ALLOWED_INTERNAL_ROUTES = new Set([
+  '/',
+  '/events',
+  '/members',
+  '/announcements',
+  '/donate',
+  '/expenditure',
+  '/profile',
+  '/signin',
+  '/signup'
+]);
+
+const isSafeExternalUrl = (url) => /^https:\/\//i.test(url) || /^mailto:/i.test(url);
+
 const ChatMessage = ({ message, onLinkClick }) => {
   const isUser = message.sender === 'user';
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(message.text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(message.text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
   };
 
-  // Simple markdown link parser: [Label](/route)
+  const renderInlineText = (text, keyPrefix) => {
+    const parts = [];
+    const boldRegex = /\*\*([^*]+)\*\*/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = boldRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+      parts.push(<strong key={`${keyPrefix}-bold-${match.index}`}>{match[1]}</strong>);
+      lastIndex = boldRegex.lastIndex;
+    }
+
+    if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+    return parts.length ? parts : [text];
+  };
+
   const renderTextWithLinks = (text) => {
     const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
     const parts = [];
@@ -21,16 +54,18 @@ const ChatMessage = ({ message, onLinkClick }) => {
 
     while ((match = regex.exec(text)) !== null) {
       if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index));
+        parts.push(...renderInlineText(text.substring(lastIndex, match.index), `text-${match.index}`));
       }
 
       const label = match[1];
       const url = match[2];
 
-      if (url.startsWith('/')) {
+      const route = url.split(/[?#]/, 1)[0];
+
+      if (url.startsWith('/') && ALLOWED_INTERNAL_ROUTES.has(route)) {
         parts.push(
           <Link
-            key={match.index}
+            key={`link-${match.index}`}
             to={url}
             onClick={onLinkClick}
             className="font-bold underline text-saffron-600 dark:text-saffron-400 hover:text-saffron-500"
@@ -38,10 +73,10 @@ const ChatMessage = ({ message, onLinkClick }) => {
             {label}
           </Link>
         );
-      } else {
+      } else if (isSafeExternalUrl(url)) {
         parts.push(
           <a
-            key={match.index}
+            key={`external-link-${match.index}`}
             href={url}
             target="_blank"
             rel="noopener noreferrer"
@@ -50,13 +85,15 @@ const ChatMessage = ({ message, onLinkClick }) => {
             {label}
           </a>
         );
+      } else {
+        parts.push(...renderInlineText(label, `invalid-link-${match.index}`));
       }
 
       lastIndex = regex.lastIndex;
     }
 
     if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex));
+      parts.push(...renderInlineText(text.substring(lastIndex), `text-${lastIndex}`));
     }
 
     return parts.length > 0 ? parts : text;

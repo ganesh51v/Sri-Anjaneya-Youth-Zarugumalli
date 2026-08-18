@@ -1,70 +1,44 @@
+/* global process */
+
 import twilio from 'twilio';
+import { applyCors, checkRateLimit, parseBody } from './_security.js';
 
 export default async function handler(req, res) {
-  const allowedOrigins = [
-    'https://sri-anjaneya-youth-zarugumalli.web.app',
-    'https://sri-anjaneya-youth-zarugumalli.firebaseapp.com',
-    'https://sri-anjaneya-youth-zarugumalli.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:4173'
-  ];
-  const origin = req.headers.origin || '';
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
+  if (!applyCors(req, res)) return res.status(403).json({ success: false, error: 'Origin not allowed.' });
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed.' });
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  const { phone, code } = parseBody(req);
+  const normalizedPhone = String(phone || '').replace(/\D/g, '');
+  if (!/^(?:91)?[6-9]\d{9}$/.test(normalizedPhone)) {
+    return res.status(400).json({ success: false, error: 'A valid mobile number is required.' });
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
-  }
-
-  const { phone, code } = req.body || {};
-
-  if (!phone) {
-    return res.status(400).json({ error: 'Recipient phone number is required.' });
+  const rate = checkRateLimit(req, normalizedPhone, { limit: 3, windowMs: 5 * 60_000 });
+  if (!rate.allowed) {
+    res.setHeader('Retry-After', rate.retryAfter);
+    return res.status(429).json({ success: false, error: 'Too many OTP requests. Please try again later.' });
   }
 
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const apiKeySid = process.env.TWILIO_API_KEY_SID;
-  const fromPhone = process.env.TWILIO_PHONE_NUMBER || '+1234567890';
+  const fromPhone = process.env.TWILIO_PHONE_NUMBER;
 
-  const otpCode = code || '123456';
-  const bodyMessage = `${otpCode} is your OTP to verify phone number at Sri Anjaneya Youth Zarugumalli. Please do not share OTP with anyone.\n\nthank you\nteam SAYZML`;
-
-  if (!accountSid || accountSid.startsWith('AC_your_')) {
-    console.warn('[Twilio OTP] TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN missing or placeholder. Returning mocked SMS dispatch.');
-    return res.status(200).json({
-      success: true,
-      mocked: true,
-      code: otpCode,
-      message: 'Twilio SMS mocked (add TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN to .env for live carrier delivery)'
-    });
+  if (!accountSid || !authToken || !fromPhone) {
+    return res.status(503).json({ success: false, error: 'SMS delivery is temporarily unavailable.' });
   }
 
   try {
-    const client = apiKeySid 
-      ? twilio(apiKeySid, authToken, { accountSid })
-      : twilio(accountSid, authToken);
-
+    const client = apiKeySid ? twilio(apiKeySid, authToken, { accountSid }) : twilio(accountSid, authToken);
     const message = await client.messages.create({
-      body: bodyMessage,
+      body: `${String(code || '').slice(0, 6)} is your verification code for Sri Anjaneya Youth. Do not share it.`,
       from: fromPhone,
-      to: phone
+      to: normalizedPhone.startsWith('91') ? `+${normalizedPhone}` : `+91${normalizedPhone}`
     });
 
-    console.log('[Twilio SMS Success] Message SID:', message.sid);
     return res.status(200).json({ success: true, sid: message.sid });
-  } catch (err) {
-    console.error('[Twilio Error]', err);
-    return res.status(500).json({ success: false, error: err.message || err });
+  } catch {
+    return res.status(502).json({ success: false, error: 'Unable to deliver SMS. Please try again.' });
   }
 }

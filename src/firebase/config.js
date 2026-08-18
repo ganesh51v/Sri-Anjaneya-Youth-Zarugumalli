@@ -97,12 +97,7 @@ const initialAnnouncements = [
 
 const initialGallery = [];
 
-const initialUsers = [
-  // Passwords are SHA-256 hashed. admin123 → hash, member123 → hash
-  // These hashes are pre-computed so plaintext never touches localStorage
-  { id: 'u1', name: 'Ganesh Nalamalapu', email: 'admin@srianjaneya.org', phone: '+91 94949 94949', role: 'admin', village: 'Zarugumalli', password: '240be518fabd2724ddb6f04eeb1da5967448d7e831d729c8570a04ec5e04cd42', createdAt: '2026-01-01T00:00:00.000Z' },
-  { id: 'u2', name: 'Youth Member', email: 'member@srianjaneya.org', phone: '+91 88888 88888', role: 'user', village: 'Zarugumalli', password: '4f2da6b0572e1bd3dab41f0d72a44d5c6cfc70a647f8cfbdddb11965e3a7524a', createdAt: '2026-01-05T00:00:00.000Z' }
-];
+const initialUsers = [];
 
 const initialDonations = [];
 
@@ -550,8 +545,6 @@ export const authService = {
       }
     }
 
-    const twoFactorApiKey = import.meta.env.VITE_TWO_FACTOR_API_KEY;
-
     if (method === 'phone') {
       const cleanPhone = destination.replace(/\D/g, '').slice(-10);
 
@@ -561,84 +554,38 @@ export const authService = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ phone: cleanPhone })
-        }).catch(() => null);
-        if (res && res.ok) {
-          const result = await res.json().catch(() => null);
-          if (result && result.success) {
-            const expiry = Date.now() + 5 * 60 * 1000;
-            sessionStorage.setItem('sa_2factor_session', JSON.stringify({
-              phone: cleanPhone,
-              sessionId: result.sessionId,
-              devCode: result.devCode || null,
-              expiry
-            }));
-            console.log('[2Factor OTP] Dispatched via backend API. Session ID:', result.sessionId);
-            return { success: true, sessionId: result.sessionId, destination };
-          }
-        }
+        });
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok || !result.success) throw new Error(result.error || 'Unable to send OTP.');
+        const expiry = Date.now() + 5 * 60 * 1000;
+        sessionStorage.setItem('sa_2factor_session', JSON.stringify({
+          phone: cleanPhone,
+          sessionId: result.sessionId,
+          expiry
+        }));
+        return { success: true, sessionId: result.sessionId, destination };
       } catch (backendErr) {
-        console.warn('[2Factor Backend API] Route unreachable, attempting direct 2Factor dispatch:', backendErr.message);
-      }
-
-      // 2. Direct 2Factor API Fallback (GET Text SMS) for local dev & CORS resilience
-      try {
-        const code = String(Math.floor(100000 + Math.random() * 900000));
-        const directUrl = `https://2factor.in/API/V1/${twoFactorApiKey}/SMS/${cleanPhone}/${code}/OTP1`;
-        let res = await fetch(directUrl, { method: 'GET' });
-        let data = await res.json();
-
-        if (!data || data.Status !== 'Success') {
-          const fallbackUrl = `https://2factor.in/API/V1/${twoFactorApiKey}/SMS/${cleanPhone}/AUTOGEN/OTP1`;
-          res = await fetch(fallbackUrl, { method: 'GET' });
-          data = await res.json();
-        }
-
-        if (data && data.Status === 'Success') {
-          const expiry = Date.now() + 5 * 60 * 1000;
-          sessionStorage.setItem('sa_2factor_session', JSON.stringify({
-            phone: cleanPhone,
-            sessionId: data.Details,
-            code,
-            expiry
-          }));
-          console.log('[2Factor OTP] Text SMS sent successfully! Session ID:', data.Details);
-          return { success: true, sessionId: data.Details, destination };
-        } else {
-          throw new Error(data.Details || 'Failed to send OTP SMS.');
-        }
-      } catch (directErr) {
-        console.error('[2Factor Direct Error]', directErr);
-        throw new Error(directErr.message || 'Failed to send OTP via Text SMS. Please check your mobile number.');
+        throw new Error(backendErr.message || 'Failed to send OTP via Text SMS. Please try again.');
       }
     } else {
-      // Email OTP via Resend
-      const code = String(Math.floor(100000 + Math.random() * 900000));
-      const expiry = Date.now() + 5 * 60 * 1000;
-      sessionStorage.setItem('sa_2factor_session', JSON.stringify({
-        destination,
-        method: 'email',
-        code,
-        expiry
-      }));
-
       try {
-        const res = await fetch('/api/send-email', {
+        const res = await fetch('/api/auth/send-email-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'otp',
-            to: destination,
-            data: { code }
-          })
-        }).catch(() => null);
-        if (res && res.ok) {
-          console.log('[Registration OTP] Resend OTP email dispatched to:', destination);
-        }
+          body: JSON.stringify({ email: destination })
+        });
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok || !result.success) throw new Error(result.error || 'Unable to send verification email.');
+        sessionStorage.setItem('sa_2factor_session', JSON.stringify({
+          destination,
+          method: 'email',
+          sessionId: result.sessionId,
+          expiry: Date.now() + 10 * 60 * 1000
+        }));
+        return { success: true, destination };
       } catch (emailErr) {
-        console.warn('[Registration OTP] Email dispatch notice:', emailErr.message);
+        throw new Error(emailErr.message || 'Unable to send verification email.');
       }
-
-      return { success: true, code, destination };
     }
   },
 
@@ -658,8 +605,6 @@ export const authService = {
     }
 
     if (session.phone) {
-      const twoFactorApiKey = import.meta.env.VITE_TWO_FACTOR_API_KEY;
-
       // 1. Try serverless backend verify route first
       try {
         const res = await fetch('/api/auth/verify-otp', {
@@ -668,44 +613,30 @@ export const authService = {
           body: JSON.stringify({
             phone: session.phone,
             otp: enteredCode,
-            sessionId: session.sessionId,
-            devCode: session.devCode
+            sessionId: session.sessionId
           })
         }).catch(() => null);
-        if (res && res.ok) {
-          const result = await res.json().catch(() => null);
-          if (result && result.success && result.verified) {
-            sessionStorage.removeItem('sa_2factor_session');
-            return true;
-          }
-        }
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok || !result.success || !result.verified) throw new Error(result.error || 'OTP verification failed.');
+        sessionStorage.removeItem('sa_2factor_session');
+        return true;
       } catch (backendErr) {
-        if (backendErr.message?.includes('Incorrect') || backendErr.message?.includes('Invalid')) {
-          throw backendErr;
-        }
-      }
-
-      // 2. Direct 2Factor API GET VERIFY Fallback
-      try {
-        const directUrl = `https://2factor.in/API/V1/${twoFactorApiKey}/SMS/VERIFY/${session.sessionId}/${enteredCode.trim()}`;
-        const res = await fetch(directUrl, { method: 'GET' });
-        const data = await res.json();
-        if (data && data.Status === 'Success' && data.Details === 'OTP Matched') {
-          sessionStorage.removeItem('sa_2factor_session');
-          return true;
-        } else {
-          const isMismatch = data?.Details?.includes('Mismatch') || data?.Details?.includes('Invalid');
-          throw new Error(isMismatch ? 'Incorrect OTP. Please check and try again.' : (data?.Details || 'OTP verification failed.'));
-        }
-      } catch (directErr) {
-        throw new Error(directErr.message || 'OTP verification failed. Please try again.');
+        throw new Error(backendErr.message || 'OTP verification failed. Please try again.');
       }
     } else {
-      if (String(enteredCode).trim() !== session.code) {
-        throw new Error('Incorrect OTP. Please check and try again.');
+      try {
+        const res = await fetch('/api/auth/verify-email-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: session.sessionId, otp: enteredCode })
+        });
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok || !result.success || !result.verified) throw new Error(result.error || 'OTP verification failed.');
+        sessionStorage.removeItem('sa_2factor_session');
+        return true;
+      } catch (emailErr) {
+        throw new Error(emailErr.message || 'OTP verification failed. Please try again.');
       }
-      sessionStorage.removeItem('sa_2factor_session');
-      return true;
     }
   },
 
@@ -787,15 +718,8 @@ export const authService = {
           localStorage.setItem('sa_users', JSON.stringify(users));
         }
       } else {
-        const expectedPassword = user.email.split('@')[0] + '123';
-        if (password !== expectedPassword && password !== 'admin123' && password !== 'member123') {
-          recordMockLoginAttempt(email, false);
-          throw new Error("Invalid credentials. For mock accounts, use: '" + user.email.split('@')[0] + "123' or 'admin123'/'member123'");
-        }
-        
-        // Auto-initialize legacy accounts with hashed default password
-        user.password = await hashPassword(password);
-        localStorage.setItem('sa_users', JSON.stringify(users));
+        recordMockLoginAttempt(email, false);
+        throw new Error('Invalid email/phone number or password.');
       }
       
       recordMockLoginAttempt(email, true);
@@ -831,10 +755,8 @@ export const authService = {
         userUid = `u_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
       }
 
-      const hashedPassword = await hashPassword(password);
       const userData = normalizeUser(userUid, {
         name, email, phone, village,
-        password: hashedPassword,
         role: 'user',
         photoUrl: '',
         committeeStatus: 'none',
@@ -1186,71 +1108,13 @@ export const authService = {
   },
 
   sendOtp: async (phoneNumber, appVerifier) => {
-    if (isFirebaseConfigured && auth) {
-      try {
-        // When appVerificationDisabledForTesting=true the SDK accepts a null verifier
-        const verifier = appVerifier || window.recaptchaVerifier || null;
-        const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier);
-        window.confirmationResult = confirmationResult;
-        return confirmationResult;
-      } catch (err) {
-        console.error('[Firebase Phone Auth Error Detail]:', err);
-        console.warn('[Firebase Phone Auth Error/Fallback]', err.code || err.message);
-        // If Firebase Phone Auth throws 400 Bad Request, reCAPTCHA error, or missing SMS provider config,
-        // fallback gracefully to test OTP verification code '123456'
-        const generatedCode = '123456';
-        console.log(`[OTP Verification] Code for ${phoneNumber} is: ${generatedCode}`);
-
-        return {
-          confirm: async (otp) => {
-            if (otp.trim() === generatedCode || otp.trim() === '123456') {
-              const fallbackUser = {
-                uid: 'u_phone_' + phoneNumber.replace(/[^0-9]/g, ''),
-                id: 'u_phone_' + phoneNumber.replace(/[^0-9]/g, ''),
-                name: 'Bhaktha (' + phoneNumber + ')',
-                email: '',
-                phone: phoneNumber,
-                role: 'user',
-                createdAt: new Date().toISOString()
-              };
-              return { user: fallbackUser };
-            } else {
-              throw new Error('Invalid OTP code. For testing, enter code: 123456');
-            }
-          }
-        };
-      }
-    } else {
-      console.log(`[Mock Send OTP] Sending code 123456 to ${phoneNumber}`);
-      return {
-        confirm: async (otp) => {
-          if (otp === '123456') {
-            const mockUser = {
-              id: 'u_phone_mock',
-              name: 'Bhaktha (' + phoneNumber + ')',
-              email: phoneNumber.replace(/[^0-9]/g, '') + '@phone.com',
-              phone: phoneNumber,
-              role: 'user',
-              createdAt: new Date().toISOString()
-            };
-            
-            // Register user in mock users list if not already there
-            const users = JSON.parse(localStorage.getItem('sa_users') || '[]');
-            let existingUser = users.find(u => u.phone === phoneNumber);
-            if (!existingUser) {
-              existingUser = mockUser;
-              users.push(mockUser);
-              localStorage.setItem('sa_users', JSON.stringify(users));
-            }
-            
-            triggerAuthChange(existingUser);
-            return { user: existingUser };
-          } else {
-            throw new Error('Invalid OTP code. For mock testing, use: 123456');
-          }
-        }
-      };
+    if (!(isFirebaseConfigured && auth)) {
+      throw new Error('Phone verification is unavailable until Firebase is configured.');
     }
+    const verifier = appVerifier || window.recaptchaVerifier || null;
+    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier);
+    window.confirmationResult = confirmationResult;
+    return confirmationResult;
   }
 };
 

@@ -1,104 +1,73 @@
+/* global process */
+
 import crypto from 'crypto';
+import { applyCors, checkRateLimit, parseBody } from './_security.js';
+
+const MAX_IMAGE_CHARS = 7 * 1024 * 1024;
 
 export default async function handler(req, res) {
-  // Set CORS headers for cross-origin requests
-  const allowedOrigins = [
-    'https://sri-anjaneya-youth-zarugumalli.web.app',
-    'https://sri-anjaneya-youth-zarugumalli.firebaseapp.com',
-    'https://sri-anjaneya-youth-zarugumalli.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:4173'
-  ];
-  const origin = req.headers.origin || '';
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
+  if (!applyCors(req, res)) return res.status(403).json({ success: false, error: 'Origin not allowed.' });
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed.' });
 
-  // Handle preflight OPTIONS request
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  const rate = checkRateLimit(req, 'upload', { limit: 10, windowMs: 10 * 60_000 });
+  if (!rate.allowed) {
+    res.setHeader('Retry-After', rate.retryAfter);
+    return res.status(429).json({ success: false, error: 'Upload limit reached. Please try again later.' });
   }
 
-  // Only allow POST requests
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+  const { file } = parseBody(req);
+  if (typeof file !== 'string' || file.length > MAX_IMAGE_CHARS) {
+    return res.status(400).json({ success: false, error: 'Image is missing or exceeds the 5 MB limit.' });
   }
 
-  const { file } = req.body;
-
-  if (!file) {
-    return res.status(400).json({ error: 'Missing image file in request body.' });
+  const imageMatch = file.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
+  if (!imageMatch) {
+    return res.status(400).json({ success: false, error: 'Only JPEG, PNG, and WebP images are supported.' });
   }
 
-  // Load Cloudinary credentials
   let cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   let apiKey = process.env.CLOUDINARY_API_KEY;
   let apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-  // Try parsing CLOUDINARY_URL if set
   if (process.env.CLOUDINARY_URL && (!cloudName || !apiKey || !apiSecret)) {
     try {
-      const urlStr = process.env.CLOUDINARY_URL;
-      const parsedUrl = new URL(urlStr);
+      const parsedUrl = new URL(process.env.CLOUDINARY_URL);
       cloudName = parsedUrl.hostname;
       apiKey = parsedUrl.username;
       apiSecret = parsedUrl.password;
-    } catch (e) {
-      console.error('[upload.js] Failed to parse CLOUDINARY_URL:', e.message);
+    } catch {
+      return res.status(503).json({ success: false, error: 'Image storage is temporarily unavailable.' });
     }
   }
 
   if (!cloudName || !apiKey || !apiSecret) {
-    return res.status(500).json({
-      error: 'Cloudinary configuration is missing on the server.'
-    });
+    return res.status(503).json({ success: false, error: 'Image storage is temporarily unavailable.' });
   }
 
   try {
-    const timestamp = Math.round(new Date().getTime() / 1000);
-    
-    // Generate signature
-    const signatureString = `timestamp=${timestamp}${apiSecret}`;
-    const signature = crypto.createHash('sha1').update(signatureString).digest('hex');
+    const timestamp = Math.round(Date.now() / 1000);
+    const signature = crypto.createHash('sha1').update(`timestamp=${timestamp}${apiSecret}`).digest('hex');
+    const formData = new URLSearchParams({
+      file,
+      api_key: apiKey,
+      timestamp: String(timestamp),
+      signature
+    });
 
-    // Build form data payload
-    const formData = new URLSearchParams();
-    formData.append('file', file);
-    formData.append('api_key', apiKey);
-    formData.append('timestamp', timestamp);
-    formData.append('signature', signature);
-
-    // Post to Cloudinary REST API
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/upload`, {
       method: 'POST',
       body: formData,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
+    const data = await response.json().catch(() => ({}));
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(response.status).json({
-        error: 'Cloudinary upload failed',
-        details: data
-      });
+    if (!response.ok || !data.secure_url) {
+      return res.status(502).json({ success: false, error: 'Image upload failed. Please try again.' });
     }
 
-    // Return the secure URL back to the client
-    return res.status(200).json({
-      success: true,
-      secure_url: data.secure_url,
-      public_id: data.public_id
-    });
-  } catch (err) {
-    console.error('[upload.js] Upload handler crash:', err);
-    return res.status(500).json({ error: err.message || 'Internal server error.' });
+    return res.status(200).json({ success: true, secure_url: data.secure_url, public_id: data.public_id });
+  } catch {
+    return res.status(502).json({ success: false, error: 'Image upload failed. Please try again.' });
   }
 }

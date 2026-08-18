@@ -358,8 +358,7 @@ const SignIn = () => {
             {authService.isMock && (
               <div className="bg-[var(--bg-muted)] border border-[var(--border)] rounded-xl p-3 text-[11px] text-[var(--text-muted)] leading-normal space-y-1 mt-3">
                 <span className="font-bold text-[var(--text-primary)] block">{t('mockAccountsText')}</span>
-                <div>• Admin: <span className="font-bold text-[var(--text-secondary)]">admin@srianjaneya.org</span> (pw: <span className="font-bold text-[var(--text-secondary)]">admin123</span>)</div>
-                <div>• User: <span className="font-bold text-[var(--text-secondary)]">member@srianjaneya.org</span> (pw: <span className="font-bold text-[var(--text-secondary)]">member123</span>)</div>
+                <div>Use your registered Firebase account to sign in.</div>
               </div>
             )}
 

@@ -1,19 +1,32 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('sa_theme') || 'light';
+    try {
+      const stored = localStorage.getItem('sa_theme');
+      if (stored === 'light' || stored === 'dark') return stored;
+    } catch {
+      // Fall back to the user's system preference.
+    }
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
 
   useEffect(() => {
-    localStorage.setItem('sa_theme', theme);
+    try {
+      localStorage.setItem('sa_theme', theme);
+    } catch {
+      // Theme still applies for this session when storage is unavailable.
+    }
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#080d1a' : '#ea580c');
   }, [theme]);
 
   const toggleTheme = () => {

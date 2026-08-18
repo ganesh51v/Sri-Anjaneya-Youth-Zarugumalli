@@ -1,4 +1,7 @@
+/* global process */
+
 import nodemailer from 'nodemailer';
+import { applyCors, checkRateLimit, cleanText, escapeHtml, isValidEmail } from './_security.js';
 
 // Helper to send a welcome email using Nodemailer & Gmail
 const sendWelcomeEmail = async (user) => {
@@ -96,21 +99,8 @@ const sendWelcomeMessage = async (user) => {
 };
 
 export default async function handler(req, res) {
-  const allowedOrigins = [
-    'https://sri-anjaneya-youth-zarugumalli.web.app',
-    'https://sri-anjaneya-youth-zarugumalli.firebaseapp.com',
-    'https://sri-anjaneya-youth-zarugumalli.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:4173'
-  ];
-  const origin = req.headers.origin || '';
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  if (!applyCors(req, res)) return res.status(403).json({ success: false, error: 'Origin not allowed.' });
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   if (req.method === 'OPTIONS') {
@@ -123,20 +113,30 @@ export default async function handler(req, res) {
 
   const user = req.body;
 
-  if (!user || !user.email) {
+  if (!user || !isValidEmail(user.email)) {
     return res.status(400).json({ error: 'Invalid user payload. Missing email.' });
   }
+
+  const rate = checkRateLimit(req, user.email, { limit: 2, windowMs: 10 * 60_000 });
+  if (!rate.allowed) return res.status(429).json({ success: false, error: 'Welcome notification limit reached.' });
+
+  const safeUser = {
+    ...user,
+    name: escapeHtml(cleanText(user.name, 120)),
+    email: cleanText(user.email, 254),
+    phone: cleanText(user.phone, 24)
+  };
 
   let emailSent = false;
   let messageSent = false;
   let errors = {};
 
-  if (user.welcomeEmailSent) {
+  if (safeUser.welcomeEmailSent) {
     console.log('[welcome.js] Welcome email already marked as sent in payload. Skipping email send.');
     emailSent = true;
   } else {
     try {
-      const emailRes = await sendWelcomeEmail(user);
+      const emailRes = await sendWelcomeEmail(safeUser);
       emailSent = emailRes.success;
     } catch (emailErr) {
       console.error('[welcome.js] Error sending welcome email:', emailErr.message);
@@ -144,12 +144,12 @@ export default async function handler(req, res) {
     }
   }
 
-  if (user.welcomeMessageSent) {
+  if (safeUser.welcomeMessageSent) {
     console.log('[welcome.js] Welcome SMS already marked as sent in payload. Skipping SMS send.');
     messageSent = true;
   } else {
     try {
-      const smsRes = await sendWelcomeMessage(user);
+      const smsRes = await sendWelcomeMessage(safeUser);
       messageSent = smsRes.success;
     } catch (smsErr) {
       console.error('[welcome.js] Error sending welcome SMS:', smsErr.message);

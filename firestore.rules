@@ -1,48 +1,68 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if the requesting user is an admin
-    function isAdmin() {
-      return request.auth != null && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    function signedIn() {
+      return request.auth != null;
     }
 
-    // Users collection — allow read for authentication & registration duplicate checks
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     match /users/{userId} {
-      allow read: if true;
-      allow create, update: if true;
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId)
+        && request.resource.data.role == 'user'
+        && request.resource.data.keys().hasOnly([
+          'uid', 'name', 'email', 'phone', 'village', 'role', 'photoUrl',
+          'committeeStatus', 'emailVerified', 'createdAt', 'welcomeEmailSent',
+          'welcomeMessageSent'
+        ]);
+      allow update: if isAdmin() || (isOwner(userId)
+        && request.resource.data.role == resource.data.role);
       allow delete: if isAdmin();
     }
 
-    // Events, Announcements, Gallery, Members collections
     match /events/{eventId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /announcements/{announcementId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /gallery/{photoId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-    match /members/{memberId} {
-      allow read: if true;
+      allow read: if signedIn();
       allow write: if isAdmin();
     }
 
-    // Donations collection
+    match /announcements/{announcementId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /gallery/{photoId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /members/{memberId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
     match /donations/{donationId} {
-      allow create: if true;
-      allow read: if true;
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'Success'
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.paymentId is string
+        && request.resource.data.paymentId.size() > 0;
       allow update, delete: if isAdmin();
     }
 
-    // Expenditures collection
     match /expenditures/{expenditureId} {
-      allow read: if true;
+      allow read: if signedIn();
       allow create, update, delete: if isAdmin();
     }
   }
