@@ -130,7 +130,7 @@ const SignIn = () => {
   const toggleLanguage = () => setLanguage(language === 'en' ? 'te' : 'en');
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[var(--bg-page)] text-[var(--text-primary)] relative overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen flex flex-col justify-between bg-transparent text-[var(--text-primary)] relative overflow-hidden transition-colors duration-300">
       <SEO title="Sign In" description="Sign in to your Sri Anjaneya Youth Zarugumalli member account. Access events, announcements, gallery and community updates." path="/signin" />
 
       {/* Luminous Animated Background Glows */}

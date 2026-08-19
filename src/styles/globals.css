@@ -185,14 +185,22 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 
   background-image:
-    radial-gradient(ellipse at 0% 0%, rgba(234, 88, 12, 0.04) 0px, transparent 50%),
-    radial-gradient(ellipse at 100% 0%, rgba(217, 119, 6, 0.03) 0px, transparent 50%);
+    linear-gradient(to bottom, rgba(248, 250, 252, 0.84) 0%, rgba(248, 250, 252, 0.90) 100%),
+    url('/saz-bg.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 .dark body {
   background-image:
-    radial-gradient(ellipse at 0% 0%, rgba(234, 88, 12, 0.06) 0px, transparent 45%),
-    radial-gradient(ellipse at 100% 5%, rgba(217, 119, 6, 0.05) 0px, transparent 45%);
+    linear-gradient(to bottom, rgba(9, 13, 22, 0.88) 0%, rgba(9, 13, 22, 0.93) 100%),
+    url('/saz-bg.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -681,7 +689,7 @@ button:disabled {
 
 .app-shell {
   min-height: 100vh;
-  background: var(--bg-page);
+  background: transparent;
   color: var(--text-primary);
   position: relative;
 }
