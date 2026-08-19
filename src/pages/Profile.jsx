@@ -244,7 +244,7 @@ const Profile = () => {
           
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-widest text-gold-600 dark:text-gold-400 bg-gold-500/10 border border-gold-500/30 mt-2 shadow-sm">
             <Sparkles className="w-3 h-3 text-gold-500" />
-            <span>{user?.role || 'Member'} Role</span>
+            <span>{user?.role || 'Member'} {t('memberRole')}</span>
           </div>
         </div>
 
@@ -260,7 +260,7 @@ const Profile = () => {
           {success && (
             <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 p-3.5 rounded-xl text-xs flex items-start gap-2.5 font-semibold animate-fade-in">
               <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-500" />
-              <span>Details updated successfully!</span>
+              <span>{t('detailsUpdated')}</span>
             </div>
           )}
 
@@ -274,7 +274,7 @@ const Profile = () => {
           {passwordSuccess && (
             <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 p-3.5 rounded-xl text-xs flex items-start gap-2.5 font-semibold animate-fade-in">
               <Check className="w-4 h-4 shrink-0 mt-0.5 text-emerald-500" />
-              <span>Password updated successfully!</span>
+              <span>{t('passwordUpdated')}</span>
             </div>
           )}
 
@@ -437,7 +437,7 @@ const Profile = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="block text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)] mb-0.5">{t('contactNumber')}</span>
-                    <span className="font-extrabold text-sm text-[var(--text-primary)] block">{user?.phone || 'Not added'}</span>
+                    <span className="font-extrabold text-sm text-[var(--text-primary)] block">{user?.phone || t('notAdded')}</span>
                   </div>
                 </div>
 
@@ -481,7 +481,7 @@ const Profile = () => {
                           </span>
                         )}
                         {(!user?.committeeStatus || user?.committeeStatus === 'none') && (
-                          <span className="text-[var(--text-secondary)] font-bold mt-0.5 block">Not a Committee Member</span>
+                          <span className="text-[var(--text-secondary)] font-bold mt-0.5 block">{t('notACommitteeMember')}</span>
                         )}
                       </span>
                     </div>

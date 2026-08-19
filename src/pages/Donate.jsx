@@ -240,7 +240,7 @@ const Donate = () => {
         </Link>
         <span className="text-xs text-slate-400 font-extrabold uppercase tracking-widest flex items-center gap-1">
           <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          Secure 256-Bit SSL Encryption
+          {t('secureSsl')}
         </span>
       </div>
 
@@ -553,34 +553,34 @@ const Donate = () => {
 
               <div className="bg-cream-50/50 dark:bg-slate-950/40 border border-cream-200 dark:border-slate-800 rounded-2xl p-5 text-left text-xs divide-y divide-cream-200/50 dark:divide-slate-800/50 space-y-3.5">
                 <div className="flex justify-between items-center pb-3">
-                  <span className="font-bold text-slate-400 uppercase tracking-wider">Donor Details</span>
+                  <span className="font-bold text-slate-400 uppercase tracking-wider">{t('donorDetails')}</span>
                   <span className="font-extrabold text-slate-800 dark:text-white">{paymentResult.donorName}</span>
                 </div>
                 
                 <div className="flex justify-between items-center py-3">
-                  <span className="font-bold text-slate-400 uppercase tracking-wider">Amount Paid</span>
+                  <span className="font-bold text-slate-400 uppercase tracking-wider">{t('amountPaid')}</span>
                   <span className="font-black text-base text-slate-800 dark:text-white">
                     ₹{paymentResult.amount.toLocaleString('en-IN')}.00
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center py-3">
-                  <span className="font-bold text-slate-400 uppercase tracking-wider">Payment Method</span>
+                  <span className="font-bold text-slate-400 uppercase tracking-wider">{t('paymentMethod')}</span>
                   <span className="font-extrabold text-slate-800 dark:text-white">{paymentResult.paymentMethod}</span>
                 </div>
 
                 <div className="flex justify-between items-center py-3">
-                  <span className="font-bold text-slate-400 uppercase tracking-wider">Purpose</span>
+                  <span className="font-bold text-slate-400 uppercase tracking-wider">{t('purpose')}</span>
                   <span className="font-semibold text-slate-700 dark:text-slate-300">{paymentResult.purpose}</span>
                 </div>
 
                 <div className="flex flex-col gap-1 py-3">
-                  <span className="font-bold text-slate-400 uppercase tracking-wider">Transaction ID</span>
+                  <span className="font-bold text-slate-400 uppercase tracking-wider">{t('transactionId')}</span>
                   <span className="font-mono text-[10px] text-slate-500 font-extrabold">{paymentResult.paymentId}</span>
                 </div>
 
                 <div className="flex justify-between items-center pt-3.5">
-                  <span className="font-bold text-slate-400 uppercase tracking-wider">Date & Time</span>
+                  <span className="font-bold text-slate-400 uppercase tracking-wider">{t('dateAndTime')}</span>
                   <span className="font-medium text-slate-500">
                     {new Date(paymentResult.createdAt).toLocaleString(language === 'en' ? 'en-IN' : 'te-IN')}
                   </span>
@@ -592,13 +592,13 @@ const Donate = () => {
                   onClick={handleReset}
                   className="flex-1 py-3 border border-cream-300 dark:border-slate-800 hover:border-saffron-500 hover:bg-saffron-50/5 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer bg-white dark:bg-slate-900"
                 >
-                  Make Another Donation
+                  {t('makeAnotherDonation')}
                 </button>
                 <button
                   onClick={() => navigate('/')}
                   className="flex-1 py-3 saffron-gradient-btn rounded-xl text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
                 >
-                  Return to Home
+                  {t('returnToHome')}
                 </button>
               </div>
 

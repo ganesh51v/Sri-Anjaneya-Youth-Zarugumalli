@@ -1,18 +1,21 @@
 import React from 'react';
 import { Calendar, Clock, MapPin, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const EventCard = ({ event, onEdit, onDelete }) => {
   const { user } = useAuth();
+  const { language, t } = useLanguage();
   const isAdmin = user && user.role === 'admin';
 
   const formatDate = (dateString) => {
     try {
-      return new Date(dateString).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+      return new Date(dateString).toLocaleDateString(language === 'en' ? 'en-IN' : 'te-IN', { year: 'numeric', month: 'short', day: 'numeric' });
     } catch { return dateString; }
   };
 
   const isUpcoming = event.status === 'upcoming';
+  const statusLabel = isUpcoming ? t('upcoming') : t('completed');
 
   return (
     <div className="card-premium flex flex-col h-full group" style={{ '--stat-accent': isUpcoming ? 'var(--saffron)' : '#94a3b8' }}>
@@ -23,7 +26,7 @@ const EventCard = ({ event, onEdit, onDelete }) => {
         {/* Status + Date row */}
         <div className="flex items-center justify-between gap-2 mb-4">
           <span className={`badge ${ isUpcoming ? 'badge-saffron pulse-glow-badge' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700' }`}>
-            {event.status}
+            {statusLabel}
           </span>
           <div className="flex items-center gap-1 text-[11px] font-semibold text-[var(--text-muted)]">
             <Calendar className="w-3 h-3 text-gold-500" />
@@ -59,15 +62,15 @@ const EventCard = ({ event, onEdit, onDelete }) => {
         <div className="border-t border-[var(--border)] bg-[var(--bg-muted)] px-4 py-2.5 flex justify-end gap-2">
           <button
             onClick={() => onEdit(event)}
-            className="btn btn-ghost btn-sm"
+            className="btn btn-ghost btn-sm cursor-pointer"
           >
-            <Edit className="w-3.5 h-3.5" /> Edit
+            <Edit className="w-3.5 h-3.5" /> {t('edit')}
           </button>
           <button
             onClick={() => onDelete(event.id)}
-            className="btn btn-danger btn-sm"
+            className="btn btn-danger btn-sm cursor-pointer"
           >
-            <Trash2 className="w-3.5 h-3.5" /> Delete
+            <Trash2 className="w-3.5 h-3.5" /> {t('delete')}
           </button>
         </div>
       )}

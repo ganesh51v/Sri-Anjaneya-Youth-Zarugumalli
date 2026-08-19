@@ -132,7 +132,7 @@ const Navbar = () => {
     { name: t('gallery'), path: '/gallery', icon: Image, show: !!user },
     { name: t('announcements'), path: '/announcements', icon: Bell, show: !!user },
     { name: t('donate'), path: '/donate', icon: Heart, show: !!user },
-    { name: 'Expenditure', path: '/expenditure', icon: Banknote, show: !!user },
+    { name: t('expenditure'), path: '/expenditure', icon: Banknote, show: !!user },
   ];
 
   if (!user) return null;
@@ -336,7 +336,7 @@ const Navbar = () => {
                           className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-devored-600 hover:bg-devored-500/10 transition-colors"
                         >
                           <ShieldAlert className="w-4 h-4 text-devored-500" />
-                          Admin Panel
+                          {t('adminPanel')}
                         </Link>
                       )}
 

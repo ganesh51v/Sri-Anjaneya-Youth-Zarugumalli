@@ -17,7 +17,7 @@ const Footer = () => {
     { to: '/gallery', icon: Image, label: t('gallery') },
     { to: '/announcements', icon: Bell, label: t('announcements') },
     { to: '/profile', icon: User, label: t('myProfile') },
-    { to: '/expenditure', icon: Banknote, label: 'Expenditure' },
+    { to: '/expenditure', icon: Banknote, label: t('expenditure') },
   ];
 
   return (

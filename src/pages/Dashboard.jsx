@@ -105,8 +105,8 @@ const Dashboard = () => {
           <div className="flex items-center gap-2.5 text-amber-700 dark:text-amber-300">
             <Info className="w-5 h-5 shrink-0 text-amber-500" />
             <div>
-              <span className="font-black text-[13px]">Your email address is not verified.</span>
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">Please click the link sent to your inbox, then click "I Have Verified" below.</p>
+              <span className="font-black text-[13px]">{t('emailNotVerified')}</span>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 font-medium">{t('emailVerifyDesc')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap">
@@ -116,31 +116,31 @@ const Dashboard = () => {
                 try {
                   const res = await checkEmailVerification();
                   if (res && res.isVerified) {
-                    alert("🎉 Email verified successfully! Your account status has been updated.");
+                    alert(language === 'en' ? "🎉 Email verified successfully! Your account status has been updated." : "🎉 ఈమెయిల్ విజయవంతంగా ధృవీకరించబడింది! మీ ఖాతా స్థితి నవీకరించబడింది.");
                   } else {
-                    alert("Email is not verified yet. Please check your inbox/spam folder and click the verification link first.");
+                    alert(language === 'en' ? "Email is not verified yet. Please check your inbox/spam folder and click the verification link first." : "ఈమెయిల్ ఇంకా ధృవీకరించబడలేదు. దయచేసి మీ ఇన్‌బాక్స్/స్పామ్ ఫోల్డర్‌ను తనిఖీ చేసి లింక్ క్లిక్ చేయండి.");
                   }
                 } catch (e) {
                   alert("Verification check error: " + e.message);
                 }
               }}
-              className="btn btn-gold btn-sm"
+              className="btn btn-gold btn-sm cursor-pointer"
             >
-              I Have Verified
+              {t('iHaveVerified')}
             </button>
             <button
               type="button"
               onClick={async () => {
                 try {
                   await authService.sendVerificationEmail();
-                  alert("Verification link has been sent to your email address!");
+                  alert(language === 'en' ? "Verification link has been sent to your email address!" : "ధృవీకరణ లింక్ మీ ఈమెయిల్‌కు పంపబడింది!");
                 } catch (e) {
                   alert("Failed to send verification link: " + e.message);
                 }
               }}
-              className="btn btn-ghost btn-sm"
+              className="btn btn-ghost btn-sm cursor-pointer"
             >
-              Resend Link
+              {t('resendLink')}
             </button>
           </div>
         </div>
@@ -237,7 +237,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="card p-8 text-center text-[var(--text-muted)] text-xs border-dashed">
-                No upcoming events scheduled right now. Check back soon!
+                {t('noUpcomingEvents')}
               </div>
             )}
           </div>
@@ -267,7 +267,7 @@ const Dashboard = () => {
                       <h3 className="text-xs font-bold text-[var(--text-primary)] mb-1 truncate">{ann.title}</h3>
                       <p className="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-2">{ann.message}</p>
                       <span className="text-[10px] text-[var(--text-subtle)] font-medium mt-1 block">
-                        Posted on {new Date(ann.createdAt).toLocaleDateString(language === 'en' ? 'en-IN' : 'te-IN')}
+                        {t('postedOn')} {new Date(ann.createdAt).toLocaleDateString(language === 'en' ? 'en-IN' : 'te-IN')}
                       </span>
                     </div>
                   </div>
@@ -275,7 +275,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="card p-8 text-center text-[var(--text-muted)] text-xs border-dashed">
-                No recent announcements.
+                {t('noRecentAnnouncements')}
               </div>
             )}
           </div>
@@ -357,7 +357,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="card p-8 text-center text-[var(--text-muted)] text-xs border-dashed">
-                No images uploaded yet.
+                {t('noImagesUploaded')}
               </div>
             )}
           </div>

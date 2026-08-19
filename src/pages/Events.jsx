@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { dbService } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import EventCard from '../components/EventCard';
 import { Plus, X, Loader2, AlertCircle, Calendar } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -9,6 +10,7 @@ import { emailService } from '../services/emailService';
 
 const Events = () => {
   const { user } = useAuth();
+  const { language, t } = useLanguage();
   const isAdmin = user && user.role === 'admin';
 
   const [events, setEvents] = useState([]);
@@ -36,7 +38,7 @@ const Events = () => {
       const data = await dbService.events.getAll();
       setEvents(data);
     } catch (err) {
-      setError('Failed to load events data.');
+      setError(language === 'en' ? 'Failed to load events data.' : 'కార్యక్రమాల డేటా లోడ్ చేయడంలో విఫలమైంది.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -80,12 +82,12 @@ const Events = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
+    if (window.confirm(t('deleteEventConfirm'))) {
       try {
         await dbService.events.delete(id);
         setEvents(prev => prev.filter(e => e.id !== id));
       } catch (err) {
-        alert("Error deleting event.");
+        alert(language === 'en' ? 'Error deleting event.' : 'కార్యక్రమాన్ని తొలగించడంలో లోపం ఏర్పడింది.');
       }
     }
   };
@@ -95,7 +97,7 @@ const Events = () => {
     setError('');
 
     if (!title || !date || !time || !location || !description) {
-      setError('Please fill in all details.');
+      setError(t('fillAllDetails'));
       return;
     }
 
@@ -119,14 +121,13 @@ const Events = () => {
       }
       setIsModalOpen(false);
     } catch (err) {
-      setError('Failed to save event.');
+      setError(language === 'en' ? 'Failed to save event.' : 'కార్యక్రమాన్ని సేవ్ చేయడంలో విఫలమైంది.');
     }
   };
 
   // Filter events based on active tab
   const displayedEvents = events.filter(e => e.status === activeTab)
     .sort((a, b) => {
-      // Sort upcoming events chronologically ascending, completed events descending
       return activeTab === 'upcoming' 
         ? new Date(a.date) - new Date(b.date) 
         : new Date(b.date) - new Date(a.date);
@@ -134,24 +135,24 @@ const Events = () => {
 
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-      <SEO title="Events" description="Upcoming and past events organised by Sri Anjaneya Youth Zarugumalli — temple festivals, cultural programmes, seva activities and community gatherings." path="/events" />
+      <SEO title={t('events')} description="Upcoming and past events organised by Sri Anjaneya Youth Zarugumalli — temple festivals, cultural programmes, seva activities and community gatherings." path="/events" />
       
       {/* Header Panel */}
       <div ref={headerRef} style={{ opacity: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Events & Meetings</h1>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">{t('eventsMeetings')}</h1>
           <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">
-            Browse upcoming meetings, seva programs, and cultural festival celebrations
+            {t('eventsSubtitle')}
           </p>
         </div>
         
         {isAdmin && (
           <button 
             onClick={openAddModal}
-            className="saffron-gradient-btn rounded-xl px-4 py-2.5 text-xs flex items-center justify-center gap-1.5 self-start sm:self-auto"
+            className="saffron-gradient-btn rounded-xl px-4 py-2.5 text-xs flex items-center justify-center gap-1.5 self-start sm:self-auto cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Add Event
+            {t('addEvent')}
           </button>
         )}
       </div>
@@ -166,7 +167,7 @@ const Events = () => {
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
-          Upcoming Events
+          {t('upcomingEvents')}
         </button>
         <button
           onClick={() => setActiveTab('completed')}
@@ -176,7 +177,7 @@ const Events = () => {
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
-          Completed Activities
+          {t('completedActivities')}
         </button>
       </div>
 
@@ -192,7 +193,7 @@ const Events = () => {
       {loading ? (
         <div className="py-20 flex flex-col items-center justify-center">
           <Loader2 className="w-8 h-8 text-saffron-600 animate-spin" />
-          <p className="mt-2 text-xs text-slate-400">Loading events...</p>
+          <p className="mt-2 text-xs text-slate-400">{t('loadingEvents')}</p>
         </div>
       ) : displayedEvents.length > 0 ? (
         <div ref={eventsGridRef} className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -209,7 +210,7 @@ const Events = () => {
       ) : (
         <div className="bg-cream-100/50 rounded-2xl p-12 text-center text-slate-400 text-xs border border-dashed border-cream-200 flex flex-col items-center gap-2">
           <Calendar className="w-8 h-8 text-slate-300" />
-          <span>No {activeTab} events registered in our logs.</span>
+          <span>{activeTab === 'upcoming' ? t('noUpcomingEventsInLogs') : t('noCompletedEventsInLogs')}</span>
         </div>
       )}
 
@@ -220,9 +221,9 @@ const Events = () => {
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-saffron-500 to-saffron-600 text-white px-6 py-4 flex justify-between items-center">
               <h2 className="font-extrabold text-sm uppercase tracking-wider">
-                {editingEvent ? 'Edit Event Details' : 'Add New Event'}
+                {editingEvent ? t('editEventDetails') : t('addNewEvent')}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-white hover:text-saffron-100">
+              <button onClick={() => setIsModalOpen(false)} className="text-white hover:text-saffron-100 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -237,7 +238,7 @@ const Events = () => {
               )}
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">Event Title *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">{t('eventTitle')} *</label>
                 <input
                   type="text"
                   value={title}
@@ -250,7 +251,7 @@ const Events = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">Date *</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">{t('date')} *</label>
                   <input
                     type="date"
                     value={date}
@@ -260,7 +261,7 @@ const Events = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">Time *</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">{t('time')} *</label>
                   <input
                     type="text"
                     value={time}
@@ -273,7 +274,7 @@ const Events = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">Location *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">{t('location')} *</label>
                 <input
                   type="text"
                   value={location}
@@ -285,7 +286,7 @@ const Events = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">Description *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">{t('description')} *</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -297,15 +298,15 @@ const Events = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">Status *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 pl-1">{t('status')} *</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full bg-cream-50 border border-cream-300 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500"
+                  className="w-full bg-cream-50 border border-cream-300 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-saffron-500 cursor-pointer"
                   required
                 >
-                  <option value="upcoming">Upcoming</option>
-                  <option value="completed">Completed</option>
+                  <option value="upcoming">{t('upcoming')}</option>
+                  <option value="completed">{t('completed')}</option>
                 </select>
               </div>
 
@@ -313,15 +314,15 @@ const Events = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-cream-300 hover:bg-cream-50 rounded-xl text-slate-700 font-bold"
+                  className="px-4 py-2 border border-cream-300 hover:bg-cream-50 rounded-xl text-slate-700 font-bold cursor-pointer"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 saffron-gradient-btn rounded-xl font-bold"
+                  className="px-5 py-2 saffron-gradient-btn rounded-xl font-bold cursor-pointer"
                 >
-                  Save Event
+                  {t('saveEvent')}
                 </button>
               </div>
             </form>

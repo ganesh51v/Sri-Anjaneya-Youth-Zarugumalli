@@ -207,7 +207,7 @@ const SignIn = () => {
               </div>
 
               <h1 className="text-xl sm:text-2xl font-black tracking-tight font-serif text-[var(--text-primary)]">
-                Divine Portal Login
+                {t('divinePortalLogin')}
               </h1>
               <p className="text-[11px] text-[var(--text-secondary)] font-medium leading-relaxed max-w-xs mx-auto">
                 &ldquo;{t('unitedQuote')}&rdquo;
@@ -236,7 +236,7 @@ const SignIn = () => {
               {/* Identifier */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-black text-[var(--text-secondary)] uppercase tracking-wider pl-1">
-                  Email or Phone Number
+                  {t('emailOrPhone')}
                 </label>
                 <div className="relative">
                   {looksLikePhone
@@ -316,7 +316,7 @@ const SignIn = () => {
             {/* Social Logins Section */}
             <div className="mt-5 pt-4 border-t border-[var(--border)] space-y-3">
               <div className="text-center">
-                <span className="text-[10px] uppercase tracking-widest text-[var(--text-subtle)] font-extrabold">{t('or')} continue with</span>
+                <span className="text-[10px] uppercase tracking-widest text-[var(--text-subtle)] font-extrabold">{t('orContinueWith')}</span>
               </div>
               
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -368,7 +368,7 @@ const SignIn = () => {
 
       {/* Footer */}
       <footer className="text-center py-4 px-4 text-xs font-semibold relative z-10 text-[var(--text-secondary)] border-t border-[var(--border)]">
-        Developed by <span className="text-saffron-600 dark:text-saffron-400 font-bold">Ganesh Nalamalapu</span>
+        {t('developedBy')} <span className="text-saffron-600 dark:text-saffron-400 font-bold">Ganesh Nalamalapu</span>
       </footer>
     </div>
   );

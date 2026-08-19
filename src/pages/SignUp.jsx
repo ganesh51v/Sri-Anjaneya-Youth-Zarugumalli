@@ -295,10 +295,10 @@ const SignUp = () => {
             </div>
 
             <h2 className="text-xl font-extrabold tracking-tight relative z-10">
-              {step === 1 ? t('joinWebsiteName') : 'Verify Your Account'}
+              {step === 1 ? t('joinWebsiteName') : t('verifyYourAccount')}
             </h2>
             <p className="text-xs text-gold-300 uppercase tracking-widest font-bold mt-1 relative z-10">
-              {step === 1 ? 'Step 1 of 2 — Fill Details' : 'Step 2 of 2 — Enter OTP'}
+              {step === 1 ? t('step1Desc') : t('step2Desc')}
             </p>
           </div>
 
@@ -424,7 +424,7 @@ const SignUp = () => {
                 {/* OTP Channel selector */}
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2 pl-1">
-                    Send OTP To
+                    {t('sendOtpTo')}
                   </label>
                   <div className="flex gap-3">
                     <button
@@ -437,7 +437,7 @@ const SignUp = () => {
                       }`}
                     >
                       <Phone className="w-4 h-4" />
-                      Phone
+                      {t('phone')}
                     </button>
                     <button
                       type="button"
@@ -449,25 +449,25 @@ const SignUp = () => {
                       }`}
                     >
                       <Mail className="w-4 h-4" />
-                      Email
+                      {t('email')}
                     </button>
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1.5 pl-1">
                     {otpChannel === 'phone'
-                      ? `OTP will be sent via SMS to +91${phone || 'XXXXXXXXXX'}`
-                      : `OTP will be sent to ${email || 'your email address'}`}
+                      ? (language === 'en' ? `OTP will be sent via SMS to +91${phone || 'XXXXXXXXXX'}` : `SMS ద్వారా OTP +91${phone || 'XXXXXXXXXX'} కు పంపబడుతుంది`)
+                      : (language === 'en' ? `OTP will be sent to ${email || 'your email address'}` : `OTP ${email || 'మీ ఈమెయిల్ చిరునామా'} కు పంపబడుతుంది`)}
                   </p>
                 </div>
 
                 {/* Send OTP button */}
                 <div className="sm:col-span-2 pt-1">
                   <button type="submit" disabled={loading}
-                    className="w-full saffron-gradient-btn rounded-xl py-3 text-sm flex items-center justify-center gap-2">
+                    className="w-full saffron-gradient-btn rounded-xl py-3 text-sm flex items-center justify-center gap-2 cursor-pointer">
                     {loading
                       ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       : <>
                           <MessageSquare className="w-4 h-4" />
-                          Send OTP to {otpChannel === 'phone' ? 'Phone' : 'Email'}
+                          {otpChannel === 'phone' ? t('sendOtpToPhone') : t('sendOtpToEmail')}
                         </>
                     }
                   </button>
@@ -487,12 +487,10 @@ const SignUp = () => {
                   </div>
                 </div>
 
-
-
                 {/* 6-digit OTP boxes */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-3 text-center">
-                    Enter 6-Digit OTP
+                    {t('enter6DigitOtp')}
                   </label>
                   <OtpInput value={otpValue} onChange={setOtpValue} />
                 </div>
@@ -504,7 +502,7 @@ const SignUp = () => {
                     onClick={() => { setStep(1); setOtpValue(''); setError(''); setInfo(''); setOtpFallbackCode(''); }}
                     className="flex items-center gap-1 text-slate-500 hover:text-slate-700 font-bold cursor-pointer"
                   >
-                    <ChevronLeft className="w-3.5 h-3.5" /> Change Details
+                    <ChevronLeft className="w-3.5 h-3.5" /> {t('changeDetails')}
                   </button>
                   <button
                     type="button"
@@ -515,18 +513,18 @@ const SignUp = () => {
                     }`}
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    {countdown > 0 ? `Resend in ${formatCountdown(countdown)}` : 'Resend OTP'}
+                    {countdown > 0 ? `${t('resendIn')} ${formatCountdown(countdown)}` : t('resendOtp')}
                   </button>
                 </div>
 
                 {/* Verify & Create Account */}
                 <button type="submit" disabled={loading || otpValue.length < 6}
-                  className="w-full saffron-gradient-btn rounded-xl py-3 text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                  className="w-full saffron-gradient-btn rounded-xl py-3 text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
                   {loading
                     ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     : <>
                         <UserPlus className="w-4 h-4" />
-                        Verify &amp; Create Account
+                        {t('verifyAndCreate')}
                       </>
                   }
                 </button>

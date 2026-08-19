@@ -1,6 +1,7 @@
 import React from 'react';
 import { Phone, MapPin, Edit, Trash2, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const AVATAR_GRADIENTS = [
   'from-saffron-400 to-saffron-600',
@@ -18,6 +19,7 @@ const getGradient = (name) => {
 
 const MemberCard = ({ member, onEdit, onDelete }) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const isAdmin = user && user.role === 'admin';
   const isOfficer = member.role?.toLowerCase().includes('president') || member.role?.toLowerCase().includes('secretary');
 
@@ -41,7 +43,7 @@ const MemberCard = ({ member, onEdit, onDelete }) => {
             </div>
           )}
           {isOfficer && (
-            <div className="absolute -bottom-1.5 -right-1.5 bg-gold-500 text-white p-1 rounded-lg border-2 border-[var(--bg-card)] shadow-sm" title="Office Bearer">
+            <div className="absolute -bottom-1.5 -right-1.5 bg-gold-500 text-white p-1 rounded-lg border-2 border-[var(--bg-card)] shadow-sm" title={t('officeBearer')}>
               <Shield className="w-2.5 h-2.5 fill-current" />
             </div>
           )}
@@ -71,11 +73,11 @@ const MemberCard = ({ member, onEdit, onDelete }) => {
       {/* Admin actions */}
       {isAdmin && (
         <div className="mt-auto border-t border-[var(--border)] bg-[var(--bg-muted)] px-4 py-2.5 flex justify-end gap-2">
-          <button onClick={() => onEdit(member)} className="btn btn-ghost btn-sm">
-            <Edit className="w-3.5 h-3.5" /> Edit
+          <button onClick={() => onEdit(member)} className="btn btn-ghost btn-sm cursor-pointer">
+            <Edit className="w-3.5 h-3.5" /> {t('edit')}
           </button>
-          <button onClick={() => onDelete(member.id)} className="btn btn-danger btn-sm">
-            <Trash2 className="w-3.5 h-3.5" /> Delete
+          <button onClick={() => onDelete(member.id)} className="btn btn-danger btn-sm cursor-pointer">
+            <Trash2 className="w-3.5 h-3.5" /> {t('delete')}
           </button>
         </div>
       )}

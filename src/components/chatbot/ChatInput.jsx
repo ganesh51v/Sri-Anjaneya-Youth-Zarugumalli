@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Send, Loader2 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const ChatInput = ({ onSendMessage, disabled }) => {
+  const { t } = useLanguage();
   const [text, setText] = useState('');
   const MAX_LENGTH = 500;
 
@@ -27,7 +29,7 @@ const ChatInput = ({ onSendMessage, disabled }) => {
           value={text}
           onChange={(e) => setText(e.target.value.slice(0, MAX_LENGTH))}
           onKeyDown={handleKeyDown}
-          placeholder="Ask a question about events, seva, etc..."
+          placeholder={t('chatPlaceholder')}
           disabled={disabled}
           aria-label="Type your question for the AI Assistant"
           className="w-full bg-[var(--bg-input)] border border-[var(--border-input)] rounded-xl py-2.5 pl-3 pr-10 text-xs text-[var(--text-primary)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-saffron-500 focus:ring-1 focus:ring-saffron-500 transition-all resize-none max-h-24 font-sans"

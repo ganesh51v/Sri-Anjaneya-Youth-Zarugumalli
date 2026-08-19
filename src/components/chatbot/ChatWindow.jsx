@@ -3,6 +3,7 @@ import { Bot, X, Trash2, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import SuggestedQuestions from './SuggestedQuestions';
+import { useLanguage } from '../../context/LanguageContext';
 
 const ChatWindow = ({
   messages,
@@ -13,6 +14,7 @@ const ChatWindow = ({
   onRetry,
   onClose
 }) => {
+  const { t } = useLanguage();
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -40,10 +42,10 @@ const ChatWindow = ({
             <div className="flex items-center gap-1.5">
               <h3 className="text-xs font-black text-[var(--text-primary)] tracking-tight">Sri Anjaneya AI</h3>
               <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-saffron-500/10 text-saffron-600 dark:text-saffron-400 border border-saffron-500/20 uppercase">
-                Assistant
+                {t('aiAssistant')}
               </span>
             </div>
-            <p className="text-[10px] text-[var(--text-muted)] font-medium">Online - Ask about seva and events</p>
+            <p className="text-[10px] text-[var(--text-muted)] font-medium">{t('onlineAskSeva')}</p>
           </div>
         </div>
 
@@ -52,17 +54,17 @@ const ChatWindow = ({
             <button
               onClick={onClearHistory}
               className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-devored-600 hover:bg-devored-500/10 transition-all cursor-pointer"
-              title="Clear Conversation"
-              aria-label="Clear Conversation"
+              title={t('clearConversation')}
+              aria-label={t('clearConversation')}
             >
               <Trash2 className="w-4 h-4" />
             </button>
           )}
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-muted)] transition-all cursor-pointer"
-            title="Close Chat"
-            aria-label="Close Chat"
+            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-var(--text-primary)] hover:bg-[var(--bg-muted)] transition-all cursor-pointer"
+            title={t('closeChat')}
+            aria-label={t('closeChat')}
           >
             <X className="w-4.5 h-4.5" />
           </button>
@@ -78,7 +80,7 @@ const ChatWindow = ({
             <div>
               <h4 className="text-xs font-black text-[var(--text-primary)]">Namaste!</h4>
               <p className="text-[11px] text-[var(--text-muted)] max-w-xs mx-auto mt-1 leading-relaxed">
-                Welcome to Sri Anjaneya Youth Association. How can I help you today?
+                {t('howCanIHelp')}
               </p>
             </div>
           </div>
@@ -91,7 +93,7 @@ const ChatWindow = ({
         {loading && (
           <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] p-2">
             <Bot className="w-4 h-4 text-saffron-500 animate-bounce" />
-            <span className="text-[11px] font-semibold italic">Anjaneya AI is typing...</span>
+            <span className="text-[11px] font-semibold italic">{t('aiTyping')}</span>
           </div>
         )}
 
@@ -106,7 +108,7 @@ const ChatWindow = ({
                 onClick={onRetry}
                 className="btn btn-sm btn-ghost py-1 px-2 text-[10px] shrink-0"
               >
-                <RefreshCw className="w-3 h-3 mr-1" /> Retry
+                <RefreshCw className="w-3 h-3 mr-1" /> {t('retry')}
               </button>
             )}
           </div>

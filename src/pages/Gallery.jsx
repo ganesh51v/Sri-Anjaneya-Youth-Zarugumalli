@@ -216,7 +216,7 @@ const Gallery = () => {
                 </div>
               ) : (
                 <div className="text-center py-12 text-slate-400">
-                  No images in this album.
+                  {t('noImagesInAlbum')}
                 </div>
               )}
             </div>
@@ -239,6 +239,7 @@ const Gallery = () => {
 
 /* Lightbox Component with Swipe Gestures, Download, Spinner, and Fallback */
 const Lightbox = ({ album, index, setIndex, onClose }) => {
+  const { t } = useLanguage();
   const currentImage = album.imageUrls[index];
 
   // Touch Swipe states
@@ -314,14 +315,14 @@ const Lightbox = ({ album, index, setIndex, onClose }) => {
           <button
             onClick={handleDownload}
             className="text-white hover:text-saffron-400 bg-black/40 p-2 rounded-full cursor-pointer hover:scale-105 transition-all"
-            title="Download Image"
+            title={t('downloadImage')}
           >
             <Download className="w-5 h-5" />
           </button>
           <button
             onClick={onClose}
             className="text-white hover:text-saffron-400 bg-black/40 p-2 rounded-full cursor-pointer hover:scale-105 transition-all"
-            title="Close Lightbox"
+            title={t('closeLightbox')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -354,7 +355,7 @@ const Lightbox = ({ album, index, setIndex, onClose }) => {
         )}
 
         {/* Load-optimized Display Image */}
-        <LightboxImage src={currentImage} alt={`${album.title} Large view`} />
+        <LightboxImage src={currentImage} alt={`${album.title} Large view`} t={t} />
       </div>
 
       {/* Lightbox Footer */}
@@ -371,7 +372,7 @@ const Lightbox = ({ album, index, setIndex, onClose }) => {
 };
 
 /* Sub-component to manage image loading indicator and fallback errors */
-const LightboxImage = ({ src, alt }) => {
+const LightboxImage = ({ src, alt, t }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -390,7 +391,7 @@ const LightboxImage = ({ src, alt }) => {
       {error ? (
         <div className="flex flex-col items-center justify-center text-slate-500 gap-2 p-10 border border-dashed border-slate-800 rounded-2xl bg-slate-900/40">
           <ImageIcon className="w-10 h-10 text-slate-600 animate-pulse" />
-          <span className="text-xs font-semibold">Image failed to load</span>
+          <span className="text-xs font-semibold">{t ? t('imageFailedToLoad') : 'Image failed to load'}</span>
         </div>
       ) : (
         <img
