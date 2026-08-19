@@ -1,0 +1,42 @@
+[
+  {
+    "id": "activities-001",
+    "title": "Hanuman Jayanthi and Festival Seva",
+    "content": "Sri Anjaneya Youth organizes Hanuman Jayanthi celebrations each year including special Abhishekam (sacred bath ritual), devotional bhajan programs, grand procession (Shobha Yatra) through the village, and temple decoration. The association also celebrates Sri Rama Navami with similar devotional programs.",
+    "sourceUrl": "/events",
+    "category": "activities",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "activities-002",
+    "title": "Annadanam — Free Food Distribution",
+    "content": "Annadanam is the free food distribution program conducted by Sri Anjaneya Youth during festivals and special occasions. Free meals are provided to villagers, pilgrims, and devotees. This is one of the core seva activities of the association, serving the community with no conditions.",
+    "sourceUrl": "/events",
+    "category": "activities",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "activities-003",
+    "title": "Blood Donation Camps",
+    "content": "Sri Anjaneya Youth organizes blood donation camps as part of its community and social welfare programs. These health drives encourage youth and community members to donate blood, supporting health awareness in Zarugumalli and surrounding areas.",
+    "sourceUrl": "/events",
+    "category": "activities",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "activities-004",
+    "title": "Community Welfare and Social Programs",
+    "content": "Community welfare activities include health awareness drives, educational support for students, village green environment initiatives, and tree plantation drives. The association works to improve the overall well-being of the Zarugumalli community through youth-led action.",
+    "sourceUrl": "/events",
+    "category": "activities",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "activities-005",
+    "title": "Temple Maintenance and Infrastructure",
+    "content": "Sri Anjaneya Youth assists in temple maintenance, temple lighting, and community hall upkeep at the Sri Anjaneya Swamy Temple in Zarugumalli. Volunteers contribute their time and effort to keep the temple premises clean and well-maintained.",
+    "sourceUrl": "/",
+    "category": "activities",
+    "updatedAt": "2025-01-01"
+  }
+]

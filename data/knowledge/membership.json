@@ -1,0 +1,26 @@
+[
+  {
+    "id": "membership-001",
+    "title": "How to Join Sri Anjaneya Youth",
+    "content": "Any youth or resident of Zarugumalli can register as a member of Sri Anjaneya Youth Association. To join, create a free account at the Sign Up page (/signup) on the website. After registering, you become a member of the association.",
+    "sourceUrl": "/signup",
+    "category": "membership",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "membership-002",
+    "title": "Executive Committee Membership",
+    "content": "Registered members can apply for Executive Committee status through their profile page (/profile). The Executive Committee includes leadership roles such as President, Secretary, Treasurer, and other coordinator roles. Applications are reviewed by the association.",
+    "sourceUrl": "/profile",
+    "category": "membership",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "membership-003",
+    "title": "Member Directory",
+    "content": "The complete list of active members, volunteers, and executive committee leaders is available on the Members page (/members) of the website. The member directory is kept up to date with current registered members.",
+    "sourceUrl": "/members",
+    "category": "membership",
+    "updatedAt": "2025-01-01"
+  }
+]

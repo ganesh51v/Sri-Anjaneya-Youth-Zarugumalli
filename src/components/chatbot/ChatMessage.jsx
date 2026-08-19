@@ -137,6 +137,29 @@ const ChatMessage = ({ message, onLinkClick }) => {
             </button>
           )}
         </div>
+
+        {/* Source links — only rendered for AI messages with verified sources */}
+        {!isUser && Array.isArray(message.sources) && message.sources.length > 0 && (
+          <div className="mt-1.5 px-1 flex flex-wrap gap-1">
+            {message.sources.map((source, i) => {
+              const url = source.url || '';
+              const title = source.title || 'Source';
+              const ALLOWED = new Set(['/', '/events', '/members', '/announcements', '/donate', '/expenditure', '/profile', '/signin', '/signup']);
+              const route = url.split(/[?#]/, 1)[0];
+              if (!ALLOWED.has(route)) return null;
+              return (
+                <Link
+                  key={`src-${i}-${url}`}
+                  to={url}
+                  onClick={onLinkClick}
+                  className="inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-saffron-500/10 text-saffron-600 dark:text-saffron-400 border border-saffron-500/20 hover:bg-saffron-500/20 transition-colors"
+                >
+                  📄 {title}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

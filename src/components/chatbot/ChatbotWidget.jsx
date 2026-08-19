@@ -121,8 +121,11 @@ const ChatbotWidget = () => {
       }
 
       conversationIdRef.current = data.conversationId || conversationIdRef.current;
+      const aiSources = Array.isArray(data.sources) ? data.sources : [];
       setMessages((prev) => {
-        const next = [...prev, createMessage('ai', data.message || 'Namaste! I am ready to help with Sri Anjaneya Youth Association information.')];
+        const aiMsg = createMessage('ai', data.message || 'Namaste! I am ready to help with Sri Anjaneya Youth Association information.');
+        aiMsg.sources = aiSources;
+        const next = [...prev, aiMsg];
         messagesRef.current = next;
         return next;
       });

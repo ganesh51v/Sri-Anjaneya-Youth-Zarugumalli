@@ -1,0 +1,42 @@
+[
+  {
+    "id": "faq-001",
+    "title": "What is Sri Anjaneya Youth?",
+    "content": "Sri Anjaneya Youth Association is a registered youth organization from Zarugumalli Village, Prakasam District, Andhra Pradesh. It was founded to serve the community through temple seva, religious events, social welfare programs, and youth empowerment under the blessings of Sri Anjaneya Swamy (Lord Hanuman).",
+    "sourceUrl": "/",
+    "category": "faq",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "faq-002",
+    "title": "Contact Information",
+    "content": "You can contact Sri Anjaneya Youth Association by email at srianjaneyayouth9@gmail.com. The website is available at https://sri-anjaneya-youth-zarugumalli.web.app. For contributions or queries, visit the Donate page (/donate) or send an email.",
+    "sourceUrl": "/",
+    "category": "faq",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "faq-003",
+    "title": "What are upcoming events?",
+    "content": "Upcoming events, celebrations, and programs organized by Sri Anjaneya Youth Association are listed on the Events page (/events). The schedule is kept current and updated regularly. Please visit /events for the latest information on upcoming seva programs, festivals, and community activities.",
+    "sourceUrl": "/events",
+    "category": "faq",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "faq-004",
+    "title": "What are the latest announcements?",
+    "content": "Official notices, volunteer calls, meeting schedules, and community updates from Sri Anjaneya Youth Association are posted on the Announcements page (/announcements). Please visit /announcements for the latest news and notices from the association.",
+    "sourceUrl": "/announcements",
+    "category": "faq",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "faq-005",
+    "title": "Who can become a member or volunteer?",
+    "content": "Any youth or resident connected to Zarugumalli can become a member or volunteer. There are no strict eligibility requirements — just a willingness to serve. Register at /signup to get started. For volunteering at specific events, watch the Announcements page (/announcements) for volunteer calls.",
+    "sourceUrl": "/signup",
+    "category": "faq",
+    "updatedAt": "2025-01-01"
+  }
+]

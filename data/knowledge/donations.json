@@ -1,0 +1,26 @@
+[
+  {
+    "id": "donations-001",
+    "title": "How to Donate to Sri Anjaneya Youth",
+    "content": "Anyone can contribute to Sri Anjaneya Youth Association online through the Donate page (/donate) on the website. The donation process is secure and supports temple seva and community programs.",
+    "sourceUrl": "/donate",
+    "category": "donations",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "donations-002",
+    "title": "Payment Methods for Donations",
+    "content": "Donations can be made via UPI, Credit Cards, Debit Cards, or Net Banking through the website's Donate page (/donate). Instant digital receipts are generated for all online contributions.",
+    "sourceUrl": "/donate",
+    "category": "donations",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "donations-003",
+    "title": "Financial Transparency and Expenditure",
+    "content": "Sri Anjaneya Youth Association is committed to financial transparency. All association funds and seva expenditures are publicly audited and published on the Expenditure page (/expenditure). Anyone can view how donations are used to support temple seva and community programs.",
+    "sourceUrl": "/expenditure",
+    "category": "donations",
+    "updatedAt": "2025-01-01"
+  }
+]

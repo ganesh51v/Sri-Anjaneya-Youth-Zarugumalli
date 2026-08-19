@@ -1,0 +1,18 @@
+[
+  {
+    "id": "website-001",
+    "title": "Website Pages and Navigation",
+    "content": "The Sri Anjaneya Youth Association website has the following pages: Home / Dashboard (/) shows an overview of the association with recent stats and updates. Events (/events) shows the complete schedule of upcoming and past events. Members (/members) shows the directory of association members and committee. Announcements (/announcements) shows community notices and volunteer calls. Donate (/donate) allows secure online contributions to support temple seva. Expenditure (/expenditure) shows transparent financial records and seva expenses. Profile (/profile) allows members to manage their details and apply for committee roles. Sign In (/signin) and Sign Up (/signup) provide account access and registration.",
+    "sourceUrl": "/",
+    "category": "website",
+    "updatedAt": "2025-01-01"
+  },
+  {
+    "id": "website-002",
+    "title": "How to Register and Sign In",
+    "content": "To create an account on the Sri Anjaneya Youth website, go to the Sign Up page (/signup). To log in to an existing account, go to the Sign In page (/signin). After signing in, you can view your profile, manage your membership details, and apply for executive committee roles on the Profile page (/profile).",
+    "sourceUrl": "/signup",
+    "category": "website",
+    "updatedAt": "2025-01-01"
+  }
+]
