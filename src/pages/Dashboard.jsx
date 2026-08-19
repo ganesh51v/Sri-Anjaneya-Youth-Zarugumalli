@@ -346,7 +346,8 @@ const Dashboard = () => {
                   <div key={item.id} className="relative rounded-2xl overflow-hidden aspect-video group shadow-sm hover-lift">
                     <img 
                       src={item.imageUrl} 
-                      alt={item.caption} 
+                      alt={item.caption || 'Sri Anjaneya Youth Zarugumalli Gallery Highlight'} 
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-2.5 flex items-end">

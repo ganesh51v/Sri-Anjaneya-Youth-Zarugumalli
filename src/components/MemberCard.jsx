@@ -34,7 +34,10 @@ const MemberCard = ({ member, onEdit, onDelete }) => {
           {member.photoUrl ? (
             <img
               src={member.photoUrl}
-              alt={member.name}
+              alt={`${member.name} - ${member.role || 'Member'}, Sri Anjaneya Youth Zarugumalli`}
+              width="56"
+              height="56"
+              loading="lazy"
               className="w-14 h-14 rounded-2xl object-cover border-2 border-[var(--border-strong)] group-hover:border-saffron-400 group-hover:scale-105 transition-all duration-300"
             />
           ) : (

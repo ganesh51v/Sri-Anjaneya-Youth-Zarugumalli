@@ -133,9 +133,42 @@ const Events = () => {
         : new Date(b.date) - new Date(a.date);
     });
 
+  const eventsSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    'name': 'Sri Anjaneya Youth Zarugumalli Events',
+    'description': 'Upcoming and completed devotional and seva events in Zarugumalli village.',
+    'itemListElement': displayedEvents.slice(0, 10).map((evt, i) => ({
+      '@type': 'ListItem',
+      'position': i + 1,
+      'item': {
+        '@type': 'Event',
+        'name': evt.title,
+        'description': evt.description,
+        'startDate': evt.date,
+        'eventStatus': evt.status === 'upcoming' ? 'https://schema.org/EventScheduled' : 'https://schema.org/EventCompleted',
+        'location': {
+          '@type': 'Place',
+          'name': evt.location || 'Sri Anjaneya Swamy Temple, Zarugumalli',
+          'address': {
+            '@type': 'PostalAddress',
+            'addressLocality': 'Zarugumalli',
+            'addressRegion': 'Andhra Pradesh',
+            'addressCountry': 'IN'
+          }
+        }
+      }
+    }))
+  };
+
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-      <SEO title={t('events')} description="Upcoming and past events organised by Sri Anjaneya Youth Zarugumalli — temple festivals, cultural programmes, seva activities and community gatherings." path="/events" />
+      <SEO 
+        title={t('events')} 
+        description="Upcoming and past events organised by Sri Anjaneya Youth Zarugumalli — temple festivals, cultural programmes, seva activities and community gatherings." 
+        path="/events"
+        schema={eventsSchema}
+      />
       
       {/* Header Panel */}
       <div ref={headerRef} style={{ opacity: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">

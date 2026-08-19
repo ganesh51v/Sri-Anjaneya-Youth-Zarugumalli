@@ -4,60 +4,76 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-  <!-- Home / Sign In (public entry point) -->
+  <!-- Home / Dashboard Portal -->
   <url>
-    <loc>https://sri-anjaneya-youth-zarugumalli.web.app/</loc>
-    <lastmod>2026-06-17</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://sri-anjaneya-youth-zarugumalli.vercel.app/</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- Sign In -->
+  <!-- Events & Seva Meetings -->
   <url>
-    <loc>https://sri-anjaneya-youth-zarugumalli.web.app/signin</loc>
-    <lastmod>2026-06-17</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://sri-anjaneya-youth-zarugumalli.vercel.app/events</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- Sign Up -->
+  <!-- Photo Gallery & Albums -->
   <url>
-    <loc>https://sri-anjaneya-youth-zarugumalli.web.app/signup</loc>
-    <lastmod>2026-06-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Events -->
-  <url>
-    <loc>https://sri-anjaneya-youth-zarugumalli.web.app/events</loc>
-    <lastmod>2026-06-17</lastmod>
+    <loc>https://sri-anjaneya-youth-zarugumalli.vercel.app/gallery</loc>
+    <lastmod>2026-08-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- Gallery -->
+  <!-- Official Announcements & Notices -->
   <url>
-    <loc>https://sri-anjaneya-youth-zarugumalli.web.app/gallery</loc>
-    <lastmod>2026-06-17</lastmod>
+    <loc>https://sri-anjaneya-youth-zarugumalli.vercel.app/announcements</loc>
+    <lastmod>2026-08-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-  <!-- Announcements -->
+  <!-- Donations & Seva Support -->
   <url>
-    <loc>https://sri-anjaneya-youth-zarugumalli.web.app/announcements</loc>
-    <lastmod>2026-06-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Donate -->
-  <url>
-    <loc>https://sri-anjaneya-youth-zarugumalli.web.app/donate</loc>
-    <lastmod>2026-06-17</lastmod>
+    <loc>https://sri-anjaneya-youth-zarugumalli.vercel.app/donate</loc>
+    <lastmod>2026-08-19</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Association Members Directory -->
+  <url>
+    <loc>https://sri-anjaneya-youth-zarugumalli.vercel.app/members</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Expenditure & Transparency Records -->
+  <url>
+    <loc>https://sri-anjaneya-youth-zarugumalli.vercel.app/expenditure</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>
+
+  <!-- Sign In Portal -->
+  <url>
+    <loc>https://sri-anjaneya-youth-zarugumalli.vercel.app/signin</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Sign Up / Register -->
+  <url>
+    <loc>https://sri-anjaneya-youth-zarugumalli.vercel.app/signup</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 
 </urlset>

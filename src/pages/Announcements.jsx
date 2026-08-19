@@ -95,9 +95,30 @@ const Announcements = () => {
     }
   };
 
+  const announcementsSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    'name': 'Sri Anjaneya Youth Zarugumalli Announcements',
+    'itemListElement': announcements.slice(0, 10).map((ann, i) => ({
+      '@type': 'ListItem',
+      'position': i + 1,
+      'item': {
+        '@type': 'NewsArticle',
+        'headline': ann.title,
+        'articleBody': ann.message,
+        'datePublished': ann.createdAt
+      }
+    }))
+  };
+
   return (
     <div className="flex-1 max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-      <SEO title="Announcements" description="Latest announcements from Sri Anjaneya Youth Zarugumalli — important updates, upcoming events, seva opportunities and community notices." path="/announcements" />
+      <SEO 
+        title={t('announcements')} 
+        description="Latest official announcements from Sri Anjaneya Youth Zarugumalli — important updates, upcoming events, seva opportunities and community notices." 
+        path="/announcements" 
+        schema={announcementsSchema}
+      />
       
       {/* Header Panel */}
       <div ref={headerRef} style={{ opacity: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">

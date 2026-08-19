@@ -80,12 +80,21 @@ const Gallery = () => {
     setSelectedAlbum(normalizeAlbum(album));
   };
 
+  const gallerySchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ImageGallery',
+    'name': 'Sri Anjaneya Youth Zarugumalli Photo Gallery',
+    'description': 'Devotional moments, Annadanam, and cultural festivals of Sri Anjaneya Swamy Temple, Zarugumalli.',
+    'image': albums.slice(0, 10).map(a => normalizeAlbum(a).coverImageUrl).filter(Boolean)
+  };
+
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       <SEO 
-        title="Gallery" 
-        description="Photo gallery of Sri Anjaneya Youth Zarugumalli events — temple festivals, seva activities, and community celebrations." 
+        title={t('gallery')} 
+        description="Photo gallery of Sri Anjaneya Youth Zarugumalli events — temple festivals, seva activities, and community celebrations in Zarugumalli." 
         path="/gallery" 
+        schema={gallerySchema}
       />
 
       {/* Header Panel */}
@@ -126,7 +135,8 @@ const Gallery = () => {
                 <div className="overflow-hidden aspect-video relative bg-slate-950">
                   <img 
                     src={album.coverImageUrl} 
-                    alt={album.title} 
+                    alt={album.title || 'Sri Anjaneya Youth Zarugumalli Album Cover'} 
+                    loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {/* Photos count badge */}
@@ -208,7 +218,8 @@ const Gallery = () => {
                     >
                       <img
                         src={url}
-                        alt={`${selectedAlbum.title} ${idx + 1}`}
+                        alt={`${selectedAlbum.title || 'Sri Anjaneya Youth Photo'} - Image ${idx + 1}`}
+                        loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>

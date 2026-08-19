@@ -486,7 +486,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-      <SEO title="Admin Dashboard" description="Sri Anjaneya Youth Zarugumalli admin control panel — manage members, events, announcements, gallery and donations." path="/admin" />
+      <SEO title="Admin Dashboard" description="Sri Anjaneya Youth Zarugumalli admin control panel." path="/admin" noindex={true} />
       
       {/* Page Header */}
       <div ref={headerRef} style={{ opacity: 0 }} className="border-b border-cream-200 pb-5">

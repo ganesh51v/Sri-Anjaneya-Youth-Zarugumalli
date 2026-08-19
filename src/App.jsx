@@ -56,6 +56,7 @@ import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import Donate from './pages/Donate';
 import Expenditure from './pages/Expenditure';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -155,8 +156,8 @@ function App() {
                     }
                   />
 
-                  {/* Fallback route */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  {/* 404 Not Found route */}
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
 

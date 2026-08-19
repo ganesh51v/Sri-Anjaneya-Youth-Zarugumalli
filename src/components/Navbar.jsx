@@ -153,7 +153,9 @@ const Navbar = () => {
                 <div className="absolute -inset-1 bg-gradient-to-r from-saffron-400 to-gold-400 rounded-full blur opacity-20 group-hover:opacity-50 transition duration-300" />
                 <img 
                   src="/icon.png" 
-                  alt="Sri Anjaneya Youth Logo" 
+                  alt="Sri Anjaneya Youth Zarugumalli Logo" 
+                  width="32"
+                  height="32"
                   className="relative w-8 h-8 rounded-full object-cover filter drop-shadow group-hover:scale-105 transition-all duration-300 border border-saffron-500/30"
                 />
               </div>

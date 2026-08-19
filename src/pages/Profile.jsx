@@ -212,7 +212,7 @@ const Profile = () => {
 
   return (
     <div className="flex-1 max-w-lg mx-auto px-4 py-10 w-full text-[var(--text-primary)]">
-      <SEO title="My Profile" description="Manage your Sri Anjaneya Youth Zarugumalli member profile — update your information, view your membership details and activity history." path="/profile" />
+      <SEO title="My Profile" description="Manage your Sri Anjaneya Youth Zarugumalli member profile." path="/profile" noindex={true} />
       
       <div ref={cardRef} style={{ opacity: 0 }} className="bg-[var(--bg-card)] rounded-[28px] border-2 border-gold-500/30 shadow-2xl overflow-hidden relative transition-colors duration-300">
         

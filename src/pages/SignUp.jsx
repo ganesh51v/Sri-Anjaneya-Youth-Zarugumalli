@@ -294,9 +294,9 @@ const SignUp = () => {
               ))}
             </div>
 
-            <h2 className="text-xl font-extrabold tracking-tight relative z-10">
+            <h1 className="text-xl font-extrabold tracking-tight relative z-10">
               {step === 1 ? t('joinWebsiteName') : t('verifyYourAccount')}
-            </h2>
+            </h1>
             <p className="text-xs text-gold-300 uppercase tracking-widest font-bold mt-1 relative z-10">
               {step === 1 ? t('step1Desc') : t('step2Desc')}
             </p>

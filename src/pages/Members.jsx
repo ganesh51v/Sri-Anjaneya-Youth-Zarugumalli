@@ -153,9 +153,33 @@ const Members = () => {
     }
   };
 
+  const membersSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    'name': 'Sri Anjaneya Youth Zarugumalli Committee & Active Members',
+    'itemListElement': members.slice(0, 15).map((m, i) => ({
+      '@type': 'ListItem',
+      'position': i + 1,
+      'item': {
+        '@type': 'Person',
+        'name': m.name,
+        'jobTitle': m.role,
+        'worksFor': {
+          '@type': 'Organization',
+          'name': 'Sri Anjaneya Youth Association Zarugumalli'
+        }
+      }
+    }))
+  };
+
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-      <SEO title="Members" description="Meet the active members of Sri Anjaneya Youth Association Zarugumalli — a dedicated group of youth committed to seva, culture and community welfare." path="/members" />
+      <SEO 
+        title={t('members')} 
+        description="Meet the active members of Sri Anjaneya Youth Association Zarugumalli — a dedicated group of youth committed to seva, culture and community welfare." 
+        path="/members"
+        schema={membersSchema}
+      />
       {/* Header Panel */}
       <div ref={headerRef} style={{ opacity: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cream-200 pb-5">
         <div>

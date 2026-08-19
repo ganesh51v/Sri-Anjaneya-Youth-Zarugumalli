@@ -225,9 +225,25 @@ const Donate = () => {
     setErrors({});
   };
 
+  const donateSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'DonateAction',
+    'name': 'Donate to Sri Anjaneya Youth Zarugumalli',
+    'description': 'Support Sri Anjaneya Swamy Temple seva, Annadanam, and community welfare in Zarugumalli village.',
+    'recipient': {
+      '@type': 'NGO',
+      'name': 'Sri Anjaneya Youth Association Zarugumalli'
+    }
+  };
+
   return (
     <div className="flex-1 max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-      <SEO title="Donate" description="Support Sri Anjaneya Youth Zarugumalli with your generous donation. Contribute to temple seva, annadanam, cultural preservation and community welfare activities." path="/donate" />
+      <SEO 
+        title={t('donate')} 
+        description="Support Sri Anjaneya Youth Zarugumalli with your generous donation. Contribute to temple seva, Annadanam, cultural preservation and community welfare in Zarugumalli." 
+        path="/donate" 
+        schema={donateSchema}
+      />
       
       {/* Page Header */}
       <div className="flex items-center justify-between">
