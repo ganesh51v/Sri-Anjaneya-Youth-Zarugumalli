@@ -65,6 +65,9 @@ function App() {
         <LanguageProvider>
           <AuthProvider>
             <div className="app-shell flex flex-col">
+              {/* Devotional Background Image Layer */}
+              <div className="web-background-layer" aria-hidden="true" />
+
               <div className="bg-blob-container">
                 <div className="bg-blob-1" />
                 <div className="bg-blob-2" />
