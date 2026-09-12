@@ -1,17 +1,13 @@
-import React from 'react';
 import { Sparkles, Calendar, Heart, Info, Phone } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
-
 const SuggestedQuestions = ({ onSelectQuestion }) => {
   const { language, t } = useLanguage();
-
   const suggestions = [
     { text: t('qWhatIsOrg'), icon: Info },
     { text: t('qUpcomingEvents'), icon: Calendar },
     { text: t('qSupportDonate'), icon: Heart },
     { text: t('qContactAssoc'), icon: Phone }
   ];
-
   return (
     <div className="p-3 bg-[var(--bg-muted)]/50 border-t border-[var(--border)]">
       <div className="flex items-center gap-1.5 mb-2 text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)]">
@@ -34,5 +30,4 @@ const SuggestedQuestions = ({ onSelectQuestion }) => {
     </div>
   );
 };
-
 export default SuggestedQuestions;

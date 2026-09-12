@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load .env file manually so api handlers can read process.env
+// eslint-env node
 function loadEnv() {
   try {
     const envContent = readFileSync(path.join(__dirname, '.env'), 'utf-8');
@@ -17,7 +18,7 @@ function loadEnv() {
       if (eqIdx === -1) return;
       const key = trimmed.slice(0, eqIdx).trim();
       const val = trimmed.slice(eqIdx + 1).trim();
-      if (key && !(key in process.env)) process.env[key] = val;
+      if (key && typeof process !== 'undefined' && !(key in process.env)) process.env[key] = val;
     });
   } catch (_) { /* .env missing is fine */ }
 }

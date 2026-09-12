@@ -1,12 +1,9 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { useLanguage } from '../context/LanguageContext';
 import { Home, Calendar, Image, Bell, Heart, Users, ArrowLeft } from 'lucide-react';
-
 const NotFound = () => {
   const { language, t } = useLanguage();
-
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 py-16 sm:py-24 text-center max-w-2xl mx-auto space-y-6 animate-fade-in">
       <SEO
@@ -15,7 +12,6 @@ const NotFound = () => {
         path="/404"
         noindex={true}
       />
-
       {/* Decorative 404 badge */}
       <div className="relative">
         <div className="text-8xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-saffron-500 via-gold-500 to-devored-600 select-none tracking-tight font-serif">
@@ -25,7 +21,6 @@ const NotFound = () => {
           {language === 'en' ? 'Page Not Found' : 'పేజీ కనుగొనబడలేదు'}
         </div>
       </div>
-
       <div className="space-y-2 mt-4">
         <h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight">
           {language === 'en' ? 'Oops! This Path Does Not Exist' : 'క్షమించండి! ఈ పేజీ అందుబాటులో లేదు'}
@@ -36,7 +31,6 @@ const NotFound = () => {
             : 'మీరు వెతుకుతున్న పేజీ తరలించబడి ఉండవచ్చు లేదా అందుబాటులో లేదు.'}
         </p>
       </div>
-
       {/* Primary Action Button */}
       <div className="pt-2">
         <Link
@@ -47,7 +41,6 @@ const NotFound = () => {
           {language === 'en' ? 'Return to Home' : 'హోమ్ పేజీకి తిరిగి వెళ్ళండి'}
         </Link>
       </div>
-
       {/* Popular Destination Links */}
       <div className="pt-8 border-t border-cream-200 dark:border-slate-800 w-full">
         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-3">
@@ -87,5 +80,4 @@ const NotFound = () => {
     </div>
   );
 };
-
 export default NotFound;

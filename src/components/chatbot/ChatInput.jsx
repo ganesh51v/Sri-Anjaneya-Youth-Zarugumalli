@@ -1,26 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Send, Loader2 } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
-
 const ChatInput = ({ onSendMessage, disabled }) => {
   const { t } = useLanguage();
   const [text, setText] = useState('');
   const MAX_LENGTH = 500;
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!text.trim() || disabled) return;
     onSendMessage(text.trim());
     setText('');
   };
-
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
     }
   };
-
   return (
     <form onSubmit={handleSubmit} className="p-3 border-t border-[var(--border)] bg-[var(--bg-card)] rounded-b-2xl">
       <div className="relative flex items-center">
@@ -51,5 +47,4 @@ const ChatInput = ({ onSendMessage, disabled }) => {
     </form>
   );
 };
-
 export default ChatInput;
