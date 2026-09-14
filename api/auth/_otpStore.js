@@ -19,6 +19,11 @@ export function createOtpToken(email, code, expiresAt) {
   return [iv, tag, encrypted].map((value) => value.toString('base64url')).join('.');
 }
 
+// In-memory set of invalidated (already-used) token strings
+// Entries are cleaned up after 15 minutes to prevent unbounded growth
+const usedTokens = new Set();
+const CLEANUP_MS = 15 * 60_000;
+
 export function readOtpToken(token) {
   const key = getKey();
   if (!key || typeof token !== 'string') return null;
@@ -32,8 +37,19 @@ export function readOtpToken(token) {
       decipher.final()
     ]);
     const session = JSON.parse(decrypted.toString('utf8'));
+    // Also check if token was already used (invalidated)
+    if (usedTokens.has(token)) return null;
     return Date.now() <= session.expiresAt ? session : null;
   } catch {
     return null;
   }
+}
+
+// Removed to fix hoisting
+
+export function invalidateOtpToken(token) {
+  if (typeof token !== 'string') return;
+  usedTokens.add(token);
+  // Auto-cleanup after expiry window
+  setTimeout(() => usedTokens.delete(token), CLEANUP_MS);
 }

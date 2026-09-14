@@ -31,7 +31,9 @@ const SEO = ({
     // Clean path and ensure valid absolute canonical URL
     const cleanPath = path.startsWith('/') ? path : `/${path}`;
     const fullUrl = cleanPath === '/' ? BASE_URL : `${BASE_URL}${cleanPath}`;
-    const fullImage = image || BASE_IMAGE;
+    const fullImage = image
+      ? (image.startsWith('http') ? image : `${BASE_URL}${image.startsWith('/') ? image : `/${image}`}`)
+      : BASE_IMAGE;
 
     // 1. Update Document Title
     document.title = fullTitle;

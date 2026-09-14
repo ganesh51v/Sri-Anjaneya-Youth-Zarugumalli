@@ -128,11 +128,18 @@ if (isFirebaseConfigured) {
     // On HMR hot reloads, the app already exists so we use getFirestore()
     // to avoid "initializeFirestore() has already been called" errors.
     if (isNewApp) {
-      db = initializeFirestore(app, {
-        localCache: persistentLocalCache({
-          tabManager: persistentMultipleTabManager()
-        })
-      });
+      // In dev mode, disable offline persistence to avoid IndexedDB timestamp
+      // skew warnings ("Detected an update time that is in the future").
+      // In production, use the full persistent multi-tab cache for offline support.
+      const isDev = import.meta.env.DEV;
+      db = initializeFirestore(app, isDev
+        ? {}  // memoryLocalCache (default) — no IndexedDB, no timestamp warnings
+        : {
+            localCache: persistentLocalCache({
+              tabManager: persistentMultipleTabManager()
+            })
+          }
+      );
     } else {
       // HMR hot-reload: Firestore already initialized, just retrieve existing instance
       db = getFirestore(app);
@@ -1473,6 +1480,32 @@ export const dbService = {
       donations.push(newDonation);
       localStorage.setItem('sa_donations', JSON.stringify(donations));
       return newDonation;
+    },
+    update: async (id, donationData) => {
+      const { id: _drop, ...rest } = donationData;
+      if (isFirebaseConfigured && db) {
+        return firestoreOp(async () => {
+          await updateDoc(doc(db, 'donations', id), rest);
+          return { id, ...rest };
+        }, null, 'donations.update');
+      }
+      const donations = safeParseLS('sa_donations', []);
+      const index = donations.findIndex(d => d.id === id);
+      if (index > -1) {
+        donations[index] = { ...donations[index], ...rest };
+        localStorage.setItem('sa_donations', JSON.stringify(donations));
+        return donations[index];
+      }
+      throw new Error('Donation record not found');
+    },
+    delete: async (id) => {
+      if (isFirebaseConfigured && db) {
+        return firestoreOp(() => deleteDoc(doc(db, 'donations', id)).then(() => id), null, 'donations.delete');
+      }
+      let donations = safeParseLS('sa_donations', []);
+      donations = donations.filter(d => d.id !== id);
+      localStorage.setItem('sa_donations', JSON.stringify(donations));
+      return id;
     }
   },
 

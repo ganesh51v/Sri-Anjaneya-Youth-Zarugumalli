@@ -1,16 +1,21 @@
 import { dbService } from '../firebase/config';
 
 const postPaymentRequest = async (path, body) => {
-  const response = await fetch(path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.success) {
-    throw new Error(data.error || 'Payment service is temporarily unavailable.');
+  try {
+    const response = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Payment service is temporarily unavailable.');
+    }
+    return data;
+  } catch (err) {
+    // Re-throw with a friendly message; preserves the original if it was already set
+    throw new Error(err.message || 'Network error. Please check your connection and try again.');
   }
-  return data;
 };
 
 export const paymentService = {
@@ -33,16 +38,55 @@ export const paymentService = {
     if (!verification.verified) throw new Error('Payment verification failed.');
 
     const donationRecord = {
-      userId: donorDetails.userId,
+      userId: donorDetails.userId || 'guest',
       donorName: donorDetails.donorName,
       phone: donorDetails.phone,
       email: donorDetails.email || '',
       amount: Number(donorDetails.amount),
+      donationDate: donorDetails.donationDate || new Date().toISOString().split('T')[0],
+      message: donorDetails.message || '',
+      receiptImage: donorDetails.receiptImage || '',
       paymentMethod: donorDetails.paymentMethod,
       purpose: donorDetails.purpose || 'General Seva',
       paymentId: paymentResponse.paymentId,
       orderId: paymentResponse.orderId,
-      status: 'Success',
+      status: 'Pending',
+      hasAddedToIncome: false,
+      approvedAt: null,
+      approvedBy: null,
+      verifiedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString()
+    };
+
+    return dbService.donations.add(donationRecord);
+  },
+
+  recordQrDonation: async (donorDetails, transactionRef) => {
+    const numericAmount = Number(donorDetails.amount);
+    if (!Number.isFinite(numericAmount) || numericAmount < 1) {
+      throw new Error('Donation amount must be greater than zero.');
+    }
+
+    const orderId = `SAZ-QR-${Date.now()}`;
+    const paymentId = transactionRef?.trim() || `UPI-QR-${Date.now().toString().slice(-8)}`;
+
+    const donationRecord = {
+      userId: donorDetails.userId || 'guest',
+      donorName: donorDetails.donorName,
+      phone: donorDetails.phone,
+      email: donorDetails.email || '',
+      amount: numericAmount,
+      donationDate: donorDetails.donationDate || new Date().toISOString().split('T')[0],
+      message: donorDetails.message || '',
+      receiptImage: donorDetails.receiptImage || '',
+      paymentMethod: donorDetails.paymentMethod || 'PhonePe / UPI QR',
+      purpose: donorDetails.purpose || 'General Seva',
+      paymentId,
+      orderId,
+      status: 'Pending',
+      hasAddedToIncome: false,
+      approvedAt: null,
+      approvedBy: null,
       verifiedAt: new Date().toISOString(),
       createdAt: new Date().toISOString()
     };

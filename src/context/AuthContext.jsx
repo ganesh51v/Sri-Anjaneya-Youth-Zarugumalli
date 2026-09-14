@@ -33,6 +33,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged((usr) => {
       setUser(usr);
+      // Keep localStorage in sync so the cached-user check on next reload is accurate
+      try {
+        if (usr) {
+          localStorage.setItem('sa_current_user', JSON.stringify(usr));
+        } else {
+          localStorage.removeItem('sa_current_user');
+        }
+      } catch { /* storage unavailable (private mode etc.) — ignore */ }
+
       // Always stop loading after the first resolution (even if usr is null)
       if (firstAuthEvent.current) {
         firstAuthEvent.current = false;
