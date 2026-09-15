@@ -306,7 +306,7 @@ const Navbar = () => {
 
                 {/* Notifications Dropdown */}
                 {isNotificationsOpen && (
-                  <div className="dropdown-menu-card absolute right-0 mt-2.5 w-80 shadow-2xl py-2 animate-slide-up overflow-hidden z-50">
+                  <div className="dropdown-menu-card absolute right-0 mt-2.5 w-80 max-w-[calc(100vw-2rem)] shadow-2xl py-2 animate-slide-up overflow-hidden z-50">
                     <div className="px-4 py-2.5 border-b border-[var(--border)] bg-[var(--bg-muted)] flex justify-between items-center">
                       <span className="text-[10px] font-black text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-1.5">
                         <Bell className="w-3.5 h-3.5 text-saffron-500" />

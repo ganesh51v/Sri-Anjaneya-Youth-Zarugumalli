@@ -908,11 +908,11 @@ const Expenditure = () => {
         </div>
       )}
       {/* ── Tabs: Expenditure Records vs Income & Approved Donations Ledger ── */}
-      <div className="flex items-center gap-2 p-1.5 bg-cream-100/70 dark:bg-slate-800/80 rounded-2xl w-fit border border-cream-200 dark:border-slate-700">
+      <div className="flex items-center gap-2 p-1.5 bg-cream-100/70 dark:bg-slate-800/80 rounded-2xl w-full sm:w-fit border border-cream-200 dark:border-slate-700 flex-wrap sm:flex-nowrap overflow-hidden">
         <button
           type="button"
           onClick={() => setActiveTab("expenses")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+          className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
             activeTab === "expenses"
               ? "bg-white dark:bg-slate-900 text-saffron-600 dark:text-saffron-400 shadow-sm"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
@@ -927,7 +927,7 @@ const Expenditure = () => {
         <button
           type="button"
           onClick={() => setActiveTab("income")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+          className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
             activeTab === "income"
               ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm"
               : "text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"

@@ -733,7 +733,7 @@ const AdminDashboard = () => {
         </div>
       )}
       {/* Collection Quick Navigation Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <Link
           to="/members"
           className="bg-white dark:bg-slate-900 border border-cream-200 dark:border-slate-800 p-4 rounded-2xl flex flex-col justify-between hover:border-saffron-400 hover:shadow-sm transition-all group"
@@ -870,7 +870,9 @@ const AdminDashboard = () => {
         </Link>
       </div>
       {/* Tab Switcher Navigation */}
-      <div className="flex border-b border-cream-200 dark:border-slate-800 gap-6 mt-4">
+      <div className="overflow-x-auto -mx-1 px-1" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+        <style>{`.admin-tabs-bar::-webkit-scrollbar{display:none}`}</style>
+        <div className="admin-tabs-bar flex border-b border-cream-200 dark:border-slate-800 gap-6 mt-4" style={{ minWidth: 'max-content' }}>
         <button
           onClick={() => {
             setActiveTab("users");
@@ -914,6 +916,7 @@ const AdminDashboard = () => {
         >
           Gallery Management ({counts.gallery})
         </button>
+        </div>
       </div>
       {/* Active Tab Panel */}
       {activeTab === "users" ? (

@@ -176,6 +176,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -849,3 +850,179 @@ button:disabled {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================
+   RESPONSIVE UTILITIES — Supplemental Layer
+   Applied as the final cascade so they win over page-level styles.
+   NO logic changes — layout/CSS only.
+   ============================================================ */
+
+/* Responsive table scroll wrapper */
+.table-responsive-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+/* Horizontal-scroll tab bars (Admin / Expenditure) */
+.tabs-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+.tabs-scroll-x::-webkit-scrollbar { display: none; }
+
+/* Notification / user dropdown: prevent overflow on narrow phones */
+.dropdown-menu-card {
+  max-width: calc(100vw - 2rem) !important;
+}
+
+/* ── XS breakpoint (320px – 374px) ─────────────────────────────────── */
+@media (max-width: 374px) {
+  /* Give page containers proper horizontal padding on tiny phones */
+  .max-w-7xl,
+  .page-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* Force single column on very small screens */
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* Stat card min-height reduction for tiny screens */
+  .stat-card {
+    min-height: unset !important;
+    padding: 0.85rem !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Section headers: reduce icon size */
+  .section-header .section-icon {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  /* Welcome banner padding */
+  .welcome-banner {
+    padding: 1.25rem !important;
+  }
+
+  /* Buttons: keep usable but don't overflow */
+  .btn {
+    font-size: 0.78rem !important;
+    padding: 0.55rem 1rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Navbar logo text size reduction */
+  .navbar-capsule .font-black {
+    font-size: 0.8rem;
+  }
+
+  /* Donation banner padding */
+  .donation-banner {
+    padding: 1.25rem !important;
+  }
+
+  /* Profile card padding */
+  .rounded-\[28px\] {
+    padding: 1rem !important;
+  }
+
+  /* Admin dashboard title */
+  h1.text-2xl {
+    font-size: 1.1rem !important;
+  }
+
+  /* Ensure admin tab bar and expenditure tab switcher scroll, not overflow */
+  [class*="border-b"][class*="gap-6"],
+  [class*="w-fit"][class*="rounded-2xl"] {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    scrollbar-width: none !important;
+  }
+  [class*="border-b"][class*="gap-6"]::-webkit-scrollbar,
+  [class*="w-fit"][class*="rounded-2xl"]::-webkit-scrollbar { display: none !important; }
+}
+
+/* ── SM breakpoint helpers (375–639px) ──────────────────────────────── */
+@media (max-width: 639px) {
+  /* Ensure admin stat card grid doesn't overflow */
+  .grid.grid-cols-2.lg\:grid-cols-5 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* Expenditure tab switcher: allow wrapping on phones */
+  .flex.items-center.gap-2.p-1\.5.bg-cream-100\/70 {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Admin tab bar: horizontal scroll on mobile */
+  .flex.border-b.border-cream-200.gap-6 {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 1px; /* prevent border clipping */
+  }
+  .flex.border-b.border-cream-200.gap-6::-webkit-scrollbar { display: none !important; }
+
+  /* Notification dropdown: constrain on small screens */
+  .absolute.right-0.mt-2\.5.w-80 {
+    width: min(320px, calc(100vw - 1.5rem)) !important;
+    right: 0 !important;
+  }
+
+  /* Dashboard gallery grid: keep images proportional */
+  .grid-cols-3.gap-3\.5 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* Make footer columns stack cleanly */
+  footer .grid.grid-cols-1.md\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Events and announcements header row: don't overflow */
+  .flex.justify-between.items-center {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Donation step indicator */
+  .donate-step-indicator {
+    gap: 0.25rem !important;
+  }
+}
+
+/* ── Touch target compliance (all devices) ──────────────────────────── */
+@media (pointer: coarse) {
+  /* Ensure all interactive elements have adequate touch targets */
+  button:not([class*="p-"]):not([class*="py-"]):not([class*="px-"]) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ── Landscape phone (e.g. 568×320, 667×375) ─────────────────────────
+   Prevent tall vertical layouts from clipping when height is limited   */
+@media (max-height: 500px) and (orientation: landscape) {
+  .min-h-screen {
+    min-height: unset !important;
+  }
+  .py-24 {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+  }
+}
+
