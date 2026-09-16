@@ -497,35 +497,83 @@ p {
   border-color: var(--saffron);
   box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.12);
 }
-
 /* ============================================================
-   PREMIUM NAVBAR ARCHITECTURE
-   Responsive, fluid, and non-clipping design for all viewports
+   DYNAMIC NAVBAR ARCHITECTURE (Dynamic Floating Capsule)
+   Transforms dynamically on scroll: full banner -> floating capsule
+   Strictly CSS presentation only. Zero component code modified.
    ============================================================ */
 .navbar-capsule {
   width: 100%;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border);
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.02);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative;
+  overflow: hidden;
 }
 
-.navbar-capsule.scrolled {
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.12);
+/* Dynamic Scroll State — Floating Island / Capsule */
+@media (min-width: 768px) {
+  .navbar-capsule.scrolled {
+    width: min(94vw, 1380px) !important;
+    margin: 0.65rem auto 0 !important;
+    border-radius: 9999px !important;
+    border: 1px solid rgba(234, 88, 12, 0.28) !important;
+    box-shadow: 
+      0 16px 36px -6px rgba(0, 0, 0, 0.16),
+      0 0 24px -2px rgba(234, 88, 12, 0.18),
+      0 0 0 1px rgba(255, 255, 255, 0.6) inset !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    backdrop-filter: blur(24px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  }
 }
 
+/* Dynamic Mobile Scroll State */
+@media (max-width: 767px) {
+  .navbar-capsule.scrolled {
+    border-radius: 0 0 1.25rem 1.25rem !important;
+    border-bottom: 2px solid rgba(234, 88, 12, 0.3) !important;
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.15), 0 0 16px -2px rgba(234, 88, 12, 0.15) !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+  }
+}
+
+/* Dark Mode Dynamic Navbar */
 .dark .navbar-capsule {
-  background: rgba(8, 13, 24, 0.92);
-  border-bottom-color: rgba(212, 175, 55, 0.15);
+  background: rgba(8, 13, 24, 0.88);
+  border-bottom-color: rgba(212, 175, 55, 0.16);
   box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.6);
 }
 
 .dark .navbar-capsule.scrolled {
-  background: rgba(8, 13, 24, 0.98);
-  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.8);
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-color: rgba(245, 158, 11, 0.32) !important;
+  box-shadow: 
+    0 16px 44px -4px rgba(0, 0, 0, 0.85),
+    0 0 28px -2px rgba(245, 158, 11, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset !important;
+}
+
+/* Dynamic Active & Hover Interactions for Nav Links */
+.navbar-capsule a:not([class*="bg-gradient"]) {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.navbar-capsule a:not([class*="bg-gradient"]):hover {
+  transform: translateY(-1.5px);
+}
+
+/* Dynamic Top Gradient Stripe Animation */
+@keyframes nav-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.navbar-capsule > div:first-child[class*="h-[3px]"] {
+  background-size: 200% 200% !important;
+  animation: nav-shimmer 6s ease infinite !important;
 }
 
 /* Dropdown Menu Cards Polish */
@@ -534,25 +582,30 @@ p {
   border: 1px solid var(--border);
   box-shadow: 0 18px 44px -4px rgba(0, 0, 0, 0.18), 0 6px 18px -2px rgba(0, 0, 0, 0.08);
   border-radius: 18px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .dark .dropdown-menu-card {
-  background: #111827;
+  background: rgba(17, 24, 39, 0.95);
   border-color: rgba(212, 175, 55, 0.2);
   box-shadow: 0 18px 50px -4px rgba(0, 0, 0, 0.7);
 }
 
 /* Mobile Navigation Drawer */
 .mobile-menu-drawer {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--border);
+  border-radius: 0 0 1.5rem 1.5rem;
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.15);
 }
 
 .dark .mobile-menu-drawer {
-  background: rgba(8, 13, 24, 0.98);
-  border-bottom-color: rgba(212, 175, 55, 0.15);
+  background: rgba(8, 13, 24, 0.96);
+  border-bottom-color: rgba(212, 175, 55, 0.18);
+  box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.7);
 }
 
 /* ============================================================
