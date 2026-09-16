@@ -519,7 +519,7 @@ p {
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.02);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
   position: relative;
-  overflow: hidden;
+  overflow: visible !important;
 }
 
 /* Dynamic Scroll State — Floating Island / Capsule */
@@ -1209,47 +1209,101 @@ img {
     grid-template-columns: 1fr !important;
   }
 
-  /* Mobile Navbar: ensure all controls fit within screen without overflow */
+  /* Mobile Navbar: surgical styling for trigger buttons and brand without crushing dropdowns */
   .navbar-capsule > div[class*="max-w-7xl"] {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
-    gap: 0.25rem !important;
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+    gap: 0.35rem !important;
   }
   .navbar-capsule a[href="/"] {
-    gap: 0.35rem !important;
+    gap: 0.45rem !important;
     margin-left: 0 !important;
     padding: 0 !important;
-    max-width: 50% !important;
+    flex-shrink: 1 !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 185px) !important;
   }
   .navbar-capsule a[href="/"] img {
-    width: 2.1rem !important;
-    height: 2.1rem !important;
-    min-width: 2.1rem !important;
+    width: 2.2rem !important;
+    height: 2.2rem !important;
+    min-width: 2.2rem !important;
+    flex-shrink: 0 !important;
   }
   .navbar-capsule a[href="/"] span[class*="font-black"] {
-    font-size: 0.8rem !important;
+    font-size: 0.82rem !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     display: block !important;
+    line-height: 1.15 !important;
   }
   .navbar-capsule a[href="/"] div span:last-child {
     display: none !important; /* Hide 'Since 2013' on mobile to save critical space */
   }
+
+  /* Control button cluster: compact 2rem touch targets */
   .navbar-capsule [class*="shrink-0"]:last-child {
     gap: 0.25rem !important;
+    display: flex !important;
+    align-items: center !important;
   }
-  .navbar-capsule [class*="shrink-0"]:last-child button,
-  .navbar-capsule [class*="shrink-0"]:last-child div {
-    width: 1.95rem !important;
-    height: 1.95rem !important;
-    min-width: 1.95rem !important;
-    min-height: 1.95rem !important;
-    padding: 0.2rem !important;
+  .navbar-capsule [class*="shrink-0"]:last-child > button,
+  .navbar-capsule [class*="shrink-0"]:last-child > div > button {
+    width: 2.05rem !important;
+    height: 2.05rem !important;
+    min-width: 2.05rem !important;
+    min-height: 2.05rem !important;
+    padding: 0.3rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 0.65rem !important;
   }
   .navbar-capsule [class*="shrink-0"]:last-child button svg {
     width: 0.95rem !important;
     height: 0.95rem !important;
+  }
+
+  /* Avatar inner circle container */
+  .navbar-capsule [class*="shrink-0"]:last-child > div > button > div {
+    width: 1.85rem !important;
+    height: 1.85rem !important;
+    min-width: 1.85rem !important;
+    min-height: 1.85rem !important;
+    font-size: 0.72rem !important;
+  }
+
+  /* Notification counter badge */
+  .navbar-capsule [class*="shrink-0"]:last-child .min-w-\[17px\] {
+    min-width: 14px !important;
+    height: 14px !important;
+    font-size: 8px !important;
+    top: -2px !important;
+    right: -2px !important;
+  }
+
+  /* Protect Dropdown menus from button-size inheritance */
+  .dropdown-menu-card {
+    width: min(320px, calc(100vw - 1.25rem)) !important;
+    max-width: calc(100vw - 1.25rem) !important;
+    height: auto !important;
+    min-height: unset !important;
+    padding: 0.5rem 0 !important;
+    z-index: 9999 !important;
+  }
+  .dropdown-menu-card div {
+    width: auto !important;
+    height: auto !important;
+    min-width: unset !important;
+    min-height: unset !important;
+  }
+
+  /* Mobile Navigation Drawer: ensure full visibility and smooth scroll */
+  .mobile-menu-drawer {
+    border-radius: 0 0 1.25rem 1.25rem !important;
+    padding: 1rem !important;
+    box-shadow: 0 20px 40px -4px rgba(0, 0, 0, 0.4) !important;
+    z-index: 9998 !important;
   }
 
   /* Floating Chatbot Gutter: ensure page content never gets occluded */
