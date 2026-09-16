@@ -839,7 +839,7 @@ const AdminDashboard = () => {
             <span className="block text-xl sm:text-2xl font-black text-slate-800 dark:text-white">
               ₹
               {donations
-                .filter((d) => d.status === "Success")
+                .filter((d) => d.status === "Approved" || d.status === "Success")
                 .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0)
                 .toLocaleString("en-IN")}
             </span>

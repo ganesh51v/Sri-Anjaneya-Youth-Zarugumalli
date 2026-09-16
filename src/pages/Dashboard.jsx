@@ -46,7 +46,7 @@ const Dashboard = () => {
         if (!isMounted) return;
 
         const upcoming = events.filter(e => e.status === 'upcoming');
-        const successfulDonations = donations.filter(d => d.status === 'Success');
+        const successfulDonations = donations.filter(d => d.status === 'Approved' || d.status === 'Success');
         const totalAmount = successfulDonations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
 
         setStats({
