@@ -690,7 +690,9 @@ const SignUp = () => {
       </div>
       <footer className="text-center py-4 text-xs text-slate-500 font-medium">
         {t("developedBy")}{" "}
-        <span className="text-saffron-600 font-bold">Ganesh Nalamalapu</span>
+        <span className="text-saffron-600 font-bold">
+          {language === "te" ? "గణేష్ నలమలపు" : "Ganesh Nalamalapu"}
+        </span>
       </footer>
     </div>
   );

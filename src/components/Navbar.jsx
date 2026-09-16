@@ -24,7 +24,7 @@ import { navbarEntrance } from "../utils/animate";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage, t, translateName, translateRole } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -401,10 +401,10 @@ const Navbar = () => {
                   <div className="dropdown-menu-card absolute right-0 mt-2.5 w-56 shadow-2xl py-2 animate-slide-up overflow-hidden z-50">
                     <div className="px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-muted)]">
                       <span className="block text-xs font-black text-[var(--text-primary)] truncate">
-                        {user.name}
+                        {translateName(user.name, language)}
                       </span>
                       <span className="block text-[9px] text-saffron-600 font-bold uppercase tracking-wider mt-0.5">
-                        {user.role}
+                        {translateRole(user.role, language)}
                       </span>
                       <span className="block text-[9px] text-[var(--text-muted)] truncate mt-0.5">
                         {user.email}

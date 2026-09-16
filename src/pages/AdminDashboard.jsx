@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { dbService } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import {
   Users,
   Calendar,
@@ -36,6 +37,16 @@ import SEO from "../components/SEO";
 import { fadeUp, staggerScaleFade, tabFade } from "../utils/animate";
 const AdminDashboard = () => {
   const { user: currentUser } = useAuth();
+  const {
+    language,
+    t,
+    translateName,
+    translateRole,
+    translateAddress,
+    translateStatus,
+    translatePurpose,
+    translateText,
+  } = useLanguage();
   const [users, setUsers] = useState([]);
   const [donations, setDonations] = useState([]);
   const [counts, setCounts] = useState({
@@ -628,8 +639,12 @@ const AdminDashboard = () => {
     return (
       <div className="flex-1 flex flex-col items-center justify-center py-20 gap-4">
         <Shield className="w-12 h-12 text-red-400" />
-        <h2 className="text-xl font-black text-slate-800">Access Denied</h2>
-        <p className="text-sm text-slate-500">You need admin privileges to view this page.</p>
+        <h2 className="text-xl font-black text-slate-800 dark:text-white">
+          {t("accessDenied", "Access Denied")}
+        </h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          {t("accessDeniedDesc", "You need admin privileges to view this page.")}
+        </p>
       </div>
     );
   }
@@ -641,7 +656,7 @@ const AdminDashboard = () => {
           <div className="absolute inset-0 border-4 border-t-saffron-500 rounded-full animate-spin"></div>
         </div>
         <p className="mt-4 text-xs text-slate-500 font-semibold animate-pulse">
-          Loading Admin Database...
+          {t("loadingAdmin", "Loading Admin Database...")}
         </p>
       </div>
     );
@@ -649,7 +664,7 @@ const AdminDashboard = () => {
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       <SEO
-        title="Admin Dashboard"
+        title={language === "te" ? "అడ్మిన్ డాష్‌బోర్డ్" : "Admin Dashboard"}
         description="Sri Anjaneya Youth Zarugumalli admin control panel."
         path="/admin"
         noindex={true}
@@ -658,26 +673,26 @@ const AdminDashboard = () => {
       <div
         ref={headerRef}
         style={{ opacity: 0 }}
-        className="border-b border-cream-200 pb-5"
+        className="border-b border-cream-200 dark:border-slate-800 pb-5"
       >
-        <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+        <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
           <Settings
             className="w-6 h-6 text-saffron-600 animate-spin"
             style={{ animationDuration: "6s" }}
           />
-          Administrative Control Panel
+          {t("adminControlCenter", "Administrative Control Panel")}
         </h1>
-        <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">
-          Review statistics and manage registered portal users
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mt-1">
+          {t("adminSubtitle", "Review statistics and manage registered portal users")}
         </p>
       </div>
       {/* Pending Committee Requests Section */}
       {users.filter((u) => u.committeeStatus === "pending").length > 0 && (
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50/20 border border-amber-200 rounded-3xl p-6 space-y-4 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-amber-200/60 pb-3">
-            <Shield className="w-5 h-5 text-amber-600" />
-            <h2 className="text-base font-extrabold text-slate-800">
-              Pending Committee Membership Requests (
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50/20 dark:from-amber-950/20 dark:to-orange-950/10 border border-amber-200 dark:border-amber-900/50 rounded-3xl p-6 space-y-4 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-amber-200/60 dark:border-amber-900/40 pb-3">
+            <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <h2 className="text-base font-extrabold text-slate-800 dark:text-white">
+              {t("pendingRequests", "Pending Committee Membership Requests")} (
               {users.filter((u) => u.committeeStatus === "pending").length})
             </h2>
           </div>
@@ -687,10 +702,10 @@ const AdminDashboard = () => {
               .map((req) => (
                 <div
                   key={req.id}
-                  className="bg-white border border-amber-100 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="bg-white dark:bg-slate-900 border border-amber-100 dark:border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold border border-amber-200 overflow-hidden shrink-0 text-sm">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center text-amber-700 dark:text-amber-400 font-bold border border-amber-200 dark:border-amber-900 overflow-hidden shrink-0 text-sm">
                       {req.photoUrl ? (
                         <img
                           src={req.photoUrl}
@@ -704,12 +719,12 @@ const AdminDashboard = () => {
                       )}
                     </div>
                     <div>
-                      <span className="font-bold text-slate-800 text-sm block">
-                        {req.name}
+                      <span className="font-bold text-slate-800 dark:text-white text-sm block">
+                        {translateName(req.name)}
                       </span>
-                      <span className="text-xs text-slate-500 font-semibold">
-                        {req.email} | {req.phone || "No phone"} |{" "}
-                        {req.village || "No area"}
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                        {req.email} | {req.phone || t("noPhone", "No phone")} |{" "}
+                        {req.village ? translateAddress(req.village) : t("noArea", "No area")}
                       </span>
                     </div>
                   </div>
@@ -718,13 +733,13 @@ const AdminDashboard = () => {
                       onClick={() => handleApproveRequest(req)}
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
                     >
-                      Approve
+                      {t("approve", "Approve")}
                     </button>
                     <button
                       onClick={() => handleDeclineRequest(req.id)}
-                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-cream-300 rounded-xl font-bold transition-all cursor-pointer"
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-cream-300 dark:border-slate-700 rounded-xl font-bold transition-all cursor-pointer"
                     >
-                      Decline
+                      {t("decline", "Decline")}
                     </button>
                   </div>
                 </div>
@@ -741,15 +756,15 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-start mb-2">
             <Users className="w-5 h-5 text-saffron-500" />
             <span className="text-[10px] font-bold text-slate-400 group-hover:text-saffron-500 transition-colors uppercase">
-              Manage
+              {t("manage", "Manage")}
             </span>
           </div>
           <div>
             <span className="block text-xl sm:text-2xl font-black text-slate-800 dark:text-white">
               {counts.members}
             </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              Members Card List
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              {t("membersCardList", "Members Card List")}
             </span>
           </div>
         </Link>
@@ -760,15 +775,15 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-start mb-2">
             <Calendar className="w-5 h-5 text-saffron-500" />
             <span className="text-[10px] font-bold text-slate-400 group-hover:text-saffron-500 transition-colors uppercase">
-              Manage
+              {t("manage", "Manage")}
             </span>
           </div>
           <div>
             <span className="block text-xl sm:text-2xl font-black text-slate-800 dark:text-white">
               {counts.events}
             </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              Scheduled Events
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              {t("scheduledEvents", "Scheduled Events")}
             </span>
           </div>
         </Link>
@@ -779,15 +794,15 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-start mb-2">
             <Bell className="w-5 h-5 text-saffron-500" />
             <span className="text-[10px] font-bold text-slate-400 group-hover:text-saffron-500 transition-colors uppercase">
-              Manage
+              {t("manage", "Manage")}
             </span>
           </div>
           <div>
             <span className="block text-xl sm:text-2xl font-black text-slate-800 dark:text-white">
               {counts.announcements}
             </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              Announcements
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              {t("announcements", "Announcements")}
             </span>
           </div>
         </Link>
@@ -804,15 +819,15 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-start mb-2">
             <Image className="w-5 h-5 text-saffron-500" />
             <span className="text-[10px] font-bold text-slate-400 group-hover:text-saffron-500 transition-colors uppercase font-mono">
-              Manage
+              {t("manage", "Manage")}
             </span>
           </div>
           <div>
             <span className="block text-xl sm:text-2xl font-black text-slate-800 dark:text-white">
               {counts.gallery}
             </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              Gallery Albums
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              {t("galleryAlbums", "Gallery Albums")}
             </span>
           </div>
         </div>
@@ -832,7 +847,7 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-start mb-2">
             <Heart className="w-5 h-5 text-saffron-500 fill-current animate-pulse" />
             <span className="text-[10px] font-bold text-slate-400 group-hover:text-saffron-500 transition-colors uppercase">
-              Ledger
+              {t("ledger", "Ledger")}
             </span>
           </div>
           <div>
@@ -843,8 +858,8 @@ const AdminDashboard = () => {
                 .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0)
                 .toLocaleString("en-IN")}
             </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              Total Donations
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              {t("totalDonations", "Total Donations")}
             </span>
           </div>
         </div>
@@ -856,15 +871,15 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-start mb-2">
             <Banknote className="w-5 h-5 text-emerald-600" />
             <span className="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600 transition-colors uppercase">
-              Manage
+              {t("manage", "Manage")}
             </span>
           </div>
           <div>
             <span className="block text-xl sm:text-2xl font-black text-slate-800 dark:text-white flex items-center gap-1">
               <TrendingDown className="w-4 h-4 text-emerald-600" />
             </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              Expenditure
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              {t("expenditure", "Expenditure")}
             </span>
           </div>
         </Link>
@@ -886,7 +901,7 @@ const AdminDashboard = () => {
               : "border-transparent text-slate-400 hover:text-slate-600"
           }`}
         >
-          Portal Accounts ({users.length})
+          {t("portalAccounts", "Portal Accounts")} ({users.length})
         </button>
         <button
           onClick={() => {
@@ -901,7 +916,7 @@ const AdminDashboard = () => {
               : "border-transparent text-slate-400 hover:text-slate-600"
           }`}
         >
-          Donations Ledger ({donations.length})
+          {t("donationsLedger", "Donations Ledger")} ({donations.length})
         </button>
         <button
           onClick={() => {
@@ -914,7 +929,7 @@ const AdminDashboard = () => {
               : "border-transparent text-slate-400 hover:text-slate-600"
           }`}
         >
-          Gallery Management ({counts.gallery})
+          {t("galleryManagement", "Gallery Management")} ({counts.gallery})
         </button>
         </div>
       </div>
@@ -925,13 +940,13 @@ const AdminDashboard = () => {
           <div className="bg-cream-50/50 dark:bg-slate-950/20 border-b border-cream-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
             <h2 className="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
               <UserCheck className="w-5 h-5 text-saffron-600" />
-              Registered Portal Accounts ({users.length})
+              {t("registeredPortalAccounts", "Registered Portal Accounts")} ({users.length})
             </h2>
             <button
               onClick={loadData}
               className="text-xs font-bold text-saffron-600 hover:text-saffron-700 hover:underline cursor-pointer"
             >
-              Refresh Database
+              {t("refreshDatabase", "Refresh Database")}
             </button>
           </div>
           {error && (
@@ -945,22 +960,22 @@ const AdminDashboard = () => {
               <thead className="bg-cream-50/20 font-extrabold text-slate-500 uppercase tracking-wider">
                 <tr>
                   <th scope="col" className="px-6 py-4">
-                    User Details
+                    {t("userDetails", "User Details")}
                   </th>
                   <th scope="col" className="px-6 py-4">
-                    Email
+                    {t("email", "Email")}
                   </th>
                   <th scope="col" className="px-6 py-4">
-                    Phone
+                    {t("phone", "Phone")}
                   </th>
                   <th scope="col" className="px-6 py-4">
-                    Village
+                    {t("village", "Village")}
                   </th>
                   <th scope="col" className="px-6 py-4">
-                    Role
+                    {t("role", "Role")}
                   </th>
                   <th scope="col" className="px-6 py-4 text-right">
-                    Actions
+                    {t("actions", "Actions")}
                   </th>
                 </tr>
               </thead>
@@ -976,7 +991,7 @@ const AdminDashboard = () => {
                         <div className="w-7 h-7 rounded-full bg-saffron-100 dark:bg-saffron-950/50 flex items-center justify-center text-saffron-700 dark:text-saffron-400 font-bold border border-saffron-200 dark:border-saffron-900 text-[10px]">
                           {item.name ? item.name[0].toUpperCase() : "U"}
                         </div>
-                        <span>{item.name}</span>
+                        <span>{translateName(item.name)}</span>
                       </div>
                     </td>
                     {/* Email */}
@@ -984,7 +999,7 @@ const AdminDashboard = () => {
                     {/* Phone */}
                     <td className="px-6 py-4">{item.phone || "-"}</td>
                     {/* Village */}
-                    <td className="px-6 py-4">{item.village || "-"}</td>
+                    <td className="px-6 py-4">{item.village ? translateAddress(item.village) : "-"}</td>
                     {/* Role */}
                     <td className="px-6 py-4">
                       <span
@@ -994,7 +1009,7 @@ const AdminDashboard = () => {
                             : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                         }`}
                       >
-                        {item.role}
+                        {translateRole(item.role)}
                       </span>
                     </td>
                     {/* Actions */}
@@ -1005,7 +1020,7 @@ const AdminDashboard = () => {
                         title={`Switch role to ${item.role === "admin" ? "user" : "admin"}`}
                       >
                         <ArrowRightLeft className="w-3.5 h-3.5" />
-                        Toggle Role
+                        {t("toggleRole", "Toggle Role")}
                       </button>
                       <button
                         onClick={() => handleDeleteUser(item.id)}
@@ -1022,7 +1037,7 @@ const AdminDashboard = () => {
           </div>
           {users.length === 0 && (
             <div className="p-8 text-center text-slate-400">
-              No registered portal accounts found in database.
+              {t("noUsersFound", "No registered portal accounts found in database.")}
             </div>
           )}
         </div>
@@ -1034,7 +1049,7 @@ const AdminDashboard = () => {
             {/* Approved / Income */}
             <div className="bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-250 dark:border-emerald-900/40 p-4 rounded-2xl">
               <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold uppercase tracking-wider block mb-1">
-                Approved Donations (Income)
+                {t("approvedDonationsIncome", "Approved Donations (Income)")}
               </span>
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-black text-slate-800 dark:text-white">
@@ -1046,7 +1061,7 @@ const AdminDashboard = () => {
                 </span>
                 <span className="text-[11px] font-bold text-slate-400">
                   ({donations.filter((d) => d.status === "Approved" || d.status === "Success").length}{" "}
-                  approved)
+                  {t("approved", "approved")})
                 </span>
               </div>
             </div>
@@ -1054,7 +1069,7 @@ const AdminDashboard = () => {
             {/* Pending Verification */}
             <div className="bg-amber-50/50 dark:bg-amber-950/10 border border-amber-250 dark:border-amber-900/40 p-4 rounded-2xl">
               <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold uppercase tracking-wider block mb-1">
-                Pending Verification
+                {t("pendingVerification", "Pending Verification")}
               </span>
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-black text-slate-800 dark:text-white">
@@ -1066,7 +1081,7 @@ const AdminDashboard = () => {
                 </span>
                 <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">
                   ({donations.filter((d) => d.status === "Pending").length}{" "}
-                  pending)
+                  {t("pending", "pending")})
                 </span>
               </div>
             </div>
@@ -1074,7 +1089,7 @@ const AdminDashboard = () => {
             {/* Rejected */}
             <div className="bg-red-50/50 dark:bg-red-950/10 border border-red-250 dark:border-red-900/40 p-4 rounded-2xl">
               <span className="text-[10px] text-red-600 dark:text-red-400 font-extrabold uppercase tracking-wider block mb-1">
-                Rejected Donations
+                {t("rejectedDonations", "Rejected Donations")}
               </span>
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-black text-slate-800 dark:text-white">
@@ -1086,7 +1101,7 @@ const AdminDashboard = () => {
                 </span>
                 <span className="text-[11px] font-bold text-slate-400">
                   ({donations.filter((d) => d.status === "Rejected" || d.status === "Failed").length}{" "}
-                  rejected)
+                  {t("rejected", "rejected")})
                 </span>
               </div>
             </div>
@@ -1101,7 +1116,7 @@ const AdminDashboard = () => {
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search donor name, phone, email, UTR..."
+                  placeholder={t("searchDonationsPlaceholder", "Search donor name, phone, email, UTR...")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2 pl-10 pr-4 text-xs focus:outline-none focus:ring-2 focus:ring-saffron-500 dark:text-white transition-all"
@@ -1116,10 +1131,10 @@ const AdminDashboard = () => {
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-saffron-500 dark:text-white cursor-pointer"
                 >
-                  <option value="all">All Statuses</option>
-                  <option value="Pending">Pending Only</option>
-                  <option value="Approved">Approved Only</option>
-                  <option value="Rejected">Rejected Only</option>
+                  <option value="all">{t("allStatuses", "All Statuses")}</option>
+                  <option value="Pending">{t("pendingOnly", "Pending Only")}</option>
+                  <option value="Approved">{t("approvedOnly", "Approved Only")}</option>
+                  <option value="Rejected">{t("rejectedOnly", "Rejected Only")}</option>
                 </select>
 
                 {/* Purpose Dropdown */}
@@ -1128,13 +1143,11 @@ const AdminDashboard = () => {
                   onChange={(e) => setPurposeFilter(e.target.value)}
                   className="bg-cream-50/50 dark:bg-slate-950 border border-cream-300 dark:border-slate-800 rounded-xl py-2 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-saffron-500 dark:text-white cursor-pointer"
                 >
-                  <option value="all">All Purposes</option>
-                  <option value="General Fund">General Fund</option>
-                  <option value="Annadanam Seva">Annadanam Seva</option>
-                  <option value="Temple Renovation">Temple Renovation</option>
-                  <option value="Community Education Kits">
-                    Education Support
-                  </option>
+                  <option value="all">{t("allPurposes", "All Purposes")}</option>
+                  <option value="General Fund">{translatePurpose("General Fund")}</option>
+                  <option value="Annadanam Seva">{translatePurpose("Annadanam Seva")}</option>
+                  <option value="Temple Renovation">{translatePurpose("Temple Renovation")}</option>
+                  <option value="Community Education Kits">{translatePurpose("Community Education Kits")}</option>
                 </select>
 
                 <button
@@ -1150,7 +1163,7 @@ const AdminDashboard = () => {
                   className="px-3 py-2 bg-saffron-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer shadow-sm hover:bg-saffron-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  Export CSV
+                  {t("exportCsv", "Export CSV")}
                 </button>
               </div>
             </div>
@@ -1161,31 +1174,31 @@ const AdminDashboard = () => {
                 <thead className="bg-cream-50/20 font-extrabold text-slate-500 uppercase tracking-wider">
                   <tr>
                     <th scope="col" className="px-5 py-4">
-                      Donor Details
+                      {t("donorDetails", "Donor Details")}
                     </th>
                     <th scope="col" className="px-5 py-4">
-                      Contact Info
+                      {t("contactInfo", "Contact Info")}
                     </th>
                     <th scope="col" className="px-5 py-4">
-                      Amount
+                      {t("amount", "Amount")}
                     </th>
                     <th scope="col" className="px-5 py-4">
-                      Seva Purpose
+                      {t("sevaPurpose", "Seva Purpose")}
                     </th>
                     <th scope="col" className="px-5 py-4">
-                      Date
+                      {t("date", "Date")}
                     </th>
                     <th scope="col" className="px-5 py-4">
-                      Receipt Proof
+                      {t("receiptProof", "Receipt Proof")}
                     </th>
                     <th scope="col" className="px-5 py-4">
-                      Transaction / UTR
+                      {t("transactionUtr", "Transaction / UTR")}
                     </th>
                     <th scope="col" className="px-5 py-4">
-                      Status
+                      {t("status", "Status")}
                     </th>
                     <th scope="col" className="px-5 py-4 text-right">
-                      Actions
+                      {t("actions", "Actions")}
                     </th>
                   </tr>
                 </thead>
@@ -1198,7 +1211,7 @@ const AdminDashboard = () => {
                       {/* Donor Name & Optional Message */}
                       <td className="px-5 py-4 font-bold text-slate-800 dark:text-white">
                         <div>
-                          <span>{item.donorName}</span>
+                          <span>{translateName(item.donorName)}</span>
                           {item.message && (
                             <p className="text-[10.5px] text-slate-400 font-normal italic mt-0.5 max-w-xs line-clamp-1" title={item.message}>
                               "{item.message}"
@@ -1227,13 +1240,13 @@ const AdminDashboard = () => {
                       {/* Purpose */}
                       <td className="px-5 py-4">
                         <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-saffron-50 dark:bg-saffron-950/20 text-saffron-700 dark:text-saffron-400 border border-saffron-100 dark:border-saffron-900">
-                          {item.purpose}
+                          {translatePurpose(item.purpose)}
                         </span>
                       </td>
 
                       {/* Date */}
                       <td className="px-5 py-4 text-slate-500 whitespace-nowrap">
-                        {item.donationDate || (item.createdAt ? new Date(item.createdAt).toLocaleDateString("en-IN") : "-")}
+                        {item.donationDate || (item.createdAt ? new Date(item.createdAt).toLocaleDateString(language === "en" ? "en-IN" : "te-IN") : "-")}
                       </td>
 
                       {/* Receipt Proof */}
@@ -1251,11 +1264,11 @@ const AdminDashboard = () => {
                               className="w-5 h-5 rounded object-cover border border-cream-200 dark:border-slate-700 shrink-0"
                             />
                             <Eye className="w-3 h-3 text-saffron-600 group-hover:scale-110 transition-transform" />
-                            View
+                            {t("view", "View")}
                           </button>
                         ) : (
                           <span className="text-[10px] text-slate-400 italic">
-                            No receipt
+                            {t("noReceipt", "No receipt")}
                           </span>
                         )}
                       </td>
@@ -1267,7 +1280,7 @@ const AdminDashboard = () => {
                             {item.paymentId}
                           </span>
                           <span className="text-[9px] text-slate-400">
-                            via {item.paymentMethod}
+                            {language === "te" ? `${translateText(item.paymentMethod)} ద్వారా` : `via ${item.paymentMethod}`}
                           </span>
                         </div>
                       </td>
@@ -1292,7 +1305,7 @@ const AdminDashboard = () => {
                           {(item.status === "Rejected" || item.status === "Failed") && (
                             <XCircle className="w-3 h-3" />
                           )}
-                          {item.status === "Success" ? "Approved" : item.status}
+                          {translateStatus(item.status === "Success" ? "Approved" : item.status)}
                         </span>
                       </td>
 
@@ -1306,19 +1319,19 @@ const AdminDashboard = () => {
                                 className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10px] flex items-center gap-1 shadow-sm transition-all cursor-pointer"
                                 title="Approve Donation and Add to Income"
                               >
-                                <Check className="w-3 h-3" /> Approve
+                                <Check className="w-3 h-3" /> {t("approve", "Approve")}
                               </button>
                               <button
                                 onClick={() => handleRejectDonation(item)}
                                 className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10px] flex items-center gap-1 shadow-sm transition-all cursor-pointer"
                                 title="Reject Donation"
                               >
-                                <X className="w-3 h-3" /> Reject
+                                <X className="w-3 h-3" /> {t("reject", "Reject")}
                               </button>
                             </>
                           ) : item.status === "Approved" || item.status === "Success" ? (
                             <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
-                              <span className="hidden sm:inline">Added to Income</span>
+                              <span className="hidden sm:inline">{t("addedToIncome", "Added to Income")}</span>
                               <button
                                 onClick={() => handleRejectDonation(item)}
                                 className="p-1 text-slate-400 hover:text-red-500 rounded hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
@@ -1329,13 +1342,13 @@ const AdminDashboard = () => {
                             </div>
                           ) : (
                             <div className="flex items-center gap-1 text-[10px] text-red-500 font-bold">
-                              <span>Rejected</span>
+                              <span>{t("rejected", "Rejected")}</span>
                               <button
                                 onClick={() => handleApproveDonation(item)}
                                 className="ml-1 px-2 py-0.5 border border-emerald-500 text-emerald-600 hover:bg-emerald-50 rounded text-[9px] font-bold cursor-pointer"
                                 title="Re-approve donation"
                               >
-                                Approve
+                                {t("approve", "Approve")}
                               </button>
                             </div>
                           )}
@@ -1357,7 +1370,7 @@ const AdminDashboard = () => {
 
             {filteredDonations().length === 0 && (
               <div className="p-8 text-center text-slate-400">
-                No matching donations found in ledger.
+                {t("noDonationsFound", "No matching donations found in ledger.")}
               </div>
             )}
           </div>
@@ -1370,11 +1383,10 @@ const AdminDashboard = () => {
               <div>
                 <h2 className="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
                   <Image className="w-5 h-5 text-saffron-600" />
-                  Gallery Album Management ({gallery.length})
+                  {t("galleryAlbumManagement", "Gallery Album Management")} ({gallery.length})
                 </h2>
                 <p className="text-xs text-slate-400 font-semibold mt-1">
-                  Create, edit, and delete photo albums displayed in the public
-                  gallery section.
+                  {t("galleryAlbumDesc", "Create, edit, and delete photo albums displayed in the public gallery section.")}
                 </p>
               </div>
               <button
@@ -1382,7 +1394,7 @@ const AdminDashboard = () => {
                 className="px-4 py-2.5 bg-saffron-500 hover:bg-saffron-600 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 self-start sm:self-auto cursor-pointer shadow-sm shadow-saffron-500/25 transition-all"
               >
                 <Plus className="w-4 h-4" />
-                Create New Album
+                {t("createNewAlbum", "Create New Album")}
               </button>
             </div>
             {gallery.length > 0 ? (
@@ -1413,7 +1425,7 @@ const AdminDashboard = () => {
                             className="w-full h-full object-cover"
                           />
                           <span className="absolute bottom-3 left-3 bg-black/60 text-white px-2 py-0.5 rounded-md text-[9px] font-bold tracking-widest font-mono">
-                            {images.length} PHOTOS
+                            {images.length} {t("photos", "PHOTOS")}
                           </span>
                         </div>
                         {/* Album info */}
@@ -1427,10 +1439,10 @@ const AdminDashboard = () => {
                               "No description provided."}
                           </p>
                           <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold block">
-                            Event Date:{" "}
+                            {t("eventDate", "Event Date")}:{" "}
                             {album.eventDate
                               ? new Date(album.eventDate).toLocaleDateString(
-                                  "en-IN",
+                                  language === "en" ? "en-IN" : "te-IN",
                                 )
                               : "N/A"}
                           </span>
@@ -1443,7 +1455,7 @@ const AdminDashboard = () => {
                           className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-cream-300 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 font-bold hover:bg-cream-50 dark:hover:bg-slate-800 cursor-pointer flex items-center gap-1.5 transition-colors"
                         >
                           <Edit2 className="w-3.5 h-3.5 text-saffron-600" />
-                          Edit Album
+                          {t("editAlbum", "Edit Album")}
                         </button>
                         <button
                           onClick={() => handleDeleteGallery(album.id)}
@@ -1459,8 +1471,7 @@ const AdminDashboard = () => {
               </div>
             ) : (
               <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-xs border border-dashed border-cream-300 dark:border-slate-800 rounded-2xl">
-                No gallery albums found. Click 'Create New Album' to get
-                started.
+                {t("noAlbumsFound", "No gallery albums found. Click 'Create New Album' to get started.")}
               </div>
             )}
           </div>
@@ -1474,8 +1485,8 @@ const AdminDashboard = () => {
             <div className="bg-gradient-to-r from-saffron-500 to-saffron-600 text-white px-6 py-4 flex justify-between items-center">
               <h2 className="font-extrabold text-sm uppercase tracking-wider">
                 {editingGalleryItem
-                  ? "Edit Gallery Album"
-                  : "Create New Gallery Album"}
+                  ? t("editGalleryAlbum", "Edit Gallery Album")
+                  : t("createNewAlbum", "Create New Gallery Album")}
               </h2>
               <button
                 onClick={() => {
@@ -1507,7 +1518,7 @@ const AdminDashboard = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 pl-1">
-                      Album Title *
+                      {t("albumTitle", "Album Title")} *
                     </label>
                     <input
                       type="text"
@@ -1525,7 +1536,7 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 pl-1">
-                      Short Description *
+                      {t("shortDescription", "Short Description")} *
                     </label>
                     <textarea
                       value={galleryForm.description}
@@ -1543,7 +1554,7 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 pl-1">
-                      Event Date *
+                      {t("eventDate", "Event Date")} *
                     </label>
                     <input
                       type="date"
@@ -1564,7 +1575,7 @@ const AdminDashboard = () => {
                   {/* Cover image uploader */}
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 pl-1">
-                      Cover Image *
+                      {t("coverImage", "Cover Image")} *
                     </label>
                     <div className="bg-cream-50/30 dark:bg-slate-950/20 border border-cream-350 dark:border-slate-800 rounded-xl p-3 space-y-2">
                       <div className="flex items-center justify-between gap-2">
@@ -1579,7 +1590,7 @@ const AdminDashboard = () => {
                           htmlFor="admin-cover-input"
                           className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-cream-300 dark:border-slate-800 rounded-lg text-[10px] font-extrabold text-slate-700 dark:text-slate-350 hover:bg-cream-50 dark:hover:bg-slate-800 cursor-pointer transition-colors shadow-sm"
                         >
-                          Choose Cover Image
+                          {t("chooseCoverImage", "Choose Cover Image")}
                         </label>
                         <span className="text-[9px] text-slate-400">
                           JPG/PNG, Max 5MB
@@ -1611,7 +1622,7 @@ const AdminDashboard = () => {
                   {/* Album images uploader */}
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1 pl-1">
-                      Album Images (Multiple)
+                      {t("albumImagesMultiple", "Album Images (Multiple)")}
                     </label>
                     <div className="bg-cream-50/30 dark:bg-slate-950/20 border border-cream-350 dark:border-slate-800 rounded-xl p-3 space-y-3">
                       <div className="flex items-center justify-between gap-2">
@@ -1627,7 +1638,7 @@ const AdminDashboard = () => {
                           htmlFor="admin-gallery-input"
                           className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-cream-300 dark:border-slate-800 rounded-lg text-[10px] font-extrabold text-slate-700 dark:text-slate-350 hover:bg-cream-50 dark:hover:bg-slate-800 cursor-pointer transition-colors shadow-sm"
                         >
-                          Choose Photos
+                          {t("choosePhotos", "Choose Photos")}
                         </label>
                         <span className="text-[9px] text-slate-400">
                           Can select multiple
@@ -1698,7 +1709,7 @@ const AdminDashboard = () => {
                   }}
                   className="px-4 py-2 border border-cream-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-cream-50 dark:hover:bg-slate-850 rounded-xl font-bold cursor-pointer transition-colors"
                 >
-                  Cancel
+                  {t("cancel", "Cancel")}
                 </button>
                 <button
                   type="submit"
@@ -1709,10 +1720,10 @@ const AdminDashboard = () => {
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   )}
                   {isSavingGallery
-                    ? "Saving Album..."
+                    ? t("savingAlbum", "Saving Album...")
                     : editingGalleryItem
-                      ? "Save Album"
-                      : "Create Album"}
+                      ? t("saveAlbum", "Save Album")
+                      : t("createAlbum", "Create Album")}
                 </button>
               </div>
             </form>
@@ -1730,17 +1741,17 @@ const AdminDashboard = () => {
                 <Eye className="w-5 h-5" />
                 <div>
                   <h3 className="font-extrabold text-sm uppercase tracking-wider">
-                    Payment Receipt Verification
+                    {t("receiptVerification", "Payment Receipt Verification")}
                   </h3>
                   <p className="text-[11px] text-saffron-100 font-medium">
-                    Donor: {selectedReceiptDonation.donorName} • ₹{selectedReceiptDonation.amount?.toLocaleString("en-IN")}
+                    {t("donor", "Donor")}: {translateName(selectedReceiptDonation.donorName)} • ₹{selectedReceiptDonation.amount?.toLocaleString(language === "te" ? "te-IN" : "en-IN")}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedReceiptDonation(null)}
                 className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-                title="Close"
+                title={t("close", "Close")}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1761,23 +1772,23 @@ const AdminDashboard = () => {
               <div className="bg-cream-50/60 dark:bg-slate-950/40 border border-cream-200 dark:border-slate-800 rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
-                    Amount
+                    {t("amount", "Amount")}
                   </span>
                   <span className="font-black text-slate-800 dark:text-white text-sm">
-                    ₹{selectedReceiptDonation.amount?.toLocaleString("en-IN")}
+                    ₹{selectedReceiptDonation.amount?.toLocaleString(language === "te" ? "te-IN" : "en-IN")}
                   </span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
-                    Donation Date
+                    {t("donationDate", "Donation Date")}
                   </span>
                   <span className="font-semibold text-slate-700 dark:text-slate-300">
-                    {selectedReceiptDonation.donationDate || (selectedReceiptDonation.createdAt ? new Date(selectedReceiptDonation.createdAt).toLocaleDateString("en-IN") : "-")}
+                    {selectedReceiptDonation.donationDate || (selectedReceiptDonation.createdAt ? new Date(selectedReceiptDonation.createdAt).toLocaleDateString(language === "te" ? "te-IN" : "en-IN") : "-")}
                   </span>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
-                    UTR / Payment Ref
+                    {t("utrPaymentRef", "UTR / Payment Ref")}
                   </span>
                   <span className="font-mono text-slate-700 dark:text-slate-300 font-bold text-[11px] truncate block">
                     {selectedReceiptDonation.paymentId}
@@ -1785,7 +1796,7 @@ const AdminDashboard = () => {
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
-                    Workflow Status
+                    {t("workflowStatus", "Workflow Status")}
                   </span>
                   <span
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-black uppercase tracking-wider ${
@@ -1796,14 +1807,14 @@ const AdminDashboard = () => {
                           : "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400"
                     }`}
                   >
-                    {selectedReceiptDonation.status}
+                    {translateStatus(selectedReceiptDonation.status)}
                   </span>
                 </div>
 
                 {selectedReceiptDonation.message && (
                   <div className="col-span-2 sm:col-span-4 pt-2 border-t border-cream-200/60 dark:border-slate-800/60">
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
-                      Donor Message
+                      {t("donorMessage", "Donor Message")}
                     </span>
                     <p className="text-xs text-slate-700 dark:text-slate-300 italic mt-0.5">
                       "{selectedReceiptDonation.message}"
@@ -1820,7 +1831,7 @@ const AdminDashboard = () => {
                 onClick={() => setSelectedReceiptDonation(null)}
                 className="px-4 py-2 border border-cream-300 dark:border-slate-700 hover:bg-cream-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
-                Close
+                {t("close", "Close")}
               </button>
 
               <div className="flex items-center gap-2">
@@ -1831,19 +1842,19 @@ const AdminDashboard = () => {
                       onClick={() => handleRejectDonation(selectedReceiptDonation)}
                       className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
                     >
-                      <X className="w-4 h-4" /> Reject
+                      <X className="w-4 h-4" /> {t("reject", "Reject")}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleApproveDonation(selectedReceiptDonation)}
                       className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
                     >
-                      <Check className="w-4 h-4" /> Approve & Add to Income
+                      <Check className="w-4 h-4" /> {t("approveAndAddToIncome", "Approve & Add to Income")}
                     </button>
                   </>
                 ) : selectedReceiptDonation.status === "Approved" || selectedReceiptDonation.status === "Success" ? (
                   <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4" /> Verified & Added to Income
+                    <CheckCircle2 className="w-4 h-4" /> {t("verifiedAndAddedToIncome", "Verified & Added to Income")}
                   </span>
                 ) : (
                   <button
@@ -1851,7 +1862,7 @@ const AdminDashboard = () => {
                     onClick={() => handleApproveDonation(selectedReceiptDonation)}
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
                   >
-                    <Check className="w-4 h-4" /> Approve Donation
+                    <Check className="w-4 h-4" /> {t("approveDonation", "Approve Donation")}
                   </button>
                 )}
               </div>

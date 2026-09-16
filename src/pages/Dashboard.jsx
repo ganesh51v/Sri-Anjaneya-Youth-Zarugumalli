@@ -12,7 +12,7 @@ import { heroEntrance, staggerScaleFade, staggerFadeUp, staggerSlideLeft, fadeUp
 
 const Dashboard = () => {
   const { user, checkEmailVerification } = useAuth();
-  const { language, t } = useLanguage();
+  const { language, t, translateName } = useLanguage();
   const [stats, setStats] = useState({ members: 0, events: 0, announcements: 0, donationCount: 0, totalAmount: 0 });
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [recentAnnouncements, setRecentAnnouncements] = useState([]);
@@ -160,7 +160,7 @@ const Dashboard = () => {
             </span>
           </div>
           <h1 className="text-2xl sm:text-4xl lg:text-5xl xl:text-[3.25rem] font-black tracking-tight leading-tight">
-            {t('welcome')}, <span className="gold-gradient-text">{user ? user.name : t('bhaktha')}</span>!
+            {t('welcome')}, <span className="gold-gradient-text">{user?.name ? translateName(user.name) : t('bhaktha')}</span>!
           </h1>
           <p className="text-xs sm:text-sm lg:text-base xl:text-lg font-medium leading-relaxed max-w-3xl text-[var(--text-secondary)]">
             {t('jaiHanumanDesc')}
@@ -397,7 +397,11 @@ const Dashboard = () => {
                 <MapPin className="w-5 h-5 xl:w-6 xl:h-6 text-gold-500 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold block text-xs sm:text-sm xl:text-[15px] text-[var(--text-primary)] mb-0.5">{t('officeAddressLabel')}</span>
-                  <span className="font-medium text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">near hanuman statue,Zarugumalli, Prakasam Dist, Andhra Pradesh - 523274</span>
+                  <span className="font-medium text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+                    {language === 'en'
+                      ? 'Near Hanuman Statue, Zarugumalli, Prakasam Dist, Andhra Pradesh - 523274'
+                      : 'శ్రీ ఆంజనేయ స్వామి విగ్రహం దగ్గర, జరుగమల్లి, ప్రకాశం జిల్లా, ఆంధ్రప్రదేశ్ - 523274'}
+                  </span>
                 </div>
               </div>
               <div className="flex items-start gap-3">

@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 const EventCard = ({ event, onEdit, onDelete }) => {
   const { user } = useAuth();
-  const { language, t } = useLanguage();
+  const { language, t, translateAddress } = useLanguage();
   const isAdmin = user && user.role === 'admin';
 
   const formatDate = (dateString) => {
@@ -48,7 +48,7 @@ const EventCard = ({ event, onEdit, onDelete }) => {
           </div>
           <div className="flex items-start gap-2">
             <MapPin className="w-4 h-4 text-gold-500 shrink-0 mt-0.5" />
-            <span className="line-clamp-2">{event.location}</span>
+            <span className="line-clamp-2">{translateAddress(event.location, language)}</span>
           </div>
         </div>
 

@@ -21,7 +21,7 @@ import SEO from "../components/SEO";
 import { fadeUp, rotateFadeIn } from "../utils/animate";
 const Profile = () => {
   const { user, loginUser, signOut } = useAuth();
-  const { language, t } = useLanguage();
+  const { language, t, translateName, translateRole, translateAddress } = useLanguage();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || "");
@@ -264,12 +264,12 @@ const Profile = () => {
             )}
           </div>
           <h2 className="text-xl font-black text-[var(--text-primary)] mt-4 tracking-tight">
-            {user?.name || user?.email}
+            {translateName(user?.name, language) || user?.email}
           </h2>
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-widest text-gold-600 dark:text-gold-400 bg-gold-500/10 border border-gold-500/30 mt-2 shadow-sm">
             <Sparkles className="w-3 h-3 text-gold-500" />
             <span>
-              {user?.role || "Member"} {t("memberRole")}
+              {translateRole(user?.role || "Member", language)} {t("memberRole")}
             </span>
           </div>
         </div>
@@ -499,7 +499,7 @@ const Profile = () => {
                       {t("address")}
                     </span>
                     <span className="font-extrabold text-sm text-[var(--text-primary)] block">
-                      {user?.village || t("notAdded")}
+                      {translateAddress(user?.village, language) || t("notAdded")}
                     </span>
                   </div>
                 </div>

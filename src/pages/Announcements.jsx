@@ -208,7 +208,7 @@ const Announcements = () => {
                     {ann.title}
                   </h3>
                   <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
-                    {new Date(ann.createdAt).toLocaleString("en-IN", {
+                    {new Date(ann.createdAt).toLocaleString(language === "te" ? "te-IN" : "en-IN", {
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}
@@ -297,7 +297,7 @@ const Announcements = () => {
                   className="btn btn-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {isSaving ? "Publishing..." : t("publishNow")}
+                  {isSaving ? (language === "te" ? "ప్రచురించబడుతోంది..." : "Publishing...") : t("publishNow")}
                 </button>
               </div>
             </form>

@@ -5,7 +5,7 @@ import { Mail, Phone, MapPin, Heart, Home, Users, Calendar, Image, Bell, User, B
 
 const Footer = () => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
 
   if (!user) return null;
 
@@ -77,7 +77,11 @@ const Footer = () => {
             <ul className="space-y-3 xl:space-y-3.5">
               <li className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 xl:w-4.5 xl:h-4.5 text-gold-500 shrink-0 mt-0.5" />
-                <span className="text-xs sm:text-sm xl:text-[15px] text-[var(--text-muted)]">near hanuman statue, Zarugumalli, Prakasam Dist, Andhra Pradesh - 523274</span>
+                <span className="text-xs sm:text-sm xl:text-[15px] text-[var(--text-muted)]">
+                  {language === 'en'
+                    ? 'Near Hanuman Statue, Zarugumalli, Prakasam Dist, Andhra Pradesh - 523274'
+                    : 'శ్రీ ఆంజనేయ స్వామి విగ్రహం దగ్గర, జరుగమల్లి, ప్రకాశం జిల్లా, ఆంధ్రప్రదేశ్ - 523274'}
+                </span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 xl:w-4.5 xl:h-4.5 text-gold-500 shrink-0" />
@@ -104,7 +108,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="border-t border-[var(--border)] pt-5 xl:pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs xl:text-sm text-[var(--text-subtle)]">
-          <p>&copy; {new Date().getFullYear()} Sri Anjaneya Youth Zarugumalli. {t('footerRights')}</p>
+          <p>&copy; {new Date().getFullYear()} {t('websiteName')} {t('zarugumalli')}. {t('footerRights')}</p>
           <p className="flex items-center gap-1.5 font-semibold">
             {t('footerCredits')}
             <Heart className="w-3.5 h-3.5 text-devored-500 fill-current animate-pulse" />

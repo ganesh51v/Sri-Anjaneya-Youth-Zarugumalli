@@ -14,7 +14,7 @@ const ChatWindow = ({
   onRetry,
   onClose
 }) => {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ const ChatWindow = ({
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="text-xs font-black text-[var(--text-primary)] tracking-tight">Sri Anjaneya AI</h3>
+              <h3 className="text-xs font-black text-[var(--text-primary)] tracking-tight">{language === 'te' ? 'శ్రీ ఆంజనేయ AI' : 'Sri Anjaneya AI'}</h3>
               <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-saffron-500/10 text-saffron-600 dark:text-saffron-400 border border-saffron-500/20 uppercase">
                 {t('aiAssistant')}
               </span>
