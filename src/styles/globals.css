@@ -327,21 +327,29 @@ p {
   box-shadow: var(--shadow-md);
   border-color: var(--border-strong);
 }
+.stat-card > div:last-child {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+}
 .stat-card .stat-number {
+  display: block !important;
   font-family: 'Outfit', system-ui, sans-serif;
   font-size: clamp(1.75rem, 2.3vw, 2.6rem);
   font-weight: 800;
   letter-spacing: -0.04em;
   color: var(--text-primary);
-  line-height: 1;
+  line-height: 1.1 !important;
 }
 .stat-card .stat-label {
+  display: block !important;
   font-size: clamp(0.72rem, 0.85vw, 0.92rem);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
-  margin-top: 0.35rem;
+  margin-top: 0.25rem !important;
 }
 .stat-card .stat-icon {
   width: clamp(3rem, 3.8vw, 4.25rem);
@@ -1199,6 +1207,57 @@ img {
   .dashboard-main-grid,
   [class*="dashboard-main-grid"] {
     grid-template-columns: 1fr !important;
+  }
+
+  /* Mobile Navbar: ensure all controls fit within screen without overflow */
+  .navbar-capsule > div[class*="max-w-7xl"] {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    gap: 0.25rem !important;
+  }
+  .navbar-capsule a[href="/"] {
+    gap: 0.35rem !important;
+    margin-left: 0 !important;
+    padding: 0 !important;
+    max-width: 50% !important;
+  }
+  .navbar-capsule a[href="/"] img {
+    width: 2.1rem !important;
+    height: 2.1rem !important;
+    min-width: 2.1rem !important;
+  }
+  .navbar-capsule a[href="/"] span[class*="font-black"] {
+    font-size: 0.8rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
+  }
+  .navbar-capsule a[href="/"] div span:last-child {
+    display: none !important; /* Hide 'Since 2013' on mobile to save critical space */
+  }
+  .navbar-capsule [class*="shrink-0"]:last-child {
+    gap: 0.25rem !important;
+  }
+  .navbar-capsule [class*="shrink-0"]:last-child button,
+  .navbar-capsule [class*="shrink-0"]:last-child div {
+    width: 1.95rem !important;
+    height: 1.95rem !important;
+    min-width: 1.95rem !important;
+    min-height: 1.95rem !important;
+    padding: 0.2rem !important;
+  }
+  .navbar-capsule [class*="shrink-0"]:last-child button svg {
+    width: 0.95rem !important;
+    height: 0.95rem !important;
+  }
+
+  /* Floating Chatbot Gutter: ensure page content never gets occluded */
+  body,
+  main,
+  .page-container,
+  [class*="max-w-7xl"] {
+    padding-bottom: clamp(3.5rem, 6vw, 5.5rem) !important;
   }
 }
 
