@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { dbService, authService } from '../firebase/config';
-import { 
-  Users, Calendar, Bell, Heart, MapPin, Mail, Phone, Info, ChevronRight, 
-  MessageSquare, Award, Sparkles 
+import {
+  Users, Calendar, Bell, Heart, MapPin, Mail, Phone, Info, ChevronRight,
+  MessageSquare, Award, Sparkles
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { heroEntrance, staggerScaleFade, staggerFadeUp, staggerSlideLeft, fadeUp, countUp } from '../utils/animate';
@@ -300,8 +300,8 @@ const Dashboard = () => {
                   <p className="text-xs sm:text-sm text-[var(--text-muted)]">{t('donationsDashboardDesc')}</p>
                 </div>
               </div>
-              <Link 
-                to="/donate" 
+              <Link
+                to="/donate"
                 className="btn btn-primary btn-sm xl:btn-md py-2.5 px-5 xl:py-3 xl:px-6 text-xs xl:text-sm font-bold shrink-0"
               >
                 <Heart className="w-4 h-4 fill-current" />
@@ -351,9 +351,9 @@ const Dashboard = () => {
               <div ref={galleryGridRef} className="grid grid-cols-3 gap-3.5 xl:gap-5">
                 {galleryPreview.map(item => (
                   <div key={item.id} className="relative rounded-2xl overflow-hidden aspect-video group shadow-sm hover-lift">
-                    <img 
-                      src={item.imageUrl} 
-                      alt={item.caption || 'Sri Anjaneya Youth Zarugumalli Gallery Highlight'} 
+                    <img
+                      src={item.imageUrl}
+                      alt={item.caption || 'Sri Anjaneya Youth Zarugumalli Gallery Highlight'}
                       loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
                     />
@@ -404,14 +404,14 @@ const Dashboard = () => {
                 <Phone className="w-5 h-5 xl:w-6 xl:h-6 text-gold-500 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold block text-xs sm:text-sm xl:text-[15px] text-[var(--text-primary)] mb-0.5">{t('callCoordinatorLabel')}</span>
-                  <a href="tel:+919494994949" className="hover:text-saffron-600 font-semibold transition-colors text-xs sm:text-sm xl:text-[15px]">+91 94949 94949</a>
+                  <a href="tel:+918185851424" className="hover:text-saffron-600 font-semibold transition-colors text-xs sm:text-sm xl:text-[15px]">+91 94949 94949</a>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Mail className="w-5 h-5 xl:w-6 xl:h-6 text-gold-500 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold block text-xs sm:text-sm xl:text-[15px] text-[var(--text-primary)] mb-0.5">{t('emailSupportLabel')}</span>
-                  <a href="mailto:info@srianjaneyayouth.org" className="hover:text-saffron-600 font-semibold transition-colors text-xs sm:text-sm xl:text-[15px]">info@srianjaneyayouth.org</a>
+                  <a href="mailto:srianjaneyayouth09@gmail.com" className="hover:text-saffron-600 font-semibold transition-colors text-xs sm:text-sm xl:text-[15px]">info@srianjaneyayouth.org</a>
                 </div>
               </div>
             </div>

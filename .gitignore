@@ -32,4 +32,5 @@ dist-ssr
 # Temp security scan runs
 strix_runs
 
-
+# Firebase cache
+.firebase
