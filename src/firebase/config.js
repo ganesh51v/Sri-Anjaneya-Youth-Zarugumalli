@@ -825,7 +825,7 @@ export const authService = {
               name: cred.user.displayName || 'Google User',
               email: cred.user.email,
               phone: cred.user.phoneNumber || '',
-              village: 'Zarugumalli',
+              village: '',
               role: 'user',
               createdAt: new Date().toISOString()
             });
@@ -866,7 +866,7 @@ export const authService = {
           name: 'Anjaneya Bhaktha (Google)',
           email: 'google_user@gmail.com',
           phone: '+91 90000 12345',
-          village: 'Zarugumalli',
+          village: '',
           role: 'user',
           createdAt: new Date().toISOString()
         };

@@ -499,7 +499,7 @@ const Profile = () => {
                       {t("address")}
                     </span>
                     <span className="font-extrabold text-sm text-[var(--text-primary)] block">
-                      {user?.village || "Zarugumalli"}
+                      {user?.village || t("notAdded")}
                     </span>
                   </div>
                 </div>
