@@ -397,21 +397,21 @@ const Dashboard = () => {
                 <MapPin className="w-5 h-5 xl:w-6 xl:h-6 text-gold-500 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold block text-xs sm:text-sm xl:text-[15px] text-[var(--text-primary)] mb-0.5">{t('officeAddressLabel')}</span>
-                  <span className="font-medium text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">{t('officeAddressVal')}</span>
+                  <span className="font-medium text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">near hanuman statue,Zarugumalli, Prakasam Dist, Andhra Pradesh - 523274</span>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Phone className="w-5 h-5 xl:w-6 xl:h-6 text-gold-500 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold block text-xs sm:text-sm xl:text-[15px] text-[var(--text-primary)] mb-0.5">{t('callCoordinatorLabel')}</span>
-                  <a href="tel:+918185851424" className="hover:text-saffron-600 font-semibold transition-colors text-xs sm:text-sm xl:text-[15px]">+91 94949 94949</a>
+                  <a href="tel:+918185851424" className="hover:text-saffron-600 font-semibold transition-colors text-xs sm:text-sm xl:text-[15px]">+91 81858 51424</a>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Mail className="w-5 h-5 xl:w-6 xl:h-6 text-gold-500 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold block text-xs sm:text-sm xl:text-[15px] text-[var(--text-primary)] mb-0.5">{t('emailSupportLabel')}</span>
-                  <a href="mailto:srianjaneyayouth09@gmail.com" className="hover:text-saffron-600 font-semibold transition-colors text-xs sm:text-sm xl:text-[15px]">info@srianjaneyayouth.org</a>
+                  <a href="mailto:srianjaneyayouth09@gmail.com" className="hover:text-saffron-600 font-semibold transition-colors text-xs sm:text-sm xl:text-[15px]">srianjaneyayouth09@gmail.com</a>
                 </div>
               </div>
             </div>
