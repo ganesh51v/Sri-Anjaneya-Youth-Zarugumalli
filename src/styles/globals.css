@@ -843,214 +843,316 @@ button:disabled {
   line-height: 1.8 !important;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
 /* ============================================================
-   UNIVERSAL RESPONSIVE ENGINE — ALL DEVICE BREAKPOINTS
-   Coverage: 280px (Fold/Mini) -> 3840px (4K / Ultra-wide)
-   Strictly presentation and layout CSS. Zero logic modification.
+   UNIVERSAL RESPONSIVE ENGINE — Production-Grade
+   Coverage: 280px (Galaxy Fold) → 3840px+ (4K Ultra-wide)
+   
+   ARCHITECTURE NOTES:
+   - This block sits AFTER the existing fluid container system
+     (lines 784-827) and only adds mobile/tablet overrides that
+     the container system doesn't cover.
+   - Uses [class*="..."] attribute selectors so they match
+     Tailwind v4's actual generated class attribute strings.
+   - Zero logic, routing, state, or component changes.
    ============================================================ */
 
-/* Root Fluid Typography & Safety */
+/* ── Global Overflow & Typography Safety ──────────────────── */
 html {
-  scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
 }
-
 body {
-  overflow-x: hidden;
+  overflow-x: hidden !important;
+}
+
+/* ── Responsive Table Wrapper ─────────────────────────────── */
+.table-responsive-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   width: 100%;
-  min-height: 100vh;
 }
 
-/* Fluid Responsive Typography */
-h1 {
-  font-size: clamp(1.5rem, 3.5vw + 0.5rem, 2.75rem) !important;
-  line-height: 1.15 !important;
-}
-
-h2 {
-  font-size: clamp(1.2rem, 2.2vw + 0.4rem, 2rem) !important;
-  line-height: 1.25 !important;
-}
-
-h3 {
-  font-size: clamp(1rem, 1.5vw + 0.3rem, 1.4rem) !important;
-}
-
-/* Universal Table Responsive Wrapper */
-.table-responsive-wrapper,
-.table-container {
-  width: 100% !important;
-  overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  scrollbar-width: thin;
-}
-
-/* Horizontal Scrolling Tab Bars */
+/* ── Scrollable Tab Bars (Admin / Expenditure) ────────────── */
 .tabs-scroll-x,
 .admin-tabs-bar {
   overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  scrollbar-width: none !important;
-  white-space: nowrap !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 .tabs-scroll-x::-webkit-scrollbar,
 .admin-tabs-bar::-webkit-scrollbar {
-  display: none !important;
+  display: none;
 }
 
-/* Dropdown & Popover Safety Boundary */
+/* ── Dropdown Overflow Protection ─────────────────────────── */
 .dropdown-menu-card {
-  max-width: calc(100vw - 1.5rem) !important;
+  max-width: calc(100vw - 2rem) !important;
 }
 
-/* Responsive Modal Containers */
-.modal-content,
-[role="dialog"] > div {
-  max-height: 90vh !important;
-  max-height: 90dvh !important;
-  overflow-y: auto !important;
-  margin: auto !important;
+/* ── Fixed Modal Height ───────────────────────────────────── */
+.fixed.inset-0 > div,
+[class*="fixed"][class*="inset-0"] > div {
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BREAKPOINT 1: Micro & Foldable Devices (280px – 359px)
-   (Samsung Galaxy Fold cover screen, Apple Watch, ultra-compact)
-   ───────────────────────────────────────────────────────────── */
+/* ── Image Responsive Safety ──────────────────────────────── */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   BREAKPOINT 1 — MICRO DEVICES (≤ 359px)
+   Galaxy Fold cover, ultra-small Android screens
+   ────────────────────────────────────────────────────────────── */
 @media (max-width: 359px) {
+  /* Container: tighter gutters */
   .max-w-7xl,
-  .page-container {
-    width: 100% !important;
-    max-width: 100% !important;
+  .page-container,
+  [class*="max-w-7xl"],
+  [class*="max-w-5xl"],
+  [class*="max-w-6xl"] {
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
   }
 
-  /* Force single column for cards */
-  .grid-cols-2,
-  .grid-cols-3,
-  .grid-cols-4,
-  .grid-cols-5,
-  .grid-cols-6 {
+  /* Force ALL multi-column grids → single column */
+  [class*="grid-cols-2"],
+  [class*="grid-cols-3"],
+  [class*="grid-cols-4"],
+  [class*="grid-cols-5"],
+  [class*="grid-cols-6"],
+  [class*="sm:grid-cols-2"],
+  [class*="sm:grid-cols-3"],
+  [class*="sm:grid-cols-4"] {
     grid-template-columns: 1fr !important;
   }
 
-  /* Compact button padding */
-  .btn,
-  .saffron-gradient-btn {
-    font-size: 0.72rem !important;
-    padding: 0.45rem 0.75rem !important;
-    white-space: normal !important;
-    text-align: center !important;
-  }
-
-  /* Stat cards */
+  /* Stat cards: compact */
   .stat-card {
     min-height: unset !important;
-    padding: 0.65rem 0.85rem !important;
+    padding: 0.75rem !important;
     gap: 0.5rem !important;
   }
   .stat-card .stat-number {
-    font-size: 1.3rem !important;
+    font-size: 1.25rem !important;
+  }
+  .stat-card .stat-icon {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
   }
 
-  /* Welcome Hero Banner */
+  /* Welcome banner: compact */
   .welcome-banner {
     padding: 1rem !important;
     border-radius: 1rem !important;
   }
 
-  /* Navbar Logo & Controls */
-  .navbar-capsule {
-    padding: 0.35rem 0.65rem !important;
+  /* Hero heading scale */
+  h1 {
+    font-size: 1.25rem !important;
+    line-height: 1.25 !important;
   }
-  .navbar-capsule .font-black {
-    font-size: 0.75rem !important;
+
+  /* Buttons: touchable & readable */
+  .btn,
+  .saffron-gradient-btn,
+  [class*="saffron-gradient-btn"] {
+    font-size: 0.72rem !important;
+    padding: 0.5rem 0.85rem !important;
+  }
+
+  /* Navbar: compact */
+  .navbar-capsule {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  .navbar-capsule [class*="font-black"] {
+    font-size: 0.72rem !important;
+  }
+
+  /* Admin tab bar + Expenditure tab: force scroll */
+  [class*="border-b"][class*="gap-6"],
+  [class*="rounded-2xl"][class*="bg-cream-100"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    white-space: nowrap !important;
+  }
+  [class*="border-b"][class*="gap-6"]::-webkit-scrollbar,
+  [class*="rounded-2xl"][class*="bg-cream-100"]::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Notification dropdown */
+  .dropdown-menu-card,
+  [class*="dropdown-menu-card"] {
+    width: calc(100vw - 1rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+
+  /* Profile card */
+  [class*="rounded-[28px]"] {
+    padding: 1rem !important;
+    border-radius: 1rem !important;
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BREAKPOINT 2: Standard Mobile (360px – 480px)
-   (iPhone 12/13/14/15/16 Pro, Galaxy S22/S23/S24, Pixel 7/8)
-   ───────────────────────────────────────────────────────────── */
-@media (min-width: 360px) and (max-width: 480px) {
+/* ──────────────────────────────────────────────────────────────
+   BREAKPOINT 2 — STANDARD MOBILE (360px – 479px)
+   iPhone 12-16 Pro, Galaxy S21-S25, Pixel 7-9
+   ────────────────────────────────────────────────────────────── */
+@media (min-width: 360px) and (max-width: 479px) {
   .max-w-7xl,
-  .page-container {
-    width: 100% !important;
+  .page-container,
+  [class*="max-w-7xl"],
+  [class*="max-w-5xl"],
+  [class*="max-w-6xl"] {
     padding-left: 0.85rem !important;
     padding-right: 0.85rem !important;
   }
 
-  /* Stacking multi-column layouts */
-  .grid-cols-3,
-  .grid-cols-4,
-  .grid-cols-5,
-  .grid-cols-6 {
+  /* 3+ col grids → single column on phones */
+  [class*="sm:grid-cols-3"],
+  [class*="sm:grid-cols-4"],
+  [class*="md:grid-cols-3"],
+  [class*="md:grid-cols-4"],
+  [class*="lg:grid-cols-3"],
+  [class*="lg:grid-cols-5"],
+  [class*="lg:grid-cols-6"] {
     grid-template-columns: 1fr !important;
   }
 
-  /* 2-column layout for stat counters */
-  .grid-cols-2 {
+  /* Dashboard stat cards: keep 2-col if sm:grid-cols-3 was used */
+  [class*="sm:grid-cols-3"][class*="grid-cols-1"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Gallery preview: 2 cols instead of 3 */
+  [class*="grid-cols-3"][class*="gap-3"] {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 0.65rem !important;
   }
 
-  .stat-card {
-    padding: 0.85rem 1rem !important;
-  }
-  .stat-card .stat-number {
-    font-size: 1.5rem !important;
-  }
-
-  /* Notification dropdown fitting */
+  /* Notification dropdown */
   .dropdown-menu-card {
-    width: calc(100vw - 1.75rem) !important;
-    right: 0 !important;
+    width: min(320px, calc(100vw - 1.5rem)) !important;
   }
 
-  /* Tab bars scroll cleanly */
-  .tabs-container {
+  /* Tab bars: scrollable */
+  .admin-tabs-bar,
+  [class*="admin-tabs-bar"] {
     overflow-x: auto !important;
+  }
+
+  /* Welcome banner */
+  .welcome-banner {
+    padding: 1.25rem !important;
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BREAKPOINT 3: Phablets & Large Mobiles (481px – 639px)
-   (iPhone Pro Max, Galaxy Plus/Ultra)
-   ───────────────────────────────────────────────────────────── */
-@media (min-width: 481px) and (max-width: 639px) {
+/* ──────────────────────────────────────────────────────────────
+   BREAKPOINT 3 — LARGE MOBILE / PHABLET (480px – 639px)
+   iPhone Pro Max, Galaxy Ultra, OnePlus
+   ────────────────────────────────────────────────────────────── */
+@media (min-width: 480px) and (max-width: 639px) {
   .max-w-7xl,
   .page-container {
     padding-left: 1.15rem !important;
     padding-right: 1.15rem !important;
   }
 
-  .grid-cols-3,
-  .grid-cols-4,
-  .grid-cols-5,
-  .grid-cols-6 {
+  /* 3+ col grids → 2 columns */
+  [class*="sm:grid-cols-3"],
+  [class*="md:grid-cols-3"],
+  [class*="md:grid-cols-4"],
+  [class*="lg:grid-cols-5"],
+  [class*="lg:grid-cols-6"] {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 0.85rem !important;
   }
 
-  .admin-stat-grid {
+  /* Gallery 3-col → 2-col */
+  [class*="grid-cols-3"][class*="gap-3"] {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BREAKPOINT 4: Small Tablets & Landscape Mobiles (640px – 767px)
-   (iPad Mini portrait, Foldables unfolded)
-   ───────────────────────────────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────
+   SHARED MOBILE RULES (≤ 639px)
+   All phones and small screens
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  /* Admin stat grid: 2 columns */
+  [class*="grid-cols-2"][class*="lg:grid-cols-6"],
+  [class*="grid-cols-2"][class*="lg:grid-cols-5"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* Footer grid: stack */
+  footer [class*="md:grid-cols-3"],
+  footer [class*="grid-cols-3"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Section header rows: allow wrapping */
+  [class*="flex"][class*="justify-between"][class*="items-center"] {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Expenditure tab switcher */
+  [class*="bg-cream-100"][class*="rounded-2xl"][class*="p-1"] {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Admin tab bar: horizontal scroll */
+  [class*="border-b"][class*="border-cream"][class*="gap-6"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex-wrap: nowrap !important;
+  }
+  [class*="border-b"][class*="border-cream"][class*="gap-6"]::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Modal full-width on mobile */
+  .fixed.inset-0 [class*="max-w-5xl"],
+  .fixed.inset-0 [class*="max-w-lg"],
+  .fixed.inset-0 [class*="max-w-md"],
+  .fixed.inset-0 [class*="max-w-xl"],
+  .fixed.inset-0 [class*="max-w-2xl"],
+  .fixed.inset-0 [class*="max-w-3xl"],
+  .fixed.inset-0 [class*="max-w-4xl"] {
+    max-width: calc(100vw - 2rem) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Donation step indicator compact */
+  .donate-step-indicator {
+    gap: 0.25rem !important;
+  }
+
+  /* Table overflow protection */
+  [class*="overflow-x-auto"],
+  [class*="overflow-hidden"] > table {
+    min-width: 0 !important;
+  }
+
+  /* Dashboard main grid: single column */
+  .dashboard-main-grid,
+  [class*="dashboard-main-grid"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   BREAKPOINT 4 — SMALL TABLET (640px – 767px)
+   iPad Mini portrait, Kindle, small Android tablets
+   ────────────────────────────────────────────────────────────── */
 @media (min-width: 640px) and (max-width: 767px) {
   .max-w-7xl,
   .page-container {
@@ -1058,17 +1160,17 @@ h3 {
     padding-right: 1.5rem !important;
   }
 
-  .grid-cols-4,
-  .grid-cols-5,
-  .grid-cols-6 {
+  /* Large grids → 2 columns */
+  [class*="lg:grid-cols-5"],
+  [class*="lg:grid-cols-6"] {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BREAKPOINT 5: Standard Tablets (768px – 1023px)
-   (iPad Air, iPad 10th Gen, Surface Go, Galaxy Tab portrait)
-   ───────────────────────────────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────
+   BREAKPOINT 5 — STANDARD TABLET (768px – 1023px)
+   iPad Air, iPad 10th Gen, Surface Go, Galaxy Tab S
+   ────────────────────────────────────────────────────────────── */
 @media (min-width: 768px) and (max-width: 1023px) {
   .max-w-7xl,
   .page-container {
@@ -1076,117 +1178,88 @@ h3 {
     padding-right: 1.75rem !important;
   }
 
-  .grid-cols-4,
-  .grid-cols-5,
-  .grid-cols-6 {
+  /* Large grids → 3 columns */
+  [class*="lg:grid-cols-5"],
+  [class*="lg:grid-cols-6"] {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
 
+  /* Dashboard: stack on tablet */
   .dashboard-main-grid {
     grid-template-columns: 1fr !important;
     gap: 1.5rem !important;
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BREAKPOINT 6: Laptops & Landscape Tablets (1024px – 1279px)
-   (iPad Pro landscape, MacBook Air 13", Chromebooks)
-   ───────────────────────────────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────
+   BREAKPOINT 6 — LAPTOP (1024px – 1279px)
+   MacBook Air 13", iPad Pro landscape, Chromebooks
+   ────────────────────────────────────────────────────────────── */
 @media (min-width: 1024px) and (max-width: 1279px) {
-  .max-w-7xl,
-  .page-container {
-    max-width: 1040px !important;
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
-  }
-
   .dashboard-main-grid {
-    grid-template-columns: minmax(0, 1.75fr) minmax(320px, 0.95fr) !important;
+    grid-template-columns: minmax(0, 1.75fr) minmax(300px, 0.95fr) !important;
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BREAKPOINT 7: Standard Desktop (1280px – 1439px)
-   (1080p desktop monitors, 15-16" laptops)
-   ───────────────────────────────────────────────────────────── */
-@media (min-width: 1280px) and (max-width: 1439px) {
-  .max-w-7xl,
-  .page-container {
-    max-width: 1240px !important;
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   BREAKPOINT 8: Large Desktop & QHD (1440px – 1919px)
-   (1440p / 2K monitors, 27" iMac)
-   ───────────────────────────────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────
+   BREAKPOINT 7 — LARGE DESKTOP / QHD (1440px – 1919px)
+   27" iMac, 2K monitors
+   ────────────────────────────────────────────────────────────── */
 @media (min-width: 1440px) and (max-width: 1919px) {
-  .max-w-7xl,
-  .page-container {
-    max-width: 1400px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
   .stat-card {
-    padding: 1.4rem 1.75rem !important;
+    padding: 1.35rem 1.6rem !important;
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BREAKPOINT 9: Ultra-Wide & 4K Displays (1920px – 3840px+)
-   (34" Ultrawide, 4K UHD monitors, 49" Super Ultrawide)
-   ───────────────────────────────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────
+   BREAKPOINT 8 — 4K & ULTRA-WIDE (1920px+)
+   4K UHD monitors, 34" Ultrawide, 49" Super Ultrawide
+   ────────────────────────────────────────────────────────────── */
 @media (min-width: 1920px) {
-  .max-w-7xl,
-  .page-container {
-    max-width: 1650px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
   body {
     font-size: 16.5px;
   }
-
-  .navbar-capsule {
-    max-width: 1650px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BREAKPOINT 10: Landscape Mobile Mode
-   (e.g. 667×375, 844×390, 932×430 in landscape orientation)
-   ───────────────────────────────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────
+   LANDSCAPE PHONE
+   (e.g. 667×375, 844×390, 932×430 in landscape)
+   ────────────────────────────────────────────────────────────── */
 @media (max-height: 520px) and (orientation: landscape) {
   .min-h-screen {
     min-height: unset !important;
   }
-  .py-24,
-  .py-20,
-  .py-16 {
+  .py-24, .py-20, .py-16 {
     padding-top: 2rem !important;
     padding-bottom: 2rem !important;
   }
   .welcome-banner {
     padding: 1.25rem !important;
   }
+  .navbar-capsule {
+    position: relative !important;
+  }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   TOUCH ACCESSIBILITY & TAP TARGETS
-   ───────────────────────────────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────
+   TOUCH TARGET ACCESSIBILITY
+   ────────────────────────────────────────────────────────────── */
 @media (pointer: coarse) {
   button,
   a[role="button"],
-  input[type="button"],
-  input[type="submit"] {
+  input[type="submit"],
+  input[type="button"] {
     min-height: 44px;
   }
 }
 
-
+/* ──────────────────────────────────────────────────────────────
+   REDUCED MOTION
+   ────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
