@@ -852,177 +852,341 @@ button:disabled {
 }
 
 /* ============================================================
-   RESPONSIVE UTILITIES — Supplemental Layer
-   Applied as the final cascade so they win over page-level styles.
-   NO logic changes — layout/CSS only.
+   UNIVERSAL RESPONSIVE ENGINE — ALL DEVICE BREAKPOINTS
+   Coverage: 280px (Fold/Mini) -> 3840px (4K / Ultra-wide)
+   Strictly presentation and layout CSS. Zero logic modification.
    ============================================================ */
 
-/* Responsive table scroll wrapper */
-.table-responsive-wrapper {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+/* Root Fluid Typography & Safety */
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
   width: 100%;
+  min-height: 100vh;
 }
 
-/* Horizontal-scroll tab bars (Admin / Expenditure) */
-.tabs-scroll-x {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
+/* Fluid Responsive Typography */
+h1 {
+  font-size: clamp(1.5rem, 3.5vw + 0.5rem, 2.75rem) !important;
+  line-height: 1.15 !important;
 }
-.tabs-scroll-x::-webkit-scrollbar { display: none; }
 
-/* Notification / user dropdown: prevent overflow on narrow phones */
+h2 {
+  font-size: clamp(1.2rem, 2.2vw + 0.4rem, 2rem) !important;
+  line-height: 1.25 !important;
+}
+
+h3 {
+  font-size: clamp(1rem, 1.5vw + 0.3rem, 1.4rem) !important;
+}
+
+/* Universal Table Responsive Wrapper */
+.table-responsive-wrapper,
+.table-container {
+  width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin;
+}
+
+/* Horizontal Scrolling Tab Bars */
+.tabs-scroll-x,
+.admin-tabs-bar {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+  white-space: nowrap !important;
+}
+.tabs-scroll-x::-webkit-scrollbar,
+.admin-tabs-bar::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Dropdown & Popover Safety Boundary */
 .dropdown-menu-card {
-  max-width: calc(100vw - 2rem) !important;
+  max-width: calc(100vw - 1.5rem) !important;
 }
 
-/* ── XS breakpoint (320px – 374px) ─────────────────────────────────── */
-@media (max-width: 374px) {
-  /* Give page containers proper horizontal padding on tiny phones */
+/* Responsive Modal Containers */
+.modal-content,
+[role="dialog"] > div {
+  max-height: 90vh !important;
+  max-height: 90dvh !important;
+  overflow-y: auto !important;
+  margin: auto !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINT 1: Micro & Foldable Devices (280px – 359px)
+   (Samsung Galaxy Fold cover screen, Apple Watch, ultra-compact)
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 359px) {
   .max-w-7xl,
   .page-container {
     width: 100% !important;
     max-width: 100% !important;
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
   }
 
-  /* Force single column on very small screens */
-  .grid-cols-3 {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  /* Stat card min-height reduction for tiny screens */
-  .stat-card {
-    min-height: unset !important;
-    padding: 0.85rem !important;
-    gap: 0.75rem !important;
-  }
-
-  /* Section headers: reduce icon size */
-  .section-header .section-icon {
-    width: 2rem !important;
-    height: 2rem !important;
-  }
-
-  /* Welcome banner padding */
-  .welcome-banner {
-    padding: 1.25rem !important;
-  }
-
-  /* Buttons: keep usable but don't overflow */
-  .btn {
-    font-size: 0.78rem !important;
-    padding: 0.55rem 1rem !important;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* Navbar logo text size reduction */
-  .navbar-capsule .font-black {
-    font-size: 0.8rem;
-  }
-
-  /* Donation banner padding */
-  .donation-banner {
-    padding: 1.25rem !important;
-  }
-
-  /* Profile card padding */
-  .rounded-\[28px\] {
-    padding: 1rem !important;
-  }
-
-  /* Admin dashboard title */
-  h1.text-2xl {
-    font-size: 1.1rem !important;
-  }
-
-  /* Ensure admin tab bar and expenditure tab switcher scroll, not overflow */
-  [class*="border-b"][class*="gap-6"],
-  [class*="w-fit"][class*="rounded-2xl"] {
-    width: 100% !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    flex-wrap: nowrap !important;
-    white-space: nowrap !important;
-    scrollbar-width: none !important;
-  }
-  [class*="border-b"][class*="gap-6"]::-webkit-scrollbar,
-  [class*="w-fit"][class*="rounded-2xl"]::-webkit-scrollbar { display: none !important; }
-}
-
-/* ── SM breakpoint helpers (375–639px) ──────────────────────────────── */
-@media (max-width: 639px) {
-  /* Ensure admin stat card grid doesn't overflow */
-  .grid.grid-cols-2.lg\:grid-cols-5 {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  /* Expenditure tab switcher: allow wrapping on phones */
-  .flex.items-center.gap-2.p-1\.5.bg-cream-100\/70 {
-    width: 100% !important;
-    flex-wrap: wrap !important;
-  }
-
-  /* Admin tab bar: horizontal scroll on mobile */
-  .flex.border-b.border-cream-200.gap-6 {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    flex-wrap: nowrap !important;
-    padding-bottom: 1px; /* prevent border clipping */
-  }
-  .flex.border-b.border-cream-200.gap-6::-webkit-scrollbar { display: none !important; }
-
-  /* Notification dropdown: constrain on small screens */
-  .absolute.right-0.mt-2\.5.w-80 {
-    width: min(320px, calc(100vw - 1.5rem)) !important;
-    right: 0 !important;
-  }
-
-  /* Dashboard gallery grid: keep images proportional */
-  .grid-cols-3.gap-3\.5 {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  /* Make footer columns stack cleanly */
-  footer .grid.grid-cols-1.md\:grid-cols-3 {
+  /* Force single column for cards */
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4,
+  .grid-cols-5,
+  .grid-cols-6 {
     grid-template-columns: 1fr !important;
   }
 
-  /* Events and announcements header row: don't overflow */
-  .flex.justify-between.items-center {
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  /* Compact button padding */
+  .btn,
+  .saffron-gradient-btn {
+    font-size: 0.72rem !important;
+    padding: 0.45rem 0.75rem !important;
+    white-space: normal !important;
+    text-align: center !important;
   }
 
-  /* Donation step indicator */
-  .donate-step-indicator {
-    gap: 0.25rem !important;
+  /* Stat cards */
+  .stat-card {
+    min-height: unset !important;
+    padding: 0.65rem 0.85rem !important;
+    gap: 0.5rem !important;
+  }
+  .stat-card .stat-number {
+    font-size: 1.3rem !important;
+  }
+
+  /* Welcome Hero Banner */
+  .welcome-banner {
+    padding: 1rem !important;
+    border-radius: 1rem !important;
+  }
+
+  /* Navbar Logo & Controls */
+  .navbar-capsule {
+    padding: 0.35rem 0.65rem !important;
+  }
+  .navbar-capsule .font-black {
+    font-size: 0.75rem !important;
   }
 }
 
-/* ── Touch target compliance (all devices) ──────────────────────────── */
-@media (pointer: coarse) {
-  /* Ensure all interactive elements have adequate touch targets */
-  button:not([class*="p-"]):not([class*="py-"]):not([class*="px-"]) {
-    min-height: 44px;
-    min-width: 44px;
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINT 2: Standard Mobile (360px – 480px)
+   (iPhone 12/13/14/15/16 Pro, Galaxy S22/S23/S24, Pixel 7/8)
+   ───────────────────────────────────────────────────────────── */
+@media (min-width: 360px) and (max-width: 480px) {
+  .max-w-7xl,
+  .page-container {
+    width: 100% !important;
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
+  }
+
+  /* Stacking multi-column layouts */
+  .grid-cols-3,
+  .grid-cols-4,
+  .grid-cols-5,
+  .grid-cols-6 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 2-column layout for stat counters */
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.65rem !important;
+  }
+
+  .stat-card {
+    padding: 0.85rem 1rem !important;
+  }
+  .stat-card .stat-number {
+    font-size: 1.5rem !important;
+  }
+
+  /* Notification dropdown fitting */
+  .dropdown-menu-card {
+    width: calc(100vw - 1.75rem) !important;
+    right: 0 !important;
+  }
+
+  /* Tab bars scroll cleanly */
+  .tabs-container {
+    overflow-x: auto !important;
   }
 }
 
-/* ── Landscape phone (e.g. 568×320, 667×375) ─────────────────────────
-   Prevent tall vertical layouts from clipping when height is limited   */
-@media (max-height: 500px) and (orientation: landscape) {
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINT 3: Phablets & Large Mobiles (481px – 639px)
+   (iPhone Pro Max, Galaxy Plus/Ultra)
+   ───────────────────────────────────────────────────────────── */
+@media (min-width: 481px) and (max-width: 639px) {
+  .max-w-7xl,
+  .page-container {
+    padding-left: 1.15rem !important;
+    padding-right: 1.15rem !important;
+  }
+
+  .grid-cols-3,
+  .grid-cols-4,
+  .grid-cols-5,
+  .grid-cols-6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.85rem !important;
+  }
+
+  .admin-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINT 4: Small Tablets & Landscape Mobiles (640px – 767px)
+   (iPad Mini portrait, Foldables unfolded)
+   ───────────────────────────────────────────────────────────── */
+@media (min-width: 640px) and (max-width: 767px) {
+  .max-w-7xl,
+  .page-container {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+
+  .grid-cols-4,
+  .grid-cols-5,
+  .grid-cols-6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINT 5: Standard Tablets (768px – 1023px)
+   (iPad Air, iPad 10th Gen, Surface Go, Galaxy Tab portrait)
+   ───────────────────────────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .max-w-7xl,
+  .page-container {
+    padding-left: 1.75rem !important;
+    padding-right: 1.75rem !important;
+  }
+
+  .grid-cols-4,
+  .grid-cols-5,
+  .grid-cols-6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .dashboard-main-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINT 6: Laptops & Landscape Tablets (1024px – 1279px)
+   (iPad Pro landscape, MacBook Air 13", Chromebooks)
+   ───────────────────────────────────────────────────────────── */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .max-w-7xl,
+  .page-container {
+    max-width: 1040px !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+
+  .dashboard-main-grid {
+    grid-template-columns: minmax(0, 1.75fr) minmax(320px, 0.95fr) !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINT 7: Standard Desktop (1280px – 1439px)
+   (1080p desktop monitors, 15-16" laptops)
+   ───────────────────────────────────────────────────────────── */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .max-w-7xl,
+  .page-container {
+    max-width: 1240px !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINT 8: Large Desktop & QHD (1440px – 1919px)
+   (1440p / 2K monitors, 27" iMac)
+   ───────────────────────────────────────────────────────────── */
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .max-w-7xl,
+  .page-container {
+    max-width: 1400px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .stat-card {
+    padding: 1.4rem 1.75rem !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINT 9: Ultra-Wide & 4K Displays (1920px – 3840px+)
+   (34" Ultrawide, 4K UHD monitors, 49" Super Ultrawide)
+   ───────────────────────────────────────────────────────────── */
+@media (min-width: 1920px) {
+  .max-w-7xl,
+  .page-container {
+    max-width: 1650px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  body {
+    font-size: 16.5px;
+  }
+
+  .navbar-capsule {
+    max-width: 1650px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINT 10: Landscape Mobile Mode
+   (e.g. 667×375, 844×390, 932×430 in landscape orientation)
+   ───────────────────────────────────────────────────────────── */
+@media (max-height: 520px) and (orientation: landscape) {
   .min-h-screen {
     min-height: unset !important;
   }
-  .py-24 {
+  .py-24,
+  .py-20,
+  .py-16 {
     padding-top: 2rem !important;
     padding-bottom: 2rem !important;
   }
+  .welcome-banner {
+    padding: 1.25rem !important;
+  }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   TOUCH ACCESSIBILITY & TAP TARGETS
+   ───────────────────────────────────────────────────────────── */
+@media (pointer: coarse) {
+  button,
+  a[role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+  }
+}
+
 
