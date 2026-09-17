@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 const EventCard = ({ event, onEdit, onDelete }) => {
   const { user } = useAuth();
-  const { language, t, translateAddress } = useLanguage();
+  const { language, t, translateAddress, translateText } = useLanguage();
   const isAdmin = user && user.role === 'admin';
 
   const formatDate = (dateString) => {
@@ -37,14 +37,14 @@ const EventCard = ({ event, onEdit, onDelete }) => {
 
         {/* Title */}
         <h3 className="text-base sm:text-lg xl:text-xl font-bold text-[var(--text-primary)] group-hover:text-saffron-600 transition-colors mb-3 leading-snug">
-          {event.title}
+          {translateText(event.title, language)}
         </h3>
 
         {/* Meta */}
         <div className="space-y-2 text-xs sm:text-sm text-[var(--text-muted)] mb-4">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-gold-500 shrink-0" />
-            <span>{event.time}</span>
+            <span>{translateText(event.time, language)}</span>
           </div>
           <div className="flex items-start gap-2">
             <MapPin className="w-4 h-4 text-gold-500 shrink-0 mt-0.5" />
@@ -54,7 +54,7 @@ const EventCard = ({ event, onEdit, onDelete }) => {
 
         {/* Description */}
         <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed border-t border-[var(--border)] pt-3.5 mt-auto">
-          {event.description}
+          {translateText(event.description, language)}
         </p>
       </div>
 

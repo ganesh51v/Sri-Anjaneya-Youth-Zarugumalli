@@ -52,6 +52,73 @@ export const TELUGU_PHRASES = [
   ['education support', 'విద్యా సహాయం'],
   ['blood donation camp', 'రక్తదాన శిబిరం'],
 
+  // Upcoming Events, Festivals & Detailed Descriptions
+  ['ganesh immersion (ganesh visarjan) marks the end of the ganesh chaturthi celebrations. devotees carry lord ganesha\'s idol in a joyful procession and immerse it in water with prayers and devotion. it symbolizes the cycle of creation and dissolution.', 'వినాయక నిమజ్జనం (గణేష్ విసర్జన్) వినాయక చవితి వేడుకల ముగింపును సూచిస్తుంది. భక్తులు శ్రీ గణేశుని విగ్రహాన్ని భక్తిశ్రద్ధల ఊరేగింపుతో తీసుకెళ్లి ప్రార్థనలతో జలాల్లో నిమజ్జనం చేస్తారు. ఇది సృష్టి మరియు లయాల చక్రాన్ని సూచిస్తుంది.'],
+  ['ganesh immersion (ganesh visarjan) marks the end of the ganesh chaturthi celebrations. devotees carry lord ganesha\'s idol in a joyful procession and immerse it in water with prayers and devotion.', 'వినాయక నిమజ్జనం (గణేష్ విసర్జన్) వినాయక చవితి వేడుకల ముగింపును సూచిస్తుంది. భక్తులు శ్రీ గణేశుని విగ్రహాన్ని భక్తిశ్రద్ధల ఊరేగింపుతో తీసుకెళ్లి ప్రార్థనలతో జలాల్లో నిమజ్జనం చేస్తారు.'],
+  ['ganesh immersion (ganesh visarjan) marks the end of the ganesh chaturthi celebrations', 'వినాయక నిమజ్జనం (గణేష్ విసర్జన్) వినాయక చవితి వేడుకల ముగింపును సూచిస్తుంది'],
+  ['devotees carry lord ganesha\'s idol in a joyful procession and immerse it in water with prayers and devotion', 'భక్తులు శ్రీ గణేశుని విగ్రహాన్ని భక్తిశ్రద్ధల ఊరేగింపుతో తీసుకెళ్లి ప్రార్థనలతో జలాల్లో నిమజ్జనం చేస్తారు'],
+  ['marks the end of the ganesh chaturthi celebrations', 'వినాయక చవితి వేడుకల ముగింపును సూచిస్తుంది'],
+  ['devotees carry lord ganesha\'s idol in a joyful procession', 'భక్తులు శ్రీ గణేశుని విగ్రహాన్ని ఆనందోత్సాహాల ఊరేగింపుతో తీసుకెళ్తారు'],
+  ['and immerse it in water with prayers and devotion', 'మరియు ప్రార్థనలు, భక్తిశ్రద్ధలతో జలాల్లో నిమజ్జనం చేస్తారు'],
+  ['it symbolizes the cycle of creation and dissolution.', 'ఇది సృష్టి మరియు లయాల చక్రాన్ని సూచిస్తుంది.'],
+  ['it symbolizes the cycle of creation and dissolution', 'ఇది సృష్టి మరియు లయాల చక్రాన్ని సూచిస్తుంది'],
+  ['it symbolizes', 'ఇది సూచిస్తుంది'],
+  ['it...', 'ఇది...'],
+  ['it..', 'ఇది..'],
+  ['it.', 'ఇది.'],
+  ['ganesh immersion', 'వినాయక నిమజ్జనం'],
+  ['ganesh visarjan', 'గణేష్ నిమజ్జనం'],
+  ['ganesh chaturthi celebrations', 'వినాయక చవితి వేడుకలు'],
+  ['ganesh chaturthi', 'వినాయక చవితి'],
+  ['vinayaka chavithi', 'వినాయక చవితి'],
+  ['vinayaka chaturthi', 'వినాయక చవితి'],
+  ['lord ganesha\'s idol', 'శ్రీ గణపతి విగ్రహం'],
+  ['lord ganesha', 'శ్రీ గణేషుడు'],
+
+  ['sri hanuman jayanthi celebrations & annadanam', 'శ్రీ హనుమాన్ జయంతి వేడుకలు & అన్నదానం'],
+  ['sri hanuman jayanthi', 'శ్రీ హనుమాన్ జయంతి'],
+  ['hanuman jayanthi', 'హనుమాన్ జయంతి'],
+  ['grand abhishekam, devotional bhajans, and massive annadanam (free meals distribution) for all villagers.', 'గ్రామస్తులందరికీ ఘన అభిషేకం, భక్తి భజనలు మరియు భారీ అన్నదానం (ఉచిత భోజన వితరణ).'],
+  ['grand abhishekam, devotional bhajans, and massive annadanam', 'ఘన అభిషేకం, భక్తి భజనలు మరియు భారీ అన్నదానం'],
+  ['free meals distribution for all villagers', 'గ్రామస్తులందరికీ ఉచిత భోజన వితరణ'],
+  ['free meals distribution', 'ఉచిత భోజన వితరణ'],
+
+  ['village tree plantation drive (green zarugumalli)', 'గ్రామ వృక్షారోపణ కార్యక్రమం (హరిత జరుగమల్లి)'],
+  ['village tree plantation drive', 'గ్రామ వృక్షారోపణ కార్యక్రమం'],
+  ['tree plantation drive', 'వృక్షారోపణ కార్యక్రమం'],
+  ['green zarugumalli', 'హరిత జరుగమల్లి'],
+  ['aiming to plant 200+ saplings to create a greener environment for our village.', 'మన గ్రామాన్ని పచ్చదనంతో తీర్చిదిద్దడానికి 200+ మొక్కలను నాటడం లక్ష్యంగా పెట్టుకున్నాము.'],
+
+  ['sri rama navami shobha yatra & panakam distribution', 'శ్రీరామనవమి శోభాయాత్ర & పానకం పంపిణీ'],
+  ['sri rama navami', 'శ్రీరామనవమి'],
+  ['srirama navami', 'శ్రీరామనవమి'],
+  ['shobha yatra & panakam distribution', 'శోభాయాత్ర & పానకం పంపిణీ'],
+  ['panakam distribution', 'పానకం పంపిణీ'],
+  ['celebrated ram navami with spiritual shobha yatra around the village and distributed cool panakam/vadapappu.', 'గ్రామంలో ఆధ్యాత్మిక శోభాయాత్రతో శ్రీరామనవమిని జరుపుకున్నాము మరియు చల్లని పానకం/వడపప్పు పంపిణీ చేశాము.'],
+
+  ['free medical camp & blood donation drive', 'ఉచిత వైద్య శిబిరం & రక్తదాన శిబిరం'],
+  ['free medical camp', 'ఉచిత వైద్య శిబిరం'],
+  ['blood donation drive', 'రక్తదాన శిబిరం'],
+  ['collaborated with rims hospital to organize a free check-up and blood donation, serving 150+ villagers.', 'రిమ్స్ ఆసుపత్రి సహకారంతో 150+ గ్రామస్తులకు ఉచిత వైద్య పరీక్షలు మరియు రక్తదానం నిర్వహించబడింది.'],
+
+  ['sri hanuman jayanthi volunteer signups open', 'శ్రీ హనుమాన్ జయంతి వాలంటీర్ నమోదు ప్రారంభం'],
+  ['all youth members are requested to gather at the temple premises on friday evening (6:00 pm) to plan the duties for hanuman jayanthi annadanam.', 'హనుమాన్ జయంతి అన్నదానం బాధ్యతలను ప్రణాళిక చేయడానికి యువ సభ్యులందరూ శుక్రవారం సాయంత్రం (సాయంత్రం 6:00) ఆలయ ప్రాంగణానికి రావాలని కోరుతున్నాము.'],
+  ['general body meeting - agenda: seva activities', 'సర్వసభ్య సమావేశం - అజెండా: సేవా కార్యక్రమాలు'],
+  ['we are organizing our monthly youth meet this sunday morning at 10:00 am in the panchayat library hall. attendance is mandatory for all registered members.', 'ఈ ఆదివారం ఉదయం 10:00 గంటలకు పంచాయతీ లైబ్రరీ హాలులో మా నెలవారీ యువజన సమావేశాన్ని నిర్వహిస్తున్నాము. నమోదైన సభ్యులందరూ తప్పక హాజరు కావాలి.'],
+  ['heartfelt thanks to all blood donors', 'రక్తదాతలందరికీ హృదయపూర్వక ధన్యవాదాలు'],
+  ['the blood donation camp was a massive success! we collected 62 units of blood. thank you to everyone who stepped forward to save lives.', 'రక్తదాన శిబిరం ఘన విజయం సాధించింది! మేము 62 యూనిట్ల రక్తాన్ని సేకరించాము. ప్రాణాలు కాపాడేందుకు ముందుకు వచ్చిన ప్రతి ఒక్కరికీ ధన్యవాదాలు.'],
+
+  ['ayodhya deepotsavam', 'అయోధ్య దీపోత్సవం'],
+  ['deepotsavam', 'దీపోత్సవం'],
+  ['diwali celebrations', 'దీపావళి వేడుకలు'],
+  ['sankranti celebrations', 'సంక్రాంతి వేడుకలు'],
+  ['ugadi celebrations', 'ఉగాది వేడుకలు'],
+  ['maha shivaratri', 'మహాశివరాత్రి'],
+  ['cleanliness drive', 'పరిశుభ్రతా సేవ'],
+  ['general body meeting', 'సర్వసభ్య సమావేశం'],
+  ['shobha yatra', 'శోభాయాత్ర'],
+  ['prayers and devotion', 'ప్రార్థనలు మరియు భక్తిశ్రద్ధలు'],
+
   // Payment methods
   ['bhim upi / qr', 'BHIM UPI / QR కోడ్'],
   ['upi qr', 'UPI QR కోడ్'],
@@ -506,6 +573,15 @@ export function translatePurpose(purpose, language = 'te') {
   return TELUGU_DICTIONARY[lower] || purpose;
 }
 
+// Pre-sort phrases by English string length descending for greedy matching
+let _cachedSortedPhrases = null;
+function getSortedPhrases() {
+  if (!_cachedSortedPhrases) {
+    _cachedSortedPhrases = [...TELUGU_PHRASES].sort((a, b) => b[0].length - a[0].length);
+  }
+  return _cachedSortedPhrases;
+}
+
 /**
  * General text translator. Checks phrases first, dictionary second,
  * then translates token-by-token.
@@ -522,7 +598,7 @@ export function translateText(text, language = 'te') {
 
   const lower = trimmed.toLowerCase();
 
-  // 1. Direct phrase match
+  // 1. Direct exact phrase match
   for (const [enPhrase, tePhrase] of TELUGU_PHRASES) {
     if (lower === enPhrase) return tePhrase;
   }
@@ -530,6 +606,35 @@ export function translateText(text, language = 'te') {
   // 2. Direct dictionary match
   if (TELUGU_DICTIONARY[lower]) return TELUGU_DICTIONARY[lower];
 
-  // 3. Tokenize
+  // 3. Multi-phrase substring replacement (from longest to shortest)
+  let replaced = trimmed;
+  let hasReplacedAny = false;
+  const sorted = getSortedPhrases();
+
+  for (const [enPhrase, tePhrase] of sorted) {
+    if (enPhrase.length > 2) {
+      const escaped = enPhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escaped, 'gi');
+      if (regex.test(replaced)) {
+        replaced = replaced.replace(regex, tePhrase);
+        hasReplacedAny = true;
+      }
+    }
+  }
+
+  if (hasReplacedAny) {
+    // Also replace any remaining standalone dictionary words
+    for (const [word, teWord] of Object.entries(TELUGU_DICTIONARY)) {
+      if (word.length > 2) {
+        const regex = new RegExp(`\\b${word}\\b`, 'gi');
+        if (regex.test(replaced)) {
+          replaced = replaced.replace(regex, teWord);
+        }
+      }
+    }
+    return replaced;
+  }
+
+  // 4. Tokenize word-by-word fallback
   return translateName(trimmed, language);
 }

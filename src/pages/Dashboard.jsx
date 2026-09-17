@@ -12,7 +12,19 @@ import { heroEntrance, staggerScaleFade, staggerFadeUp, staggerSlideLeft, fadeUp
 
 const Dashboard = () => {
   const { user, checkEmailVerification } = useAuth();
-  const { language, t, translateName } = useLanguage();
+  const { language, t, translateName, translateAddress, translateText } = useLanguage();
+
+  const formatEventDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return dateString;
+      return d.toLocaleDateString(language === 'en' ? 'en-IN' : 'te-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return dateString;
+    }
+  };
+
   const [stats, setStats] = useState({ members: 0, events: 0, announcements: 0, donationCount: 0, totalAmount: 0 });
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [recentAnnouncements, setRecentAnnouncements] = useState([]);
@@ -223,18 +235,18 @@ const Dashboard = () => {
                   <div key={event.id} className="card-premium p-5 xl:p-6 flex flex-col group">
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <span className="badge badge-saffron text-xs xl:text-sm">
-                        {event.date}
+                        {formatEventDate(event.date)}
                       </span>
                     </div>
                     <h3 className="text-sm sm:text-base xl:text-lg font-bold text-[var(--text-primary)] mb-2 truncate group-hover:text-saffron-600 transition-colors">
-                      {event.title}
+                      {translateText(event.title)}
                     </h3>
                     <p className="text-xs sm:text-sm text-[var(--text-muted)] line-clamp-2 leading-relaxed mb-4">
-                      {event.description}
+                      {translateText(event.description)}
                     </p>
                     <div className="text-xs xl:text-sm text-[var(--text-subtle)] font-medium flex items-center gap-1.5 mt-auto">
                       <MapPin className="w-4 h-4 xl:w-4.5 xl:h-4.5 text-gold-500 shrink-0" />
-                      <span className="truncate">{event.location}</span>
+                      <span className="truncate">{translateAddress(event.location)}</span>
                     </div>
                   </div>
                 ))}
@@ -269,10 +281,10 @@ const Dashboard = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-xs sm:text-sm xl:text-base font-bold text-[var(--text-primary)] mb-1 truncate">
-                        {ann.title}
+                        {translateText(ann.title)}
                       </h3>
                       <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed line-clamp-2">
-                        {ann.message}
+                        {translateText(ann.message)}
                       </p>
                       <span className="text-[10px] xl:text-xs text-[var(--text-subtle)] font-medium mt-1.5 block">
                         {t('postedOn')} {new Date(ann.createdAt).toLocaleDateString(language === 'en' ? 'en-IN' : 'te-IN')}
