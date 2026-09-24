@@ -240,6 +240,74 @@ export default async function handler(req, res) {
         break;
       }
 
+      case 'announcement': {
+        const annTitle = payload?.title || 'New Announcement';
+        const annMessage = payload?.message || '';
+        const annDate = payload?.date || new Date().toLocaleDateString('en-IN');
+        htmlContent = `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #fdfcf9;">
+            <div style="height: 6px; background: linear-gradient(to right, #ff7700, #d4af37, #dc2626); border-top-left-radius: 16px; border-top-right-radius: 16px; margin: -24px -24px 20px -24px;"></div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+              <span style="background-color: #fff9f2; color: #d96100; border: 1px solid #ffeacc; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+                📢 Community Announcement
+              </span>
+              <h1 style="color: #ff7700; margin-top: 12px; font-size: 22px; font-weight: 800;">${annTitle}</h1>
+            </div>
+
+            <div style="background-color: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #f7f2e4; margin: 20px 0; line-height: 1.7; color: #334155; font-size: 14px;">
+              ${annMessage}
+            </div>
+
+            <p style="font-size: 12px; color: #64748b; text-align: center;">Posted on ${annDate}</p>
+
+            <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+              Sri Anjaneya Youth Association • Zarugumalli, Prakasam District, Andhra Pradesh
+            </div>
+          </div>
+        `;
+        break;
+      }
+
+      case 'event': {
+        const evTitle = payload?.title || 'New Event';
+        const evDate = payload?.date || '';
+        const evTime = payload?.time || '';
+        const evLocation = payload?.location || 'Zarugumalli';
+        const evDesc = payload?.description || '';
+        htmlContent = `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #fdfcf9;">
+            <div style="height: 6px; background: linear-gradient(to right, #ff7700, #d4af37, #dc2626); border-top-left-radius: 16px; border-top-right-radius: 16px; margin: -24px -24px 20px -24px;"></div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+              <span style="background-color: #fff9f2; color: #d96100; border: 1px solid #ffeacc; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+                📅 Event Notification
+              </span>
+              <h1 style="color: #ff7700; margin-top: 12px; font-size: 22px; font-weight: 800;">${evTitle}</h1>
+            </div>
+
+            <div style="background-color: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #f7f2e4; margin: 20px 0;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;">
+                ${evDate ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">📅 Date</td><td style="padding: 10px 0; font-weight: bold; text-align: right;">${evDate}</td></tr>` : ''}
+                ${evTime ? `<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 10px 0; color: #64748b;">⏰ Time</td><td style="padding: 10px 0; font-weight: bold; text-align: right;">${evTime}</td></tr>` : ''}
+                <tr><td style="padding: 10px 0; color: #64748b;">📍 Location</td><td style="padding: 10px 0; font-weight: bold; text-align: right;">${evLocation}</td></tr>
+              </table>
+            </div>
+
+            ${evDesc ? `<p style="font-size: 14px; color: #475569; line-height: 1.6; padding: 0 4px;">${evDesc}</p>` : ''}
+
+            <p style="font-size: 12px; color: #64748b; text-align: center; margin-top: 20px;">
+              🙏 May Lord Anjaneya Swamy bless this auspicious event!
+            </p>
+
+            <div style="text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+              Sri Anjaneya Youth Association • Zarugumalli, Prakasam District, Andhra Pradesh
+            </div>
+          </div>
+        `;
+        break;
+      }
+
       default: {
         htmlContent = payload?.html || payload?.text || '<p>Notification from Sri Anjaneya Youth Zarugumalli</p>';
       }
