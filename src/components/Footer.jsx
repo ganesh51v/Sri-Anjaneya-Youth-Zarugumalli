@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Mail, Phone, MapPin, Heart, Home, Users, Calendar, Image, Bell, User, Banknote } from 'lucide-react';
+import { Mail, Phone, MapPin, Heart, Home, Users, Calendar, Image, Bell, User, Banknote, Sparkles } from 'lucide-react';
 
 const Footer = () => {
   const { user } = useAuth();
@@ -11,6 +11,7 @@ const Footer = () => {
 
   const navLinks = [
     { to: '/', icon: Home, label: t('dashboard') },
+    { to: '/landing', icon: Sparkles, label: language === 'te' ? 'సంస్థ వివరాలు' : 'About Seva' },
     { to: '/members', icon: Users, label: t('members') },
     { to: '/events', icon: Calendar, label: t('events') },
     { to: '/gallery', icon: Image, label: t('gallery') },

@@ -19,6 +19,7 @@ import {
   Moon,
   Heart,
   Banknote,
+  Sparkles,
 } from "lucide-react";
 import { navbarEntrance } from "../utils/animate";
 
@@ -147,6 +148,7 @@ const Navbar = () => {
 
   const navItems = [
     { name: t("dashboard"), path: "/", icon: Home, show: !!user },
+    { name: language === "te" ? "పరిచయం" : "About Seva", path: "/landing", icon: Sparkles, show: !!user },
     { name: t("members"), path: "/members", icon: Users, show: !!user },
     { name: t("events"), path: "/events", icon: Calendar, show: !!user },
     { name: t("gallery"), path: "/gallery", icon: Image, show: !!user },

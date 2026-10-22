@@ -60,6 +60,7 @@ function OfflineBanner() {
 // Components
 import ChatbotWidget from "./components/chatbot/ChatbotWidget";
 // Pages
+import Landing from "./pages/Landing";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
@@ -119,6 +120,8 @@ function App() {
               <main className="flex-grow flex flex-col">
                 <Routes>
                   {/* Public Routes */}
+                  <Route path="/landing" element={<Landing />} />
+                  <Route path="/welcome" element={<Landing />} />
                   <Route path="/signin" element={<SignIn />} />
                   <Route path="/signup" element={<SignUp />} />
                   {/* Protected Routes */}
