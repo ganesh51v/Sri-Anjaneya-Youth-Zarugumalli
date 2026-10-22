@@ -3,9 +3,8 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate,
 } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LanguageProvider } from "./context/LanguageContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -105,6 +104,25 @@ class ErrorBoundary extends Component {
   }
 }
 
+// HomeRoute: Renders Dashboard if user is authenticated; renders Landing before login
+function HomeRoute() {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 border-4 border-saffron-200 dark:border-saffron-900 rounded-full" />
+          <div className="absolute inset-0 border-4 border-t-saffron-500 rounded-full animate-spin" />
+        </div>
+        <p className="mt-4 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+          Jai Hanuman...
+        </p>
+      </div>
+    );
+  }
+  return user ? <Dashboard /> : <Landing />;
+}
+
 function App() {
   return (
     <Router>
@@ -119,14 +137,18 @@ function App() {
               <Navbar />
               <main className="flex-grow flex flex-col">
                 <Routes>
+                  {/* Root Route: Shows Landing before login, Dashboard when authenticated */}
+                  <Route path="/" element={<HomeRoute />} />
+
                   {/* Public Routes */}
                   <Route path="/landing" element={<Landing />} />
                   <Route path="/welcome" element={<Landing />} />
                   <Route path="/signin" element={<SignIn />} />
                   <Route path="/signup" element={<SignUp />} />
-                  {/* Protected Routes */}
+
+                  {/* Explicit Dashboard Protected Route */}
                   <Route
-                    path="/"
+                    path="/dashboard"
                     element={
                       <ProtectedRoute>
                         <Dashboard />
