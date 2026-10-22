@@ -3,7 +3,7 @@
  * Uses the named `animate` export from animejs v4.
  * All animations respect the `prefers-reduced-motion` accessibility setting.
  */
-import { animate, createTimeline, utils } from 'animejs';
+import { animate } from 'animejs';
 
 /** Check if the user prefers reduced motion */
 const prefersReducedMotion = () =>

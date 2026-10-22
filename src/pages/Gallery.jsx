@@ -136,6 +136,7 @@ const Gallery = () => {
                     src={album.coverImageUrl} 
                     alt={album.title || 'Sri Anjaneya Youth Zarugumalli Album Cover'} 
                     loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   {/* Photos count badge */}
@@ -218,6 +219,7 @@ const Gallery = () => {
                         src={url}
                         alt={`${selectedAlbum.title || 'Sri Anjaneya Youth Photo'} - Image ${idx + 1}`}
                         loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>

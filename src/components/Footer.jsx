@@ -35,6 +35,8 @@ const Footer = () => {
                 alt="Sri Anjaneya Youth Zarugumalli Logo"
                 width="40"
                 height="40"
+                loading="lazy"
+                decoding="async"
                 className="w-8 h-8 sm:w-10 sm:h-10 xl:w-11 xl:h-11 rounded-full object-cover border border-saffron-300/50"
               />
               <div>

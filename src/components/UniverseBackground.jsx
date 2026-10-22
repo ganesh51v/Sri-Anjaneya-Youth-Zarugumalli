@@ -309,17 +309,34 @@ const UniverseBackground = () => {
 
     render();
 
-    // Resize listener
+    // Visibility listener: pause rendering loop when tab is hidden to save CPU & battery
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animationFrameId);
+      } else {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Resize listener with debounced canvas sizing
+    let resizeTimer;
     const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }, 150);
     };
     window.addEventListener('resize', handleResize);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
       clearInterval(cometInterval);
+      clearTimeout(resizeTimer);
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isLight]);
 
@@ -377,7 +394,7 @@ const UniverseBackground = () => {
       <div className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden">
         <div
           ref={nebula1Ref}
-          className="absolute rounded-full filter blur-[85px] transition-opacity duration-500"
+          className="absolute rounded-full filter blur-[85px] transition-opacity duration-500 will-change-transform"
           style={{
             width: '580px',
             height: '580px',
@@ -385,11 +402,12 @@ const UniverseBackground = () => {
             top: '-10%',
             right: '-5%',
             opacity: isLight ? 0.07 : 0.16,
+            contain: 'layout paint',
           }}
         />
         <div
           ref={nebula2Ref}
-          className="absolute rounded-full filter blur-[85px] transition-opacity duration-500"
+          className="absolute rounded-full filter blur-[85px] transition-opacity duration-500 will-change-transform"
           style={{
             width: '680px',
             height: '680px',
@@ -397,11 +415,12 @@ const UniverseBackground = () => {
             bottom: '-15%',
             left: '-10%',
             opacity: isLight ? 0.07 : 0.16,
+            contain: 'layout paint',
           }}
         />
         <div
           ref={nebula3Ref}
-          className="absolute rounded-full filter blur-[85px] transition-opacity duration-500"
+          className="absolute rounded-full filter blur-[85px] transition-opacity duration-500 will-change-transform"
           style={{
             width: '440px',
             height: '440px',
@@ -409,6 +428,7 @@ const UniverseBackground = () => {
             top: '35%',
             left: '25%',
             opacity: isLight ? 0.04 : 0.08,
+            contain: 'layout paint',
           }}
         />
       </div>

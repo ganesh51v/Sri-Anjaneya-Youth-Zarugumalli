@@ -367,6 +367,7 @@ const Landing = () => {
                   alt="Sri Anjaneya Youth Zarugumalli Logo"
                   width="44"
                   height="44"
+                  decoding="async"
                   className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-gold-400 shadow-md group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -657,6 +658,7 @@ const Landing = () => {
                       alt="Sri Anjaneya Youth Zarugumalli Emblem"
                       width="68"
                       height="68"
+                      decoding="async"
                       className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-gold-400 shadow-xl"
                     />
                   </div>
@@ -1101,6 +1103,8 @@ const Landing = () => {
                   alt="Sri Anjaneya Swamy Association Emblem"
                   width="56"
                   height="56"
+                  loading="lazy"
+                  decoding="async"
                   className="relative w-14 h-14 rounded-full object-cover border-2 border-gold-400 shadow-xl"
                 />
               </div>
@@ -1231,6 +1235,8 @@ const Landing = () => {
                     alt="Sri Anjaneya Youth Zarugumalli Logo"
                     width="40"
                     height="40"
+                    loading="lazy"
+                    decoding="async"
                     className="w-10 h-10 rounded-full object-cover border border-saffron-300/50"
                   />
                   <div>

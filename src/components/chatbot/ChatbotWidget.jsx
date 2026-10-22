@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { Bot, MessageSquare, X } from 'lucide-react';
-import ChatWindow from './ChatWindow';
+
+const ChatWindow = lazy(() => import('./ChatWindow'));
 
 const LOCAL_STORAGE_KEY = 'sa_chat_history';
 const MAX_STORED_MESSAGES = 20;
@@ -179,17 +180,19 @@ const ChatbotWidget = () => {
         </div>
       </button>
 
-      {/* Chat Popover Window */}
+      {/* Chat Popover Window (Loaded On-Demand) */}
       {isOpen && (
-        <ChatWindow
-          messages={messages}
-          loading={loading}
-          error={error}
-          onSendMessage={handleSendMessage}
-          onClearHistory={handleClearHistory}
-          onRetry={handleRetry}
-          onClose={() => setIsOpen(false)}
-        />
+        <Suspense fallback={null}>
+          <ChatWindow
+            messages={messages}
+            loading={loading}
+            error={error}
+            onSendMessage={handleSendMessage}
+            onClearHistory={handleClearHistory}
+            onRetry={handleRetry}
+            onClose={() => setIsOpen(false)}
+          />
+        </Suspense>
       )}
     </>
   );

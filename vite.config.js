@@ -1,3 +1,4 @@
+/* global process */
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'fs';
@@ -7,7 +8,6 @@ import { fileURLToPath, pathToFileURL } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load .env file manually so api handlers can read process.env
-// eslint-env node
 function loadEnv() {
   try {
     const envContent = readFileSync(path.join(__dirname, '.env'), 'utf-8');
@@ -20,7 +20,7 @@ function loadEnv() {
       const val = trimmed.slice(eqIdx + 1).trim();
       if (key && typeof process !== 'undefined' && !(key in process.env)) process.env[key] = val;
     });
-  } catch (_) { /* .env missing is fine */ }
+  } catch { /* .env missing is fine */ }
 }
 
 // Vite dev plugin: execute api/*.js serverless handlers directly in the dev server
@@ -88,5 +88,30 @@ function localApiPlugin() {
 }
 
 export default defineConfig({
-  plugins: [react(), localApiPlugin()]
+  plugins: [react(), localApiPlugin()],
+  build: {
+    target: 'es2020',
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('firebase')) {
+              return 'vendor-firebase';
+            }
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('animejs')) {
+              return 'vendor-anime';
+            }
+          }
+        }
+      }
+    }
+  }
 });

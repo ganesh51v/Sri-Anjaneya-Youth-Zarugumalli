@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, Component } from "react";
+import { useState, useEffect, useRef, Component, lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
+  useLocation,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LanguageProvider } from "./context/LanguageContext";
@@ -12,6 +13,44 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import UniverseBackground from "./components/UniverseBackground";
 import { WifiOff, Wifi } from "lucide-react";
+
+// ScrollToTop: Smoothly resets viewport to top or target hash on every route change
+function ScrollToTop() {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      const el = document.querySelector(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname, hash]);
+
+  return null;
+}
+
+// Lightweight, zero-layout-shift branded fallback during route transitions
+function PageLoadingFallback() {
+  return (
+    <div
+      className="flex-1 flex flex-col items-center justify-center min-h-[60vh] py-16 animate-fade-in"
+      role="status"
+      aria-label="Loading page content"
+    >
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 border-4 border-saffron-500/20 rounded-full" />
+        <div className="absolute inset-0 border-4 border-t-saffron-500 border-r-gold-500 rounded-full animate-spin" />
+      </div>
+      <p className="mt-4 text-xs font-bold uppercase tracking-widest text-[var(--text-muted)] animate-pulse">
+        Jai Hanuman...
+      </p>
+    </div>
+  );
+}
+
 // Sticky offline / back-online notification banner
 function OfflineBanner() {
   const [online, setOnline] = useState(navigator.onLine);
@@ -56,22 +95,23 @@ function OfflineBanner() {
     </div>
   );
 }
-// Components
+
+// Lazy-loaded Components & Pages
 import ChatbotWidget from "./components/chatbot/ChatbotWidget";
-// Pages
-import Landing from "./pages/Landing";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
-import Dashboard from "./pages/Dashboard";
-import Members from "./pages/Members";
-import Events from "./pages/Events";
-import Gallery from "./pages/Gallery";
-import Announcements from "./pages/Announcements";
-import Profile from "./pages/Profile";
-import AdminDashboard from "./pages/AdminDashboard";
-import Donate from "./pages/Donate";
-import Expenditure from "./pages/Expenditure";
-import NotFound from "./pages/NotFound";
+
+const Landing = lazy(() => import("./pages/Landing"));
+const SignIn = lazy(() => import("./pages/SignIn"));
+const SignUp = lazy(() => import("./pages/SignUp"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Members = lazy(() => import("./pages/Members"));
+const Events = lazy(() => import("./pages/Events"));
+const Gallery = lazy(() => import("./pages/Gallery"));
+const Announcements = lazy(() => import("./pages/Announcements"));
+const Profile = lazy(() => import("./pages/Profile"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Donate = lazy(() => import("./pages/Donate"));
+const Expenditure = lazy(() => import("./pages/Expenditure"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 // H6: Top-level error boundary — catches render errors that would otherwise blank the screen
 class ErrorBoundary extends Component {
@@ -108,17 +148,7 @@ class ErrorBoundary extends Component {
 function HomeRoute() {
   const { user, loading } = useAuth();
   if (loading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="relative w-12 h-12">
-          <div className="absolute inset-0 border-4 border-saffron-200 dark:border-saffron-900 rounded-full" />
-          <div className="absolute inset-0 border-4 border-t-saffron-500 rounded-full animate-spin" />
-        </div>
-        <p className="mt-4 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
-          Jai Hanuman...
-        </p>
-      </div>
-    );
+    return <PageLoadingFallback />;
   }
   return user ? <Dashboard /> : <Landing />;
 }
@@ -126,6 +156,7 @@ function HomeRoute() {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
@@ -136,9 +167,10 @@ function App() {
               <OfflineBanner />
               <Navbar />
               <main className="flex-grow flex flex-col">
-                <Routes>
-                  {/* Root Route: Shows Landing before login, Dashboard when authenticated */}
-                  <Route path="/" element={<HomeRoute />} />
+                <Suspense fallback={<PageLoadingFallback />}>
+                  <Routes>
+                    {/* Root Route: Shows Landing before login, Dashboard when authenticated */}
+                    <Route path="/" element={<HomeRoute />} />
 
                   {/* Public Routes */}
                   <Route path="/landing" element={<Landing />} />
@@ -221,9 +253,10 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  {/* 404 Not Found route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                    {/* 404 Not Found route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
               </main>
               <ChatbotWidget />
               <Footer />
