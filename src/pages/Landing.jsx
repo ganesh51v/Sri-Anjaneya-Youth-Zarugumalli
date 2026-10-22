@@ -27,6 +27,7 @@ import {
   X,
   Utensils,
   Flame,
+  Bell,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import {
@@ -46,13 +47,13 @@ const Landing = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copiedUPI, setCopiedUPI] = useState(false);
 
-  // Dynamic statistics with resilient default fallback metrics
+  // Live statistics loaded directly from Firebase
   const [stats, setStats] = useState({
-    members: 120,
-    events: 24,
-    announcements: 16,
-    donationsCount: 85,
-    totalDonations: 95000,
+    members: 0,
+    events: 0,
+    announcements: 0,
+    donationsCount: 0,
+    totalDonations: 0,
   });
 
   // Animation element references
@@ -61,8 +62,8 @@ const Landing = () => {
   const statRowRef = useRef(null);
   const membersCountRef = useRef(null);
   const eventsCountRef = useRef(null);
-  const mealsCountRef = useRef(null);
-  const bloodCountRef = useRef(null);
+  const announcementsCountRef = useRef(null);
+  const donationsCountRef = useRef(null);
   const pillarsGridRef = useRef(null);
   const highlightsGridRef = useRef(null);
   const testimonialsRef = useRef(null);
@@ -113,11 +114,11 @@ const Landing = () => {
         );
 
         setStats({
-          members: members.length > 0 ? members.length : 120,
-          events: events.length > 0 ? events.length : 24,
-          announcements: announcements.length > 0 ? announcements.length : 16,
-          donationsCount: approvedDonations.length > 0 ? approvedDonations.length : 85,
-          totalDonations: totalAmount > 0 ? totalAmount : 95000,
+          members: members.length,
+          events: events.length,
+          announcements: announcements.length,
+          donationsCount: approvedDonations.length,
+          totalDonations: totalAmount,
         });
       } catch (err) {
         console.error('Error fetching landing data:', err);
@@ -130,7 +131,7 @@ const Landing = () => {
     };
   }, []);
 
-  // Trigger Anime.js animations on mount
+  // Trigger Anime.js entrance animations on mount
   useEffect(() => {
     if (heroRef.current) heroEntrance(heroRef.current, { delay: 100 });
     if (heroBadgeRef.current) fadeUp(heroBadgeRef.current, { delay: 50, distance: 20 });
@@ -140,11 +141,6 @@ const Landing = () => {
         startDelay: 250,
       });
     }
-
-    if (membersCountRef.current) countUp(membersCountRef.current, stats.members, { delay: 350 });
-    if (eventsCountRef.current) countUp(eventsCountRef.current, stats.events, { delay: 450 });
-    if (mealsCountRef.current) countUp(mealsCountRef.current, 5000, { delay: 550, prefix: '' });
-    if (bloodCountRef.current) countUp(bloodCountRef.current, 500, { delay: 650, prefix: '' });
 
     if (pillarsGridRef.current) {
       staggerFadeUp(pillarsGridRef.current.querySelectorAll(':scope > div'), {
@@ -170,7 +166,23 @@ const Landing = () => {
     if (closingCtaRef.current) {
       fadeUp(closingCtaRef.current, { delay: 700, distance: 30 });
     }
-  }, [stats]);
+  }, []);
+
+  // Animate count-up whenever live stats arrive from Firebase
+  useEffect(() => {
+    if (membersCountRef.current && stats.members > 0) {
+      countUp(membersCountRef.current, stats.members, { delay: 50 });
+    }
+    if (eventsCountRef.current && stats.events > 0) {
+      countUp(eventsCountRef.current, stats.events, { delay: 150 });
+    }
+    if (announcementsCountRef.current && stats.announcements > 0) {
+      countUp(announcementsCountRef.current, stats.announcements, { delay: 250 });
+    }
+    if (donationsCountRef.current && stats.donationsCount > 0) {
+      countUp(donationsCountRef.current, stats.donationsCount, { delay: 350 });
+    }
+  }, [stats.members, stats.events, stats.announcements, stats.donationsCount]);
 
   // Content Data: Core Seva Pillars
   const sevaPillars = [
@@ -747,32 +759,32 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* Stat 3: Meals Distributed */}
+            {/* Stat 3: Announcements */}
             <div className="stat-card hover-glow-saffron" style={{ '--stat-accent': 'var(--devored)' }}>
               <div className="stat-icon bg-devored-500/10 text-devored-600 dark:text-devored-400">
-                <Utensils className="w-6 h-6 xl:w-8 xl:h-8" />
+                <Bell className="w-6 h-6 xl:w-8 xl:h-8" />
               </div>
               <div>
-                <span ref={mealsCountRef} className="stat-number">
-                  5,000+
+                <span ref={announcementsCountRef} className="stat-number">
+                  {stats.announcements}
                 </span>
                 <span className="stat-label">
-                  {language === 'en' ? 'Annadanam Meals Served' : 'అందించిన అన్నప్రసాదాలు'}
+                  {language === 'en' ? 'Announcements & Updates' : 'ప్రకటనలు & సమాచారం'}
                 </span>
               </div>
             </div>
 
-            {/* Stat 4: Blood Units */}
+            {/* Stat 4: Approved Donations */}
             <div className="stat-card hover-glow-gold" style={{ '--stat-accent': '#0f9f6e' }}>
               <div className="stat-icon bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                <Droplet className="w-6 h-6 xl:w-8 xl:h-8" />
+                <Heart className="w-6 h-6 xl:w-8 xl:h-8" />
               </div>
               <div>
-                <span ref={bloodCountRef} className="stat-number">
-                  500+
+                <span ref={donationsCountRef} className="stat-number">
+                  {stats.donationsCount}
                 </span>
                 <span className="stat-label">
-                  {language === 'en' ? 'Blood Units Arranged' : 'అందించిన రక్త నిల్వలు'}
+                  {language === 'en' ? 'Contributions Received' : 'అందిన విరాళాలు'}
                 </span>
               </div>
             </div>
@@ -958,24 +970,38 @@ const Landing = () => {
 
             <div className="card p-6 space-y-4 border-2 border-gold-400/40 shadow-lg text-center lg:text-left">
               <h3 className="text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
-                {language === 'en' ? 'Verified Seva Allocation' : 'నిధుల కేటాయింపు'}
+                {language === 'en' ? 'Live Seva Statistics' : 'ప్రత్యక్ష సేవా గణాంకాలు'}
               </h3>
               <div className="space-y-2.5 text-xs font-semibold">
                 <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
-                  <span className="text-[var(--text-muted)]">{language === 'en' ? 'Annadanam & Prasad' : 'అన్నదానం & ప్రసాదం'}</span>
-                  <span className="font-mono text-saffron-600 font-bold">50%</span>
+                  <span className="text-[var(--text-muted)]">
+                    {language === 'en' ? 'Total Contributions Logged' : 'మొత్తం నమోదైన విరాళాలు'}
+                  </span>
+                  <span className="font-mono text-saffron-600 font-bold">
+                    ₹{stats.totalDonations.toLocaleString('en-IN')}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
-                  <span className="text-[var(--text-muted)]">{language === 'en' ? 'Temple Festivals & Lights' : 'ఉత్సవాలు & దీపాలంకరణ'}</span>
-                  <span className="font-mono text-gold-600 font-bold">30%</span>
+                  <span className="text-[var(--text-muted)]">
+                    {language === 'en' ? 'Verified Seva Donations' : 'ధృవీకరించిన విరాళాలు'}
+                  </span>
+                  <span className="font-mono text-gold-600 font-bold">
+                    {stats.donationsCount}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
-                  <span className="text-[var(--text-muted)]">{language === 'en' ? 'Blood Camps & Student Aid' : 'రక్తదానం & విద్యార్థుల సాయం'}</span>
-                  <span className="font-mono text-emerald-600 font-bold">20%</span>
+                  <span className="text-[var(--text-muted)]">
+                    {language === 'en' ? 'Registered Youth Volunteers' : 'క్రియాశీలక సభ్యులు'}
+                  </span>
+                  <span className="font-mono text-emerald-600 font-bold">
+                    {stats.members}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center pt-1 font-bold text-devored-600">
                   <span>{language === 'en' ? 'Admin / Overhead' : 'నిర్వహణ ఖర్చులు'}</span>
-                  <span className="font-mono">0% (Voluntary)</span>
+                  <span className="font-mono">
+                    0% ({language === 'en' ? '100% Voluntary' : 'పూర్తిగా స్వచ్ఛంద సేవ'})
+                  </span>
                 </div>
               </div>
             </div>
